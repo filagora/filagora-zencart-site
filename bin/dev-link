@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Use the local Filagora checkouts (../filagora-*) instead of the GitHub versions, so a
+# change in a package shows up here at once. Run inside the project; needs DDEV.
+#
+# This edits composer.json and composer.lock. Do not commit those changes: run
+# bin/dev-unlink first.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+packages=(core entitlements forums logs cms compliance messages search push memberships notifications plugins plugins-security zencart)
+
+for name in "${packages[@]}"; do
+  if [ ! -d "../filagora-${name}" ]; then
+    echo "Missing ../filagora-${name}: clone it next to this project first." >&2
+    exit 1
+  fi
+done
+
+# Local path repositories come first, so Composer prefers them over Packagist.
+python3 - <<'PY'
+import json
+
+with open("composer.json") as handle:
+    data = json.load(handle)
+
+# A symlinked checkout reports itself as dev-master, which would not satisfy the packages'
+# own ^0.2 constraints on each other, so say which release line the checkouts stand for.
+# Bump these when a package moves to a new 0.x minor.
+lines = {"forums": "0.6.x-dev", "cms": "0.3.x-dev", "compliance": "0.1.x-dev", "messages": "0.3.x-dev", "search": "0.1.x-dev", "push": "0.1.x-dev", "memberships": "0.1.x-dev", "notifications": "0.1.x-dev", "plugins": "0.3.x-dev", "plugins-security": "0.1.x-dev", "zencart": "0.3.x-dev"}
+default_line = "0.2.x-dev"
+local = [
+    {
+        "type": "path",
+        "url": f"/var/www/filagora-{name}",
+        "options": {"symlink": True, "versions": {f"filagora/filagora-{name}": lines.get(name, default_line)}},
+    }
+    for name in ("core", "entitlements", "forums", "logs", "cms", "compliance", "messages", "search", "push", "memberships", "notifications", "plugins", "plugins-security", "zencart")
+]
+rest = [repo for repo in data.get("repositories", []) if repo.get("type") != "path"]
+data["repositories"] = local + rest
+
+with open("composer.json", "w") as handle:
+    json.dump(data, handle, indent=4, ensure_ascii=False)
+    handle.write("\n")
+PY
+
+ddev restart >/dev/null
+ddev composer require --no-interaction \
+  filagora/filagora-core:@dev \
+  filagora/filagora-entitlements:@dev \
+  filagora/filagora-forums:@dev \
+  filagora/filagora-logs:@dev \
+  filagora/filagora-cms:@dev \
+  filagora/filagora-compliance:@dev \
+  filagora/filagora-messages:@dev \
+  filagora/filagora-search:@dev \
+  filagora/filagora-push:@dev \
+  filagora/filagora-memberships:@dev \
+  filagora/filagora-notifications:@dev \
+  filagora/filagora-plugins:@dev \
+  filagora/filagora-plugins-security:@dev \
+  filagora/filagora-zencart:@dev
+
+echo
+echo "Linked. vendor/filagora/ now points at your checkouts:"
+ls -l vendor/filagora

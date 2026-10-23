@@ -1,0 +1,19 @@
+# Mounts the sibling Filagora checkouts into the web container so `bin/dev-link` can
+# symlink them into vendor/. Missing folders are simply empty mounts.
+services:
+  web:
+    volumes:
+      - ../../filagora-core:/var/www/filagora-core
+      - ../../filagora-entitlements:/var/www/filagora-entitlements
+      - ../../filagora-forums:/var/www/filagora-forums
+      - ../../filagora-logs:/var/www/filagora-logs
+      - ../../filagora-cms:/var/www/filagora-cms
+      - ../../filagora-compliance:/var/www/filagora-compliance
+      - ../../filagora-messages:/var/www/filagora-messages
+      - ../../filagora-search:/var/www/filagora-search
+      - ../../filagora-push:/var/www/filagora-push
+      - ../../filagora-memberships:/var/www/filagora-memberships
+      - ../../filagora-notifications:/var/www/filagora-notifications
+      - ../../filagora-plugins:/var/www/filagora-plugins
+      - ../../filagora-plugins-security:/var/www/filagora-plugins-security
+      - ../../filagora-zencart:/var/www/filagora-zencart
