@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "91c7af65d4e3308e3c493683ce404e9b",
+    "content-hash": "02cdd5b3768d9c04e61efc8deebd4f90",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1940,16 +1940,16 @@
         },
         {
             "name": "filagora/filagora-zencart",
-            "version": "v0.3.0",
+            "version": "v0.4.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:filagora/filagora-zencart.git",
-                "reference": "5177b6cf24cb0530f3932c6e83b6f5cba97518e0"
+                "reference": "2a0dcddb78e433016db657522870f8e4d3de4ced"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/5177b6cf24cb0530f3932c6e83b6f5cba97518e0",
-                "reference": "5177b6cf24cb0530f3932c6e83b6f5cba97518e0",
+                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/2a0dcddb78e433016db657522870f8e4d3de4ced",
+                "reference": "2a0dcddb78e433016db657522870f8e4d3de4ced",
                 "shasum": ""
             },
             "require": {
@@ -1961,6 +1961,7 @@
                 "filagora/filagora-memberships": "^0.1.1",
                 "filagora/filagora-messages": "^0.3",
                 "filagora/filagora-notifications": "^0.1",
+                "filagora/filagora-plugins": "^0.3",
                 "php": "^8.4"
             },
             "require-dev": {
@@ -2011,10 +2012,10 @@
                 "zen-cart"
             ],
             "support": {
-                "source": "https://github.com/filagora/filagora-zencart/tree/v0.3.0",
+                "source": "https://github.com/filagora/filagora-zencart/tree/v0.4.0",
                 "issues": "https://github.com/filagora/filagora-zencart/issues"
             },
-            "time": "2026-10-22T20:02:52+00:00"
+            "time": "2026-10-23T22:31:55+00:00"
         },
         {
             "name": "filament/actions",
