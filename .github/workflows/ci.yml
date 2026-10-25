@@ -32,9 +32,6 @@ jobs:
       DB_DATABASE: testing
       DB_USERNAME: root
       DB_PASSWORD: root
-      # Read access to the private Zen Cart profile package: a fine-grained, read-only token held as
-      # an Actions secret, used only while Composer installs.
-      COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
     steps:
       - uses: actions/checkout@v4
 
@@ -62,3 +59,12 @@ jobs:
 
       - name: Run tests
         run: vendor/bin/pest --ci
+
+  leak-scan:
+    uses: filagora/filagora-shared/.github/workflows/leak-scan.yml@master
+    with:
+      allowed-emails: |
+        security@zen-cart.com
+        team@zen-cart.com
+        paypal@zen-cart.com
+    secrets: inherit

@@ -283,7 +283,7 @@ class FrontendMaintenanceModeTest extends TestCase
         ]);
 
         $response = $this->withServerVariables([
-            'REMOTE_ADDR' => '172.18.0.10',
+            'REMOTE_ADDR' => '198.51.100.10',
             'HTTP_X_FORWARDED_FOR' => '203.0.113.10',
         ])->get('/');
 
@@ -316,7 +316,7 @@ class FrontendMaintenanceModeTest extends TestCase
         ]);
 
         $response = $this->withServerVariables([
-            'REMOTE_ADDR' => '172.71.178.155',
+            'REMOTE_ADDR' => '198.51.100.20',
             'HTTP_X_FORWARDED_FOR' => '203.0.113.10',
         ])->get('/');
 

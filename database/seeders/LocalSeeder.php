@@ -22,6 +22,7 @@ class LocalSeeder extends Seeder
         }
 
         $this->call(OperatorEntitlementSeeder::class);
+        $this->call(SitePagesSeeder::class);
 
         $admin = User::query()->updateOrCreate(
             ['email' => 'admin@example.test'],
