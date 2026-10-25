@@ -67,4 +67,5 @@ jobs:
         security@zen-cart.com
         team@zen-cart.com
         paypal@zen-cart.com
+        claudebot@anthropic.com
     secrets: inherit
