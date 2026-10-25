@@ -54,8 +54,6 @@ class ServicesPageCmsMediaTest extends TestCase
 
     public function test_pages_still_render_when_a_partner_image_is_missing_from_cms_media(): void
     {
-        $this->markTestSkipped('Needs the forums page: slice S2 (forum reading).');
-
         // Regression: the layout composer indexed the media map directly, so
         // one deleted partner image made every page using it fail.
         CmsMediaAsset::query()->where('path', 'cms-media/partners/phpstorm.jpg')->delete();

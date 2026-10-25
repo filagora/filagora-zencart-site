@@ -82,8 +82,6 @@ class LoginTest extends TestCase
 
     public function test_login_failure_elsewhere_on_the_site_reopens_the_modal_on_redirect_back(): void
     {
-        $this->markTestSkipped('Needs the /forums page: slice S2 (forum reading).');
-
         User::factory()->create([
             'username' => 'standard-user',
             'password' => Hash::make('password123'),

@@ -4,6 +4,8 @@ use App\Http\Controllers\Cms\CmsPageController;
 use App\Http\Controllers\Cms\CmsPreviewController;
 use App\Http\Controllers\Cms\CmsPreviewSessionController;
 use App\Http\Controllers\Cms\CmsPreviewShareController;
+use App\Http\Controllers\ForumController;
+use App\Http\Controllers\ForumSearchController;
 use App\Http\Controllers\FrontendLogoutController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
@@ -11,6 +13,20 @@ use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/forums', [ForumController::class, 'index'])->name('forums.index');
+Route::get('/forums/today', [ForumController::class, 'today'])->name('forums.today');
+Route::get('/forums/unread', [ForumController::class, 'unread'])->middleware('frontend.verified')->name('forums.unread');
+Route::get('/forums/mark-all-read', static function (): never {
+    abort(405);
+});
+Route::post('/forums/mark-all-read', [ForumController::class, 'markAllRead'])->middleware('frontend.verified')->name('forums.mark-all-read');
+// Before /forums/{forum}, which would otherwise take "search" as a forum.
+Route::get('/forums/search', [ForumSearchController::class, 'index'])->name('forums.search');
+Route::get('/forums/search/forums', [ForumSearchController::class, 'forumOptions'])->name('forums.search.forum-options');
+Route::get('/forums/{forum}', [ForumController::class, 'show'])->name('forums.show');
+Route::get('/threads/{thread}', [ForumController::class, 'showThread'])->name('threads.show');
+Route::get('/threads/{thread}/search', [ForumSearchController::class, 'thread'])->name('threads.search');
+
 Route::get('/sitemap.xml', [SitemapController::class, 'show'])->name('sitemap.xml');
 
 Route::get('/pages/{slug}', [CmsPageController::class, 'show'])->name('cms.pages.show');
