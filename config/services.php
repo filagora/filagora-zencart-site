@@ -35,6 +35,11 @@ return [
         ],
     ],
 
+    'legacy_redirect' => [
+        'logging_enabled' => env('LEGACY_REDIRECT_LOGGING_ENABLED', false),
+        'docs_url' => env('LEGACY_DOCS_URL', 'https://docs.zen-cart.com'),
+    ],
+
     'turnstile' => [
         'enabled' => env('TURNSTILE_ENABLED', false),
         'site_key' => env('TURNSTILE_SITE_KEY'),

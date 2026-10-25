@@ -302,8 +302,6 @@ class ForumHeaderNavigationTest extends TestCase
 
     public function test_forum_show_displays_visible_attachment_indicator_and_list(): void
     {
-        $this->markTestSkipped('Needs the attachment pages: slice S2d (attachments).');
-
         $forum = $this->createForum();
         $author = User::factory()->create();
         $otherUser = User::factory()->create();
