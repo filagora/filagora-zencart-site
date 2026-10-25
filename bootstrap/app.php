@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Middleware\ApplySearchIconToggleOverride;
+use App\Http\Middleware\EnsureFrontendEmailIsVerified;
+use App\Http\Middleware\FrontendMaintenanceMode;
+use App\Http\Middleware\RecordUserLastSeen;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,7 +16,18 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->web(prepend: [
+            FrontendMaintenanceMode::class,
+        ]);
+
+        $middleware->web(append: [
+            RecordUserLastSeen::class,
+            ApplySearchIconToggleOverride::class,
+        ]);
+
+        $middleware->alias([
+            'frontend.verified' => EnsureFrontendEmailIsVerified::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

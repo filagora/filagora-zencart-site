@@ -13,6 +13,6 @@ return [
     |
     */
 
-    'panel_path' => env('SITE_PANEL_PATH', 'admin'),
+    'panel_path' => env('SITE_PANEL_PATH', 'dashboard'),
 
 ];
