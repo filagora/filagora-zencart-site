@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\UserNotificationPreference;
 use App\Notifications\Channels\CoalescingDatabaseChannel;
 use App\Notifications\ThreadUpdatedNotification;
-use App\Services\ForumStatsService;
 use Carbon\Carbon;
 use Filagora\Forums\Enums\ContentModerationStatus;
 use Filagora\Forums\Enums\ForumPostingPolicy;

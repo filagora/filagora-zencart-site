@@ -5,11 +5,13 @@ use App\Http\Controllers\Cms\CmsPreviewController;
 use App\Http\Controllers\Cms\CmsPreviewSessionController;
 use App\Http\Controllers\Cms\CmsPreviewShareController;
 use App\Http\Controllers\ForumController;
+use App\Http\Controllers\ForumModerationController;
 use App\Http\Controllers\ForumSearchController;
 use App\Http\Controllers\FrontendLogoutController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostAttachmentController;
+use App\Http\Controllers\RelocationTargetsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\ThreadPostingController;
 use App\Http\Controllers\UserAvatarController;
@@ -64,6 +66,14 @@ Route::middleware('frontend.verified')->group(function (): void {
     Route::put('/posts/{post}', [ThreadPostingController::class, 'updatePost'])->name('posts.update');
     Route::post('/threads/{thread}/subscribe', [ThreadPostingController::class, 'subscribe'])->name('threads.subscribe');
     Route::post('/threads/{thread}/unsubscribe', [ThreadPostingController::class, 'unsubscribe'])->name('threads.unsubscribe');
+
+    Route::get('/threads/search/for-move', [RelocationTargetsController::class, 'threads'])->middleware('throttle:message-user-search')->name('threads.search-for-move');
+    Route::get('/forums/search/for-move', [RelocationTargetsController::class, 'forums'])->middleware('throttle:message-user-search')->name('forums.search-for-move');
+    Route::post('/threads/{thread}/moderate', [ForumModerationController::class, 'moderateThread'])->middleware('throttle:moderation-action')->name('threads.moderate');
+    Route::post('/threads/{thread}/posts/moderate-bulk', [ForumModerationController::class, 'moderatePostsBulk'])->middleware('throttle:moderation-action')->name('posts.moderate-bulk');
+    Route::post('/posts/{post}/moderate', [ForumModerationController::class, 'moderatePost'])->middleware('throttle:moderation-action')->name('posts.moderate');
+    Route::post('/moderation/relocate/undo', [ForumModerationController::class, 'undoRelocation'])->middleware('throttle:moderation-action')->name('moderation.relocate.undo');
+    Route::post('/moderation/reports/{postReport}/resolve', [ForumModerationController::class, 'resolvePostReport'])->middleware('throttle:moderation-action')->name('moderation.reports.resolve');
 });
 
 Route::get('/sitemap.xml', [SitemapController::class, 'show'])->name('sitemap.xml');
