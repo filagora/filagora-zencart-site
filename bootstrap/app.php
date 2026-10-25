@@ -4,7 +4,6 @@ use App\Http\Middleware\ApplySearchIconToggleOverride;
 use App\Http\Middleware\EnsureFrontendEmailIsVerified;
 use App\Http\Middleware\FrontendMaintenanceMode;
 use App\Http\Middleware\RecordUserLastSeen;
-use Filagora\Cms\Http\Middleware\MarkPreviewResponsesUncacheable;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -24,9 +23,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             RecordUserLastSeen::class,
             ApplySearchIconToggleOverride::class,
-            // The CMS package adds this itself, but that registration is lost when the kernel
-            // syncs its own middleware groups, so the site lists it here.
-            MarkPreviewResponsesUncacheable::class,
         ]);
 
         $middleware->alias([
