@@ -8,6 +8,8 @@ import './modules/push';
 // as the slice that owns the page is ported (see zencart-site-frontend-plan.md in the planning
 // repository). Each is only downloaded on pages that carry its marker.
 const pageModules = [
+    ['[data-thread-attachments-popup]', () => import('./modules/forum-thread-list')],
+    ['[data-forum-search-bar]', () => import('./modules/forum-search-bar')],
     ['[data-home-motion-root]', () => import('./modules/home-motion')],
     ['#deploySteps', () => import('./modules/home-deploy-steps')],
 ];

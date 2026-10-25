@@ -2,6 +2,8 @@
 
 namespace App\Models\Concerns;
 
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
