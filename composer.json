@@ -6,7 +6,7 @@
     "license": "proprietary",
     "require": {
         "php": "^8.4",
-        "filagora/filagora-cms": "^0.3.1",
+        "filagora/filagora-cms": "^0.3.2",
         "filagora/filagora-compliance": "^0.1",
         "filagora/filagora-core": "^0.2.2",
         "filagora/filagora-entitlements": "^0.2",
