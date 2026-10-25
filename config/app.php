@@ -123,4 +123,25 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'frontend_maintenance' => [
+        'enabled' => (bool) env('FRONTEND_MAINTENANCE_ENABLED', false),
+        'allow_during_tests' => (bool) env('FRONTEND_MAINTENANCE_ALLOW_DURING_TESTS', false),
+        'message' => env('FRONTEND_MAINTENANCE_MESSAGE'),
+        'message_key' => env('FRONTEND_MAINTENANCE_MESSAGE_KEY', 'maintenance.message'),
+        'retry_after' => (int) env('FRONTEND_MAINTENANCE_RETRY_AFTER', 3600),
+        // Set this alongside FRONTEND_MAINTENANCE_ENABLED so the maintenance
+        // page can show when the window began — without it, "suggested
+        // retry: 1 hour" means nothing to a visitor who doesn't know whether
+        // that hour started five minutes or five hours ago.
+        'started_at' => env('FRONTEND_MAINTENANCE_STARTED_AT'),
+        'allowed_ips' => array_values(array_filter(array_map(
+            static fn (string $ip): string => trim($ip),
+            explode(',', (string) env('FRONTEND_MAINTENANCE_ALLOWED_IPS', ''))
+        ))),
+        'except' => array_values(array_filter(array_map(
+            static fn (string $path): string => trim($path),
+            explode(',', (string) env('FRONTEND_MAINTENANCE_EXCEPT', 'up,dashboard,dashboard/*'))
+        ))),
+    ],
+
 ];

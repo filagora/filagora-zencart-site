@@ -2,6 +2,12 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\EmailVerificationPrompt;
+use App\Filament\Pages\Auth\Login as UsernameLogin;
+use App\Filament\Pages\Auth\Register as FrontendRegister;
+use App\Http\Middleware\EnsureBannedDashboardUserIsLoggedOut;
+use App\Http\Middleware\EnsureDashboardAccess;
+use App\Http\Middleware\ThrottleAuthEndpoints;
 use Filagora\Cms\FilagoraCmsPlugin;
 use Filagora\Compliance\FilagoraCompliancePlugin;
 use Filagora\Compliance\Filament\Widgets\PrivacyKpiOverview;
@@ -38,9 +44,12 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->id('admin')
+            ->id('dashboard')
             ->path(config('site.panel_path'))
-            ->login()
+            ->login(UsernameLogin::class)
+            ->registration(FrontendRegister::class)
+            ->emailVerification(EmailVerificationPrompt::class)
+            ->passwordReset()
             ->sidebarCollapsibleOnDesktop()
             ->colors([
                 'primary' => Color::Amber,
@@ -77,11 +86,14 @@ class AdminPanelProvider extends PanelProvider
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 PreventRequestForgery::class,
+                EnsureBannedDashboardUserIsLoggedOut::class,
+                ThrottleAuthEndpoints::class,
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
+                EnsureDashboardAccess::class,
                 Authenticate::class,
             ]);
     }

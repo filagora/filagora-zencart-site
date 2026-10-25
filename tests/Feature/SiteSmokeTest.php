@@ -26,16 +26,16 @@ it('passes the Filagora doctor on a migrated install', function () {
 });
 
 it('sends guests to the sign-in page', function () {
-    get('/admin')->assertRedirect('/admin/login');
-    get('/admin/login')->assertOk();
+    get('/dashboard')->assertRedirect('/dashboard/login');
+    get('/dashboard/login')->assertOk();
 });
 
 it('lets the local administrator open the dashboard and the index page of every resource', function () {
     actingAs($this->admin);
-    $panel = Filament::getPanel('admin');
+    $panel = Filament::getPanel('dashboard');
     $opened = 0;
 
-    get('/admin')->assertOk();
+    get('/dashboard')->assertOk();
 
     foreach ($panel->getResources() as $resource) {
         if (! array_key_exists('index', $resource::getPages())) {
@@ -52,7 +52,7 @@ it('lets the local administrator open the dashboard and the index page of every 
 it('keeps the dashboard closed to someone without the staff entitlement', function () {
     $member = User::factory()->create();
 
-    actingAs($member)->get('/admin')->assertForbidden();
+    actingAs($member)->get('/dashboard')->assertForbidden();
 });
 
 it('wires the Zen Cart profile over the packages\' defaults', function () {

@@ -1,2 +1,129 @@
 User-agent: *
-Disallow:
+Disallow: /*/blackhole/
+Disallow: /images/
+Disallow: /image.php
+Disallow: /archived_contributions/
+Disallow: *redlink*
+Disallow: /search
+Disallow: /members/
+Disallow: /members$
+Disallow: /*?auth=
+Disallow: /plugins/*/download
+Crawl-delay: 15
+
+User-agent: ClaudeBot
+Crawl-delay: 25
+Disallow: /
+Allow: /$
+Allow: /sitemap.xml
+Allow: /threads/
+Allow: /pages/
+Allow: /showthread.php
+Allow: /content.php
+
+User-agent: Claude-SearchBot
+Crawl-delay: 10
+Disallow: /
+Allow: /$
+Allow: /sitemap.xml
+Allow: /threads/
+Allow: /pages/
+Allow: /showthread.php
+Allow: /content.php
+
+User-agent: Claude-User
+Disallow: /
+Allow: /$
+Allow: /sitemap.xml
+Allow: /threads/
+Allow: /pages/
+Allow: /search
+Allow: /showthread.php
+Allow: /content.php
+
+User-agent: GPTBot
+Crawl-delay: 25
+Disallow: /
+Allow: /$
+Allow: /sitemap.xml
+Allow: /threads/
+Allow: /pages/
+Allow: /showthread.php
+Allow: /content.php
+
+User-agent: OAI-SearchBot
+Crawl-delay: 10
+Disallow: /
+Allow: /$
+Allow: /sitemap.xml
+Allow: /threads/
+Allow: /pages/
+Allow: /showthread.php
+Allow: /content.php
+
+User-agent: ChatGPT-User
+Disallow: /
+Allow: /$
+Allow: /sitemap.xml
+Allow: /threads/
+Allow: /pages/
+Allow: /search
+Allow: /showthread.php
+Allow: /content.php
+
+User-agent: Slurp
+Disallow: /images/
+Disallow: /search
+Disallow: /members/
+Disallow: /members$
+Disallow: /*?auth=
+Disallow: /plugins/*/download
+Disallow: /archived_contributions/
+Disallow: *redlink*
+Crawl-delay: 15
+
+User-agent: MSNBot
+Disallow: /images/
+Disallow: /search
+Disallow: /members/
+Disallow: /members$
+Disallow: /*?auth=
+Disallow: /plugins/*/download
+Disallow: /archived_contributions/
+Disallow: *redlink*
+Crawl-delay: 15
+
+User-agent: Yandex
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-Agent: Neevabot
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: Amzn-SearchBot
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+User-agent: SleepBot
+Disallow: /
+
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+Sitemap: https://www.zen-cart.com/sitemap.xml
