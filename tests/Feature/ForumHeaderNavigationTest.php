@@ -26,8 +26,6 @@ class ForumHeaderNavigationTest extends TestCase
 
     public function test_forum_pages_render_forum_header_navigation_from_cms_records(): void
     {
-        $this->markTestSkipped('Needs the new-thread form: slice S3 (forum writing).');
-
         CmsNavigation::query()->updateOrCreate(
             ['name' => 'forum_header'],
             ['items' => [

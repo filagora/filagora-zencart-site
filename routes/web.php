@@ -11,6 +11,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostAttachmentController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\ThreadPostingController;
 use App\Http\Controllers\UserAvatarController;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Request;
@@ -53,6 +54,16 @@ Route::withoutMiddleware([
     Route::get('/avatars/{user}/{filename}', [UserAvatarController::class, 'show'])
         ->where('filename', '[A-Za-z0-9._-]+')
         ->name('users.avatar.show');
+});
+
+Route::middleware('frontend.verified')->group(function (): void {
+    Route::get('/forums/{forum}/threads/new', [ThreadPostingController::class, 'newThreadForm'])->name('threads.create.form');
+    Route::post('/forums/{forum}/threads', [ThreadPostingController::class, 'storeThread'])->name('threads.create');
+    Route::post('/threads/{thread}/reply', [ThreadPostingController::class, 'reply'])->name('threads.reply');
+    Route::get('/posts/{post}/edit', [ThreadPostingController::class, 'editPostForm'])->name('posts.edit');
+    Route::put('/posts/{post}', [ThreadPostingController::class, 'updatePost'])->name('posts.update');
+    Route::post('/threads/{thread}/subscribe', [ThreadPostingController::class, 'subscribe'])->name('threads.subscribe');
+    Route::post('/threads/{thread}/unsubscribe', [ThreadPostingController::class, 'unsubscribe'])->name('threads.unsubscribe');
 });
 
 Route::get('/sitemap.xml', [SitemapController::class, 'show'])->name('sitemap.xml');

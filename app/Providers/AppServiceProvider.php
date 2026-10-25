@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Filament\Auth\Responses\LoginResponse as AppLoginResponse;
 use App\Filament\Auth\Responses\RegistrationResponse as AppRegistrationResponse;
+use App\Markdown\BlankLineGapExtension;
+use App\Markdown\ZenCartHtmlTransformer;
 use App\Models\BugReport;
 use App\Observers\FlushForumsIndexCacheObserver;
 use App\Support\FormattedContentRenderer;
@@ -13,12 +15,15 @@ use App\View\Composers\ChromeComposer;
 use App\View\Composers\ForumPagesComposer;
 use App\View\Composers\HeaderComposer;
 use App\View\Composers\ModerationQueueComposer;
+use Filagora\Core\Content\ExtensionRegistry;
 use Filagora\Core\Content\MarkdownRenderer;
 use Filagora\Core\Settings\SettingDefinition;
 use Filagora\Core\Settings\SettingsRegistry;
 use Filagora\Core\Settings\SettingType;
 use Filagora\Forums\Contracts\StaffPreview;
 use Filagora\Forums\Events\ForumStatsChanged;
+use Filagora\Forums\Models\Post;
+use Filagora\Forums\Models\Thread;
 use Filagora\Forums\Support\Models;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse as FilamentLoginResponse;
 use Filament\Auth\Http\Responses\Contracts\RegistrationResponse as FilamentRegistrationResponse;
@@ -65,6 +70,13 @@ class AppServiceProvider extends ServiceProvider
             ));
         });
 
+        // The site's additions to markdown rendering: blank-line gaps, the old forum's tags, issue
+        // and mention links.
+        $this->callAfterResolving(ExtensionRegistry::class, function (ExtensionRegistry $registry): void {
+            $registry->extension(new BlankLineGapExtension);
+            $registry->transformer(new ZenCartHtmlTransformer);
+        });
+
         Blade::directive('cmsMarkdown', fn (string $expression): string => "<?php echo \\App\\Support\\CmsMarkdown::block({$expression}); ?>");
         Blade::directive('cmsMarkdownInline', fn (string $expression): string => "<?php echo \\App\\Support\\CmsMarkdown::inline({$expression}); ?>");
 
@@ -79,14 +91,15 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Relations the public forum pages use that the forums package does not define: a post's
-     * attachments, a thread's poll, followers and bug reports.
+     * attachments and reactions, a thread's poll and bug reports. Registered on the package's base
+     * models, which the site's own subclasses inherit.
      */
     private function registerForumRelations(): void
     {
-        Models::class('post')::resolveRelationUsing('attachments', fn ($post) => $post->hasMany(Models::class('post_attachment'), 'post_id'));
-        Models::class('post')::resolveRelationUsing('reactions', fn ($post) => $post->hasMany(Models::class('reaction'), 'post_id'));
-        Models::class('thread')::resolveRelationUsing('poll', fn ($thread) => $thread->hasOne(Models::class('poll'), 'thread_id'));
-        Models::class('thread')::resolveRelationUsing('bugReports', fn ($thread) => $thread->hasMany(BugReport::class, 'thread_id'));
+        Post::resolveRelationUsing('attachments', fn ($post) => $post->hasMany(Models::class('post_attachment'), 'post_id'));
+        Post::resolveRelationUsing('reactions', fn ($post) => $post->hasMany(Models::class('reaction'), 'post_id'));
+        Thread::resolveRelationUsing('poll', fn ($thread) => $thread->hasOne(Models::class('poll'), 'thread_id'));
+        Thread::resolveRelationUsing('bugReports', fn ($thread) => $thread->hasMany(BugReport::class, 'thread_id'));
     }
 
     /**

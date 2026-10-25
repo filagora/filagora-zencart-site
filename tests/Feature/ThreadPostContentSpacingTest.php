@@ -101,8 +101,6 @@ class ThreadPostContentSpacingTest extends TestCase
 
     public function test_post_edit_preview_panel_gets_the_paragraph_spacing_class(): void
     {
-        $this->markTestSkipped('Needs thread creation, replying or post editing: slice S3 (forum writing).');
-
         $group = ForumGroup::query()->create([
             'name' => 'General',
             'slug' => 'general-edit-preview-spacing-'.uniqid(),
