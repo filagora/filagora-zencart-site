@@ -11,11 +11,12 @@ use Filagora\ZenCart\Models\Forum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Support\Facades\Route;
+use Tests\Concerns\SeedsSitePages;
 use Tests\TestCase;
 
 class FrontendMaintenanceModeTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsSitePages;
 
     protected function setUp(): void
     {

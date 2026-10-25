@@ -4,11 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\SeedsSitePages;
 use Tests\TestCase;
 
 class RecordUserLastSeenMiddlewareTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsSitePages;
 
     public function test_authenticated_request_records_last_seen_at(): void
     {

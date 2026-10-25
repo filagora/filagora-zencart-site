@@ -3,11 +3,12 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\SeedsSitePages;
 use Tests\TestCase;
 
 class HomeAuthModalTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsSitePages;
 
     public function test_home_page_renders_hamburger_mobile_navigation_trigger(): void
     {

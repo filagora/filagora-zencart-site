@@ -22,6 +22,30 @@ use Illuminate\View\View;
  */
 class ChromeComposer
 {
+    private const HOME_INTRO_IMAGE = 'cms-media/home-intro-hero.jpg';
+
+    private const ABOUT_GOALS_IMAGE = 'cms-media/about-goals.jpg';
+
+    private const GITHUB_LOGO = 'cms-media/footer-github-logo.png';
+
+    private const PRODUCT_BOX_IMAGE = 'cms-media/zencart-box3-transparent.png';
+
+    private const PARTNER_IMAGES = [
+        'cms-media/partners/phpstorm.jpg',
+        'cms-media/partners/DO_Powered_by_Badge_blue.png',
+        'cms-media/partners/Navicat-Premium.png',
+        'cms-media/partners/logoAtlassianPNG.png',
+        'cms-media/partners/browserstack.svg',
+        'cms-media/partners/tower2-logo-icon-subline-light.png',
+    ];
+
+    private const DEPLOY_STEP_IMAGES = [
+        'cms-media/steps/step_1.jpg',
+        'cms-media/steps/step_2.jpg',
+        'cms-media/steps/step_3.jpg',
+        'cms-media/steps/step_4.jpg',
+    ];
+
     public function __construct(
         private readonly Request $request,
         private readonly CmsContent $cms,
@@ -67,7 +91,18 @@ class ChromeComposer
     {
         $githubBlock = $this->cms->publishedReusableBlock('footer_github');
         $newsletterBlock = $this->cms->publishedReusableBlock('footer_newsletter');
-        $githubLogoUrl = $this->cms->mediaUrls(['cms-media/footer-github-logo.png'])['cms-media/footer-github-logo.png'] ?? null;
+        $assets = $this->cms->mediaAssets([
+            self::HOME_INTRO_IMAGE,
+            self::ABOUT_GOALS_IMAGE,
+            self::GITHUB_LOGO,
+            self::PRODUCT_BOX_IMAGE,
+            ...self::PARTNER_IMAGES,
+            ...self::DEPLOY_STEP_IMAGES,
+        ]);
+        $homeIntroImage = $assets[self::HOME_INTRO_IMAGE] ?? null;
+        $aboutGoalsImage = $assets[self::ABOUT_GOALS_IMAGE] ?? null;
+        $productBoxImage = $assets[self::PRODUCT_BOX_IMAGE] ?? null;
+        $githubLogoUrl = ($assets[self::GITHUB_LOGO] ?? null)?->publicUrl();
 
         $githubHtml = is_array($githubBlock?->data) ? (string) ($githubBlock->data['html'] ?? '') : '';
 
@@ -83,6 +118,16 @@ class ChromeComposer
             'footerGithubBlockHtml' => $githubHtml,
             'footerNewsletterBlockHtml' => is_array($newsletterBlock?->data) ? (string) ($newsletterBlock->data['html'] ?? '') : '',
             'footerGithubLogoUrl' => $githubLogoUrl,
+            'homeIntroImageUrl' => $homeIntroImage?->publicUrl(),
+            'homeIntroImageAlt' => $homeIntroImage?->alt_text,
+            'homeIntroImageWidth' => $homeIntroImage?->width(),
+            'homeIntroImageHeight' => $homeIntroImage?->height(),
+            'aboutGoalsImageUrl' => $aboutGoalsImage?->publicUrl(),
+            'aboutGoalsImageAlt' => $aboutGoalsImage?->alt_text,
+            'productBoxImageUrl' => $productBoxImage?->publicUrl(),
+            'productBoxImageAlt' => $productBoxImage?->alt_text,
+            'partnerImageUrls' => $this->urlsFor($assets, self::PARTNER_IMAGES),
+            'deployStepImageUrls' => $this->urlsFor($assets, self::DEPLOY_STEP_IMAGES),
             'cookieConsentWorkflowEnabled' => $this->cookieConsent->isWorkflowEnabled(),
             'searchIconToggleEnabled' => $this->searchIconToggleEnabled($request),
             'cookieConsentGroups' => $this->cookieConsent->enabledGroups(),
@@ -95,6 +140,28 @@ class ChromeComposer
             'activeSiteNotifications' => $this->announcements->forViewer($user),
             'dismissedSiteNotificationIds' => $user ? $this->dismissals->dismissedIdsFor($user) : [],
         ];
+    }
+
+    /**
+     * The public URL of each asset that exists, keyed by its path.
+     *
+     * @param  array<string, object>  $assets
+     * @param  list<string>  $paths
+     * @return array<string, string>
+     */
+    private function urlsFor(array $assets, array $paths): array
+    {
+        $urls = [];
+
+        foreach ($paths as $path) {
+            $url = ($assets[$path] ?? null)?->publicUrl();
+
+            if (is_string($url) && $url !== '') {
+                $urls[$path] = $url;
+            }
+        }
+
+        return $urls;
     }
 
     private function searchIconToggleEnabled(Request $request): bool

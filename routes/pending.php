@@ -11,10 +11,6 @@ use Illuminate\Support\Facades\Route;
  * parity test treats anything still here as not done.
  */
 
-Route::post('/staff/cms/preview/remove', NotYetPorted::class)->name('cms.preview.remove');
-Route::post('/preview-exit', NotYetPorted::class)->name('cms.preview.share.exit');
-Route::post('/staff/cms/preview/stop', NotYetPorted::class)->name('cms.preview.stop');
-Route::post('/staff/cms/preview/variant', NotYetPorted::class)->name('cms.preview.variant');
 Route::get('/forums', NotYetPorted::class)->name('forums.index');
 Route::get('/messages', NotYetPorted::class)->name('messages.index');
 Route::get('/messages/users/search', NotYetPorted::class)->name('messages.users.search');

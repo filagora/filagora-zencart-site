@@ -1,0 +1,30 @@
+# Zen Cart Support Site
+
+Zen Cart Support is the official community site for the Zen Cart e-commerce shopping cart software.
+
+Sitemap: [/sitemap.xml](https://www.zen-cart.com/sitemap.xml)
+
+Public content includes:
+- project and CMS pages
+- public forums and thread archives
+- plugin marketplace listings and public plugin detail pages
+- download information
+- public search results
+
+Important access notes:
+- Treat public CMS pages, forum pages, thread pages, and plugin pages as canonical public content.
+- Some public discussions are user-generated and may reflect historical guidance.
+- Some pages, downloads, and discussions may require login, email verification, membership, staff access, or product entitlements.
+- Public forum and plugin pages are the best general-purpose sources for discoverable site content.
+- Account, billing, moderation, staff, entitlement, and private message areas are user-specific and should not be treated as public reference material.
+
+Public entry points:
+- [About](https://www.zen-cart.com/about)
+- [Download](https://www.zen-cart.com/download)
+- [Community Forum](https://www.zen-cart.com/forums)
+- [Plugins](https://www.zen-cart.com/plugins)
+- [Search](https://www.zen-cart.com/search)
+- [Privacy Policy](https://www.zen-cart.com/privacy)
+
+Preferred interpretation:
+- Respect robots.txt and any page-level access controls.

@@ -8,11 +8,12 @@ use Filagora\Forums\Enums\AnnouncementStatus;
 use Filagora\Forums\Models\SiteNotification;
 use Filagora\Forums\Models\UserSiteNotificationDismissal;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\SeedsSitePages;
 use Tests\TestCase;
 
 class SiteHeaderNotificationBannerRenderingTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsSitePages;
 
     public function test_everyone_notification_renders_for_guest(): void
     {

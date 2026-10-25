@@ -4,11 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\SeedsSitePages;
 use Tests\TestCase;
 
 class SearchIconToggleTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SeedsSitePages;
 
     public function test_persistent_search_strip_renders_for_guests(): void
     {
