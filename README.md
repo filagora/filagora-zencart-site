@@ -1,18 +1,15 @@
 # Filagora Zen Cart site
 
-The Zen Cart support site, built on the [Filagora](https://github.com/filagora) packages and the private Zen Cart profile (`filagora/filagora-zencart`). A Laravel 13 / Filament 5 application. **Private.**
+The Zen Cart support site, built on the [Filagora](https://github.com/filagora) packages and the [Zen Cart profile](https://github.com/filagora/filagora-zencart). A Laravel 13 / Filament 5 application, MIT licensed.
 
-This repository is the application: host code, tests, and the local environment. It does not deploy itself. Production is deployed by a separate, deployment-only repository (`filagora/filagora-zencart-deploy`) that takes a built release of this one, so nothing here can be changed by a deploy.
+This repository is the application: host code, tests, and the local environment. It does not deploy itself and holds no deploy scripts. Production is deployed by a separate, deployment-only repository (`filagora/filagora-zencart-deploy`) that takes a built release of this one, so nothing here can be changed by a deploy.
 
-It is grown from the generic [`filagora-demo`](https://github.com/filagora/filagora-demo) (which must never learn of this site) and from the existing support site's application code, which is brought across one slice at a time as the packages replace it. See `zencart-site-plan.md` in the private planning repository.
+It is grown from the generic [`filagora-demo`](https://github.com/filagora/filagora-demo) (a generic demo that knows nothing of this site) and from the existing support site's application code, which is brought across one slice at a time as the packages replace it. The porting plan is kept in the maintainers' private planning repository.
 
 ## Run it locally (DDEV)
 
 ```bash
 ddev start
-# Composer needs read access to the private profile, once per DDEV install. This keeps the token
-# in DDEV's global Composer config, never in the repository:
-ddev composer config --global github-oauth.github.com "$(gh auth token)"
 ddev composer install
 cp .env.example .env
 ddev exec php artisan key:generate
@@ -20,7 +17,7 @@ ddev exec php artisan migrate --seed
 ddev exec php artisan test
 ```
 
-Open <https://filagora-zencart-site.ddev.site/admin> and sign in as `admin@example.test` / `password` (public, local only: the seeder refuses to run in any other environment).
+Open <https://filagora-zencart-site.ddev.site/> for the site and <https://filagora-zencart-site.ddev.site/dashboard> for the staff dashboard, and sign in as `admin` / `password` (public, local only: the seeder refuses to run in any other environment).
 
 ## Environments
 
@@ -33,7 +30,7 @@ Open <https://filagora-zencart-site.ddev.site/admin> and sign in as `admin@examp
 ## Rules that matter
 
 - **Host migrations that touch a table production already has must be written to do nothing there** (add a column only if it is missing). Production's tables are the truth; see `database/migrations/*_add_site_columns_to_users_table.php`.
-- **No secrets, no real data, no deploy scripts in this repository.** CI gets the profile through a read-only `COMPOSER_AUTH` Actions secret.
+- **No secrets, no real data, no deploy scripts in this repository.** CI installs everything from public repositories.
 - **Keep the same `APP_KEY`, session driver and cookie settings as the old site** in every environment that shares its data, so signed links, encrypted two-factor secrets and sessions keep working.
 
 ## Develop the packages alongside this app
@@ -43,3 +40,7 @@ Clone the package repositories next to this one and run `bin/dev-link` (and `bin
 ## Tests
 
 `ddev exec php artisan test` (Pest, on a real MariaDB). CI runs Pint, the migrations, `filagora:doctor` and the suite.
+
+## Contributing and licence
+
+Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). MIT licensed, see [LICENSE](LICENSE). "Zen Cart" and its logos are trademarks of Zen Ventures, LLC; the third-party logos under `public/images` (PayPal, Authorize.net, DigitalOcean and others) belong to their owners and are shown for identification only.
