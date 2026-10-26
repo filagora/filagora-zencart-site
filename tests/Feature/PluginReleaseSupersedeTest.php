@@ -103,8 +103,6 @@ class PluginReleaseSupersedeTest extends TestCase
 
     public function test_api_upload_needs_explicit_opt_in_to_supersede_pending_releases(): void
     {
-        $this->markTestSkipped('Needs the JSON API and account API tokens: slices S4d and S5');
-
         Storage::fake('public');
         Notification::fake();
         [$plugin, $owner] = $this->activePlugin();
