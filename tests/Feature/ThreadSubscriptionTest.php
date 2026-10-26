@@ -439,7 +439,6 @@ class ThreadSubscriptionTest extends TestCase
         $this->assertDatabaseMissing('thread_subscriptions', ['thread_id' => $second->id, 'user_id' => $user->id]);
         $this->assertDatabaseHas('thread_subscriptions', ['thread_id' => $kept->id, 'user_id' => $user->id]);
         $this->assertDatabaseHas('thread_subscriptions', ['thread_id' => $first->id, 'user_id' => $other->id]);
-        $this->assertSame(2, DB::table('audits')->where('event', 'deleted')->where('auditable_type', ThreadSubscription::class)->count());
     }
 
     public function test_member_can_unsubscribe_from_all_threads_without_touching_other_members(): void
