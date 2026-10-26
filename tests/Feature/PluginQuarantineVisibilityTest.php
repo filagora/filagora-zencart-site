@@ -91,8 +91,6 @@ class PluginQuarantineVisibilityTest extends TestCase
 
     public function test_quarantined_release_is_absent_from_search(): void
     {
-        $this->markTestSkipped('Needs the site-wide search page and the JSON API: slice S4d');
-
         $response = $this->get('/search?q=Held');
 
         $response->assertOk();
@@ -101,7 +99,7 @@ class PluginQuarantineVisibilityTest extends TestCase
 
     public function test_quarantined_release_is_absent_from_the_api_release_list(): void
     {
-        $this->markTestSkipped('Needs the site-wide search page and the JSON API: slice S4d');
+        $this->markTestSkipped('Needs the plugins JSON API: slice S5 (account tokens)');
 
         $response = $this->getJson("/api/v1/plugins/{$this->plugin->slug}/releases");
 

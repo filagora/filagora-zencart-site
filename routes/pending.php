@@ -21,7 +21,6 @@ Route::post('/notifications/read-all', NotYetPorted::class)->name('notifications
 Route::post('/profile/privacy-policy/accept', NotYetPorted::class)->name('profile.privacy-policy.accept');
 Route::get('/profile', NotYetPorted::class)->name('profile.show');
 Route::post('/profile/staff-frontend-preview', NotYetPorted::class)->name('profile.staff-frontend-preview.update');
-Route::get('/search', NotYetPorted::class)->name('search.index');
 Route::post('/staff/impersonation/stop', NotYetPorted::class)->name('staff.impersonation.stop');
 Route::get('/account/billing', NotYetPorted::class)->name('billing.index');
 Route::get('/members/{user}', NotYetPorted::class)->name('members.show');

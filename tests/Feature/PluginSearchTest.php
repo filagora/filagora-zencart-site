@@ -162,8 +162,6 @@ class PluginSearchTest extends TestCase
 
     public function test_best_match_ordering_matches_the_header_search(): void
     {
-        $this->markTestSkipped('Needs the site-wide search page: slice S4d');
-
         $type = $this->createType();
         $this->createPluginWithRelease($type, ['name' => 'Kappa Exact Widget']);
         $this->createPluginWithRelease($type, ['name' => 'Unrelated Tool', 'description' => 'mentions kappa widget in passing']);

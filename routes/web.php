@@ -19,6 +19,7 @@ use App\Http\Controllers\PollController;
 use App\Http\Controllers\PostAttachmentController;
 use App\Http\Controllers\PostInteractionController;
 use App\Http\Controllers\RelocationTargetsController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\ThreadPostingController;
 use App\Http\Controllers\UserAvatarController;
@@ -162,6 +163,7 @@ Route::middleware('frontend.verified')->group(function (): void {
     Route::post('/plugins/{plugin:slug}/releases/{release}/zc-versions', [PluginSubmissionController::class, 'updateReleaseZcVersions'])->name('plugins.release.zc-versions.update');
 });
 
+Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 Route::get('/plugins', [PluginLibraryController::class, 'index'])->name('plugins.index');
 Route::get('/plugins/search', [PluginLibraryController::class, 'search'])->name('plugins.search');
 Route::get('/plugins/type/{slug}', [PluginLibraryController::class, 'byType'])->name('plugins.type');
