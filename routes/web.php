@@ -12,6 +12,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MarkdownPreviewController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PluginLibraryController;
+use App\Http\Controllers\PluginSubmissionController;
 use App\Http\Controllers\PollController;
 use App\Http\Controllers\PostAttachmentController;
 use App\Http\Controllers\PostInteractionController;
@@ -141,6 +142,15 @@ require __DIR__.'/legacy.php';
 
 // The plugin library's public pages. After the pending routes so `/plugins/submit` and
 // `/plugins/search` are matched before `/plugins/{plugin}`.
+Route::middleware('frontend.verified')->group(function (): void {
+    Route::get('/plugins/submit', [PluginSubmissionController::class, 'submit'])->middleware('plugins.submissions.open')->name('plugins.submit');
+    Route::post('/plugins/submit', [PluginSubmissionController::class, 'store'])->middleware('plugins.submissions.open')->name('plugins.store');
+    Route::get('/plugins/support-threads/search', [PluginSubmissionController::class, 'searchSupportThreads'])->name('plugins.support-threads.search');
+    Route::get('/plugins/{plugin:slug}/releases/new', [PluginSubmissionController::class, 'newRelease'])->middleware('plugins.submissions.open')->name('plugins.release.new');
+    Route::post('/plugins/{plugin:slug}/releases/new', [PluginSubmissionController::class, 'storeRelease'])->middleware('plugins.submissions.open')->name('plugins.release.store');
+    Route::post('/plugins/{plugin:slug}/releases/{release}/zc-versions', [PluginSubmissionController::class, 'updateReleaseZcVersions'])->name('plugins.release.zc-versions.update');
+});
+
 Route::get('/plugins', [PluginLibraryController::class, 'index'])->name('plugins.index');
 Route::get('/plugins/search', [PluginLibraryController::class, 'search'])->name('plugins.search');
 Route::get('/plugins/type/{slug}', [PluginLibraryController::class, 'byType'])->name('plugins.type');

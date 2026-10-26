@@ -961,8 +961,6 @@ class PluginLibraryTest extends TestCase
 
     public function test_guest_is_redirected_to_login_modal_for_plugin_submission_pages(): void
     {
-        $this->markTestSkipped('Needs the submission forms: slice S4b');
-
         [$plugin] = $this->createPluginWithRelease();
 
         $this->get(route('plugins.submit'))

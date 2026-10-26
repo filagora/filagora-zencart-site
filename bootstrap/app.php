@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\ApplySearchIconToggleOverride;
 use App\Http\Middleware\EnsureFrontendEmailIsVerified;
+use App\Http\Middleware\EnsurePluginSubmissionsAreOpen;
 use App\Http\Middleware\FrontendMaintenanceMode;
 use App\Http\Middleware\RecordUserLastSeen;
 use App\Http\Middleware\RepairLegacyPathEncoding;
@@ -34,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'frontend.verified' => EnsureFrontendEmailIsVerified::class,
+            'plugins.submissions.open' => EnsurePluginSubmissionsAreOpen::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

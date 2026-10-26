@@ -122,6 +122,7 @@ class AppServiceProvider extends ServiceProvider
         Post::resolveRelationUsing('attachments', fn ($post) => $post->hasMany(Models::class('post_attachment'), 'post_id'));
         Post::resolveRelationUsing('reactions', fn ($post) => $post->hasMany(Models::class('reaction'), 'post_id'));
         Thread::resolveRelationUsing('subscribedUsers', fn ($thread) => $thread->belongsToMany(User::class, (new (Models::class('thread_subscription')))->getTable(), 'thread_id', 'user_id')->withTimestamps());
+        PluginReleaseModel::resolveRelationUsing('zcVersions', fn ($release) => $release->belongsToMany(ZcVersion::class, (new ZcVersion)->releasesTable(), 'plugin_release_id', 'plugin_zc_version_id')->withTimestamps());
         PluginModel::resolveRelationUsing('forumThread', fn ($plugin) => $plugin->belongsTo(Models::class('thread'), 'forum_thread_id'));
         Thread::resolveRelationUsing('poll', fn ($thread) => $thread->hasOne(Models::class('poll'), 'thread_id'));
         Thread::resolveRelationUsing('bugReports', fn ($thread) => $thread->hasMany(BugReport::class, 'thread_id'));

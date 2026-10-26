@@ -18,8 +18,6 @@ Route::post('/notifications/clear-all', NotYetPorted::class)->name('notification
 Route::get('/notifications', NotYetPorted::class)->name('notifications.index');
 Route::get('/notifications/{notification}/go', NotYetPorted::class)->name('notifications.open');
 Route::post('/notifications/read-all', NotYetPorted::class)->name('notifications.read-all');
-Route::get('/plugins/{plugin}/releases/new', NotYetPorted::class)->name('plugins.release.new');
-Route::get('/plugins/submit', NotYetPorted::class)->name('plugins.submit');
 Route::post('/profile/privacy-policy/accept', NotYetPorted::class)->name('profile.privacy-policy.accept');
 Route::get('/profile', NotYetPorted::class)->name('profile.show');
 Route::post('/profile/staff-frontend-preview', NotYetPorted::class)->name('profile.staff-frontend-preview.update');
@@ -32,16 +30,12 @@ Route::post('/profile/hide-resolved-bug-threads', NotYetPorted::class)->name('pr
 Route::post('/threads/{thread}/bug-reports', NotYetPorted::class)->name('threads.bug-reports.store');
 Route::get('/messages/{conversation}', NotYetPorted::class)->name('messages.show');
 Route::get('/members', NotYetPorted::class)->name('members.index');
-Route::post('/plugins/submit', NotYetPorted::class)->name('plugins.store');
-Route::get('/plugins/support-threads/search', NotYetPorted::class)->name('plugins.support-threads.search');
 Route::delete('/plugins/{plugin}', NotYetPorted::class)->name('plugins.destroy');
 Route::post('/plugins/{plugin}/grant-auto-publish', NotYetPorted::class)->name('plugins.grant-auto-publish');
 Route::post('/plugins/{plugin}/moderate', NotYetPorted::class)->name('plugins.moderate');
-Route::post('/plugins/{plugin}/releases/new', NotYetPorted::class)->name('plugins.release.store');
 Route::delete('/plugins/{plugin}/releases/{release}', NotYetPorted::class)->name('plugins.release.destroy');
 Route::post('/plugins/{plugin}/releases/{release}/grant-auto-publish', NotYetPorted::class)->name('plugins.release.grant-auto-publish');
 Route::post('/plugins/{plugin}/releases/{release}/moderate', NotYetPorted::class)->name('plugins.release.moderate');
-Route::post('/plugins/{plugin}/releases/{release}/zc-versions', NotYetPorted::class)->name('plugins.release.zc-versions.update');
 Route::post('/plugins/{plugin}/report', NotYetPorted::class)->name('plugins.report');
 Route::post('/plugins/{plugin}/subscribe', NotYetPorted::class)->name('plugins.subscribe');
 Route::post('/plugins/{plugin}/unsubscribe', NotYetPorted::class)->name('plugins.unsubscribe');

@@ -5,6 +5,9 @@
  * array, so each key listed here carries all of its own values.
  */
 return [
+    // The same kill switch the site's pages read (config/plugins.php).
+    'submissions_enabled' => (bool) env('PLUGINS_SUBMISSIONS_ENABLED', true),
+
     // Release archives are on the public disk, where the old site kept them.
     'storage' => [
         'disk' => env('FILAGORA_PLUGINS_DISK', 'public'),
