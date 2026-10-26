@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApiDocsController;
 use App\Http\Controllers\Cms\CmsPageController;
 use App\Http\Controllers\Cms\CmsPreviewController;
 use App\Http\Controllers\Cms\CmsPreviewSessionController;
@@ -163,6 +164,8 @@ Route::middleware('frontend.verified')->group(function (): void {
     Route::post('/plugins/{plugin:slug}/releases/{release}/zc-versions', [PluginSubmissionController::class, 'updateReleaseZcVersions'])->name('plugins.release.zc-versions.update');
 });
 
+Route::get('/docs/api/plugin-marketplace', [ApiDocsController::class, 'pluginMarketplace'])->name('docs.api.plugin-marketplace');
+Route::get('/docs/api/plugin-marketplace/openapi.yaml', [ApiDocsController::class, 'pluginMarketplaceSpec'])->name('docs.api.plugin-marketplace.spec');
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 Route::get('/plugins', [PluginLibraryController::class, 'index'])->name('plugins.index');
 Route::get('/plugins/search', [PluginLibraryController::class, 'search'])->name('plugins.search');
