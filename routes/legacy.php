@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\LegacyRedirectController;
+use App\Http\Middleware\ThrottleVersionCheckOnly;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
@@ -35,7 +36,9 @@ $vbulletinRoutes = function (): void {
     Route::get('/search.php', [LegacyRedirectController::class, 'search'])
         ->name('search');
 
+    // Only the version check is limited; the other modes just redirect.
     Route::get('/downloads.php', [LegacyRedirectController::class, 'downloads'])
+        ->middleware(ThrottleVersionCheckOnly::class)
         ->name('downloads');
 
     Route::get('/content.php/{legacyPath?}', [LegacyRedirectController::class, 'content'])

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\LegacyUrlResolver;
 use App\Support\LegacyRedirectResult;
+use Filagora\ZenCart\VersionCheck\VersionCheckController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,18 +53,27 @@ class LegacyRedirectController extends Controller
         return $this->respond($request, $this->resolver->resolveSearch($request));
     }
 
-    public function downloads(Request $request): RedirectResponse|Response|JsonResponse
+    public function downloads(Request $request, VersionCheckController $pluginCheck): RedirectResponse|Response|JsonResponse
     {
         if ($response = $this->rejectStyleId($request, 'downloads.php')) {
             return $response;
         }
 
         // Zen Cart v1.5.4 and older call this URL for the plugin version check and the v1.5.5/1.5.6
-        // curl client never follows redirects, so it must be answered here, not redirected. The
-        // answer comes from the Zen Cart profile's version-check endpoint (profile slice 8c), which
-        // is not released yet: until it is, this URL must not be cut over to.
+        // curl client never follows redirects, so it is answered here, not redirected, by the Zen
+        // Cart profile's version-check endpoint.
         if (trim((string) $request->query('do', '')) === 'versioncheck') {
-            abort(404);
+            $this->logRedirect([
+                'input_url' => $request->fullUrl(),
+                'resolution_outcome' => 'served',
+                'status_code' => 200,
+                'target_url' => null,
+                'matched_pattern' => 'downloads.php',
+                'lookup_key' => 'do',
+                'legacy_mode' => 'versioncheck',
+            ]);
+
+            return $pluginCheck($request);
         }
 
         return $this->respond($request, $this->resolver->resolveDownloads($request));
