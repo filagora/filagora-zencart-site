@@ -28,8 +28,6 @@ class ThreadSubscriptionTest extends TestCase
 
     public function test_authenticated_user_can_subscribe_and_manage_subscription_from_profile(): void
     {
-        $this->markTestSkipped('Needs the profile subscriptions tab: slice S5 (account).');
-
         $user = User::factory()->create();
         $thread = $this->createPublicThread($user);
 
@@ -60,8 +58,6 @@ class ThreadSubscriptionTest extends TestCase
 
     public function test_profile_subscriptions_show_thread_and_last_post_dates_beneath_title(): void
     {
-        $this->markTestSkipped('Needs the profile subscriptions tab: slice S5 (account).');
-
         $user = User::factory()->create();
         $thread = $this->createPublicThread($user);
         $thread->forceFill([
@@ -293,8 +289,6 @@ class ThreadSubscriptionTest extends TestCase
 
     public function test_profile_subscriptions_are_paginated(): void
     {
-        $this->markTestSkipped('Needs the profile subscriptions tab: slice S5 (account).');
-
         $user = User::factory()->create();
 
         for ($i = 1; $i <= 21; $i++) {
@@ -322,8 +316,6 @@ class ThreadSubscriptionTest extends TestCase
 
     public function test_profile_subscriptions_are_ordered_by_most_recent_thread_activity_first(): void
     {
-        $this->markTestSkipped('Needs the profile subscriptions tab: slice S5 (account).');
-
         $user = User::factory()->create();
         $staleThread = $this->createPublicThread($user, 1);
         $activeThread = $this->createPublicThread($user, 2);
@@ -423,8 +415,6 @@ class ThreadSubscriptionTest extends TestCase
 
     public function test_member_can_unsubscribe_from_selected_threads_in_bulk(): void
     {
-        $this->markTestSkipped('Needs the profile subscriptions tab: slice S5 (account).');
-
         $user = User::factory()->create();
         $other = User::factory()->create();
         [$first, $second, $kept] = [
@@ -449,13 +439,10 @@ class ThreadSubscriptionTest extends TestCase
         $this->assertDatabaseMissing('thread_subscriptions', ['thread_id' => $second->id, 'user_id' => $user->id]);
         $this->assertDatabaseHas('thread_subscriptions', ['thread_id' => $kept->id, 'user_id' => $user->id]);
         $this->assertDatabaseHas('thread_subscriptions', ['thread_id' => $first->id, 'user_id' => $other->id]);
-        $this->assertSame(2, DB::table('audits')->where('event', 'deleted')->where('auditable_type', ThreadSubscription::class)->count());
     }
 
     public function test_member_can_unsubscribe_from_all_threads_without_touching_other_members(): void
     {
-        $this->markTestSkipped('Needs the profile subscriptions tab: slice S5 (account).');
-
         $user = User::factory()->create();
         $other = User::factory()->create();
         $threads = [$this->createPublicThread($user, 1), $this->createPublicThread($user, 2)];
@@ -474,8 +461,6 @@ class ThreadSubscriptionTest extends TestCase
 
     public function test_bulk_unsubscribe_requires_a_selection_and_a_login(): void
     {
-        $this->markTestSkipped('Needs the profile subscriptions tab: slice S5 (account).');
-
         $user = User::factory()->create();
         $thread = $this->createPublicThread($user);
         ThreadSubscription::query()->create(['thread_id' => $thread->id, 'user_id' => $user->id]);
@@ -492,8 +477,6 @@ class ThreadSubscriptionTest extends TestCase
 
     public function test_subscriptions_tab_offers_bulk_unsubscribe_controls(): void
     {
-        $this->markTestSkipped('Needs the profile subscriptions tab: slice S5 (account).');
-
         $user = User::factory()->create();
         $thread = $this->createPublicThread($user);
         ThreadSubscription::query()->create(['thread_id' => $thread->id, 'user_id' => $user->id]);

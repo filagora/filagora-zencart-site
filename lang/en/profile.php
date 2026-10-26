@@ -2,6 +2,7 @@
 
 return [
     'flash' => [
+        'notification_preferences_updated' => 'Notification preferences updated.',
         'subscription_removed' => 'Subscription removed.',
         'subscriptions_removed' => '{0} No subscriptions were removed.|{1} 1 subscription removed.|[2,*] :count subscriptions removed.',
         'privacy_acknowledgement_required' => 'Please acknowledge the active privacy policy to continue.',
