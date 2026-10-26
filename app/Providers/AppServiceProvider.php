@@ -8,10 +8,13 @@ use App\Markdown\BlankLineGapExtension;
 use App\Markdown\ZenCartHtmlTransformer;
 use App\Models\BugReport;
 use App\Models\User;
+use App\Observers\BumpPluginsIndexCacheObserver;
 use App\Observers\FlushForumsIndexCacheObserver;
 use App\Observers\SyncUserPostCountObserver;
 use App\Policies\ForumPostPolicy;
 use App\Policies\ForumThreadPolicy;
+use App\Policies\PluginPolicy;
+use App\Policies\PluginReleasePolicy;
 use App\Services\UserPostCountService;
 use App\Support\FormattedContentRenderer;
 use App\Support\ForumsIndexCache;
@@ -31,6 +34,10 @@ use Filagora\Forums\Events\ThreadDeleted;
 use Filagora\Forums\Models\Post;
 use Filagora\Forums\Models\Thread;
 use Filagora\Forums\Support\Models;
+use Filagora\Plugins\Models\Plugin as PluginModel;
+use Filagora\Plugins\Models\PluginRelease as PluginReleaseModel;
+use Filagora\Plugins\Support\Models as PluginModels;
+use Filagora\ZenCart\Models\ZcVersion;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse as FilamentLoginResponse;
 use Filament\Auth\Http\Responses\Contracts\RegistrationResponse as FilamentRegistrationResponse;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -92,6 +99,8 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(Post::class, ForumPostPolicy::class);
         Gate::policy(Thread::class, ForumThreadPolicy::class);
+        Gate::policy(PluginModel::class, PluginPolicy::class);
+        Gate::policy(PluginReleaseModel::class, PluginReleasePolicy::class);
 
         $this->registerRateLimiters();
         $this->registerForumRelations();
@@ -113,6 +122,8 @@ class AppServiceProvider extends ServiceProvider
         Post::resolveRelationUsing('attachments', fn ($post) => $post->hasMany(Models::class('post_attachment'), 'post_id'));
         Post::resolveRelationUsing('reactions', fn ($post) => $post->hasMany(Models::class('reaction'), 'post_id'));
         Thread::resolveRelationUsing('subscribedUsers', fn ($thread) => $thread->belongsToMany(User::class, (new (Models::class('thread_subscription')))->getTable(), 'thread_id', 'user_id')->withTimestamps());
+        PluginReleaseModel::resolveRelationUsing('zcVersions', fn ($release) => $release->belongsToMany(ZcVersion::class, (new ZcVersion)->releasesTable(), 'plugin_release_id', 'plugin_zc_version_id')->withTimestamps());
+        PluginModel::resolveRelationUsing('forumThread', fn ($plugin) => $plugin->belongsTo(Models::class('thread'), 'forum_thread_id'));
         Thread::resolveRelationUsing('poll', fn ($thread) => $thread->hasOne(Models::class('poll'), 'thread_id'));
         Thread::resolveRelationUsing('bugReports', fn ($thread) => $thread->hasMany(BugReport::class, 'thread_id'));
     }
@@ -123,6 +134,12 @@ class AppServiceProvider extends ServiceProvider
      */
     private function registerForumCacheFlush(): void
     {
+        foreach (['type', 'plugin', 'release'] as $key) {
+            PluginModels::class($key)::observe(BumpPluginsIndexCacheObserver::class);
+        }
+
+        ZcVersion::observe(BumpPluginsIndexCacheObserver::class);
+
         foreach (['forum_group', 'forum', 'thread', 'post'] as $key) {
             Models::class($key)::observe(FlushForumsIndexCacheObserver::class);
         }

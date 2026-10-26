@@ -11,6 +11,10 @@ use App\Http\Controllers\FrontendLogoutController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MarkdownPreviewController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PluginCommunityController;
+use App\Http\Controllers\PluginLibraryController;
+use App\Http\Controllers\PluginModerationController;
+use App\Http\Controllers\PluginSubmissionController;
 use App\Http\Controllers\PollController;
 use App\Http\Controllers\PostAttachmentController;
 use App\Http\Controllers\PostInteractionController;
@@ -137,6 +141,33 @@ Route::post('/logout', FrontendLogoutController::class)->name('frontend.logout')
 require __DIR__.'/auth.php';
 require __DIR__.'/pending.php';
 require __DIR__.'/legacy.php';
+
+// The plugin library's public pages. After the pending routes so `/plugins/submit` and
+// `/plugins/search` are matched before `/plugins/{plugin}`.
+Route::middleware('frontend.verified')->group(function (): void {
+    Route::get('/plugins/submit', [PluginSubmissionController::class, 'submit'])->middleware('plugins.submissions.open')->name('plugins.submit');
+    Route::post('/plugins/submit', [PluginSubmissionController::class, 'store'])->middleware('plugins.submissions.open')->name('plugins.store');
+    Route::get('/plugins/support-threads/search', [PluginSubmissionController::class, 'searchSupportThreads'])->name('plugins.support-threads.search');
+    Route::get('/plugins/{plugin:slug}/releases/new', [PluginSubmissionController::class, 'newRelease'])->middleware('plugins.submissions.open')->name('plugins.release.new');
+    Route::post('/plugins/{plugin:slug}/releases/new', [PluginSubmissionController::class, 'storeRelease'])->middleware('plugins.submissions.open')->name('plugins.release.store');
+    Route::post('/plugins/{plugin:slug}/subscribe', [PluginCommunityController::class, 'subscribe'])->name('plugins.subscribe');
+    Route::post('/plugins/{plugin:slug}/unsubscribe', [PluginCommunityController::class, 'unsubscribe'])->name('plugins.unsubscribe');
+    Route::post('/plugins/{plugin:slug}/report', [PluginCommunityController::class, 'report'])->name('plugins.report');
+    Route::post('/plugins/{plugin:slug}/moderate', [PluginModerationController::class, 'moderate'])->name('plugins.moderate');
+    Route::delete('/plugins/{plugin:slug}', [PluginModerationController::class, 'destroyPlugin'])->name('plugins.destroy');
+    Route::post('/plugins/{plugin:slug}/grant-auto-publish', [PluginModerationController::class, 'grantAutoPublishToPluginAuthor'])->name('plugins.grant-auto-publish');
+    Route::post('/plugins/{plugin:slug}/releases/{release}/moderate', [PluginModerationController::class, 'moderateRelease'])->name('plugins.release.moderate');
+    Route::delete('/plugins/{plugin:slug}/releases/{release}', [PluginModerationController::class, 'destroyRelease'])->name('plugins.release.destroy');
+    Route::post('/plugins/{plugin:slug}/releases/{release}/grant-auto-publish', [PluginModerationController::class, 'grantAutoPublishToReleaseAuthor'])->name('plugins.release.grant-auto-publish');
+    Route::post('/plugins/{plugin:slug}/releases/{release}/zc-versions', [PluginSubmissionController::class, 'updateReleaseZcVersions'])->name('plugins.release.zc-versions.update');
+});
+
+Route::get('/plugins', [PluginLibraryController::class, 'index'])->name('plugins.index');
+Route::get('/plugins/search', [PluginLibraryController::class, 'search'])->name('plugins.search');
+Route::get('/plugins/type/{slug}', [PluginLibraryController::class, 'byType'])->name('plugins.type');
+Route::get('/plugins/{plugin:slug}', [PluginLibraryController::class, 'show'])->name('plugins.show');
+Route::get('/plugins/{plugin:slug}/download', [PluginLibraryController::class, 'download'])->name('plugins.download');
+Route::get('/plugins/{plugin:slug}/releases/{release}/download', [PluginLibraryController::class, 'downloadRelease'])->name('plugins.release.download');
 
 Route::get('/forum.php', function (Request $request) {
     if ($request->query->has('styleid')) {

@@ -17,6 +17,7 @@ use Filagora\Plugins\Enums\PluginStatus;
 use Filagora\Plugins\Models\PluginType;
 use Filagora\ZenCart\Models\Forum;
 use Filagora\ZenCart\Models\Plugin;
+use Filagora\ZenCart\Models\PluginRelease;
 use Filagora\ZenCart\Models\Post;
 use Filagora\ZenCart\Models\Thread;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -299,11 +300,18 @@ class LegacyRedirectTest extends TestCase
      */
     public function test_downloads_versioncheck_is_answered_rather_than_redirected(): void
     {
-        $this->markTestSkipped('Needs the profile version-check endpoint (profile slice 8c) before the old downloads.php URL can be cut over.');
-
         $this->get('/downloads.php?do=versioncheck&id=2431')
             ->assertOk()
             ->assertExactJson([]);
+
+        $type = PluginType::query()->create(['name' => 'Plugin', 'slug' => 'plugin', 'is_active' => true]);
+        $plugin = Plugin::query()->create(['legacy_vbulletin_file_id' => 2431, 'name' => 'Skynet Scanner', 'slug' => 'skynet-scanner', 'plugin_type_id' => $type->id, 'status' => PluginStatus::ACTIVE->value]);
+        PluginRelease::query()->create(['plugin_id' => $plugin->id, 'version' => '1.0.0', 'internal_version' => 1, 'zip_path' => 'plugins/skynet.zip', 'zip_filename' => 'skynet.zip', 'encapsulated' => 'yes', 'status' => PluginStatus::ACTIVE->value]);
+
+        $this->get('/downloads.php?do=versioncheck&id=2431')
+            ->assertOk()
+            ->assertJsonPath('0.id', '2431')
+            ->assertHeader('Cache-Control');
     }
 
     public function test_downloads_unknown_file_and_plain_landing_redirect_to_plugins_index(): void
