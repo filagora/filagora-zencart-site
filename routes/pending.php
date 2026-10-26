@@ -30,13 +30,4 @@ Route::post('/profile/hide-resolved-bug-threads', NotYetPorted::class)->name('pr
 Route::post('/threads/{thread}/bug-reports', NotYetPorted::class)->name('threads.bug-reports.store');
 Route::get('/messages/{conversation}', NotYetPorted::class)->name('messages.show');
 Route::get('/members', NotYetPorted::class)->name('members.index');
-Route::delete('/plugins/{plugin}', NotYetPorted::class)->name('plugins.destroy');
-Route::post('/plugins/{plugin}/grant-auto-publish', NotYetPorted::class)->name('plugins.grant-auto-publish');
-Route::post('/plugins/{plugin}/moderate', NotYetPorted::class)->name('plugins.moderate');
-Route::delete('/plugins/{plugin}/releases/{release}', NotYetPorted::class)->name('plugins.release.destroy');
-Route::post('/plugins/{plugin}/releases/{release}/grant-auto-publish', NotYetPorted::class)->name('plugins.release.grant-auto-publish');
-Route::post('/plugins/{plugin}/releases/{release}/moderate', NotYetPorted::class)->name('plugins.release.moderate');
-Route::post('/plugins/{plugin}/report', NotYetPorted::class)->name('plugins.report');
-Route::post('/plugins/{plugin}/subscribe', NotYetPorted::class)->name('plugins.subscribe');
-Route::post('/plugins/{plugin}/unsubscribe', NotYetPorted::class)->name('plugins.unsubscribe');
 Route::post('/profile/plugin-subscriptions/{plugin}/remove', NotYetPorted::class)->name('profile.plugin-subscriptions.remove');
