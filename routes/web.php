@@ -11,6 +11,7 @@ use App\Http\Controllers\FrontendLogoutController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MarkdownPreviewController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PluginLibraryController;
 use App\Http\Controllers\PollController;
 use App\Http\Controllers\PostAttachmentController;
 use App\Http\Controllers\PostInteractionController;
@@ -137,6 +138,15 @@ Route::post('/logout', FrontendLogoutController::class)->name('frontend.logout')
 require __DIR__.'/auth.php';
 require __DIR__.'/pending.php';
 require __DIR__.'/legacy.php';
+
+// The plugin library's public pages. After the pending routes so `/plugins/submit` and
+// `/plugins/search` are matched before `/plugins/{plugin}`.
+Route::get('/plugins', [PluginLibraryController::class, 'index'])->name('plugins.index');
+Route::get('/plugins/search', [PluginLibraryController::class, 'search'])->name('plugins.search');
+Route::get('/plugins/type/{slug}', [PluginLibraryController::class, 'byType'])->name('plugins.type');
+Route::get('/plugins/{plugin:slug}', [PluginLibraryController::class, 'show'])->name('plugins.show');
+Route::get('/plugins/{plugin:slug}/download', [PluginLibraryController::class, 'download'])->name('plugins.download');
+Route::get('/plugins/{plugin:slug}/releases/{release}/download', [PluginLibraryController::class, 'downloadRelease'])->name('plugins.release.download');
 
 Route::get('/forum.php', function (Request $request) {
     if ($request->query->has('styleid')) {

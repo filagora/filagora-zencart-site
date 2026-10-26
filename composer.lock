@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2aa2d41af08a68ccb809474fa52978b0",
+    "content-hash": "9a7b81bc461ba757ffeb19b75e8c59be",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1940,16 +1940,16 @@
         },
         {
             "name": "filagora/filagora-zencart",
-            "version": "v0.4.0",
+            "version": "v0.5.0",
             "source": {
                 "type": "git",
-                "url": "git@github.com:filagora/filagora-zencart.git",
-                "reference": "2a0dcddb78e433016db657522870f8e4d3de4ced"
+                "url": "https://github.com/filagora/filagora-zencart.git",
+                "reference": "e41ecb0d79cb5e635bd95729d768e498e3926828"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/2a0dcddb78e433016db657522870f8e4d3de4ced",
-                "reference": "2a0dcddb78e433016db657522870f8e4d3de4ced",
+                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/e41ecb0d79cb5e635bd95729d768e498e3926828",
+                "reference": "e41ecb0d79cb5e635bd95729d768e498e3926828",
                 "shasum": ""
             },
             "require": {
@@ -2012,10 +2012,10 @@
                 "zen-cart"
             ],
             "support": {
-                "source": "https://github.com/filagora/filagora-zencart/tree/v0.4.0",
+                "source": "https://github.com/filagora/filagora-zencart/tree/v0.5.0",
                 "issues": "https://github.com/filagora/filagora-zencart/issues"
             },
-            "time": "2026-10-23T22:31:55+00:00"
+            "time": "2026-10-26T17:00:01+00:00"
         },
         {
             "name": "filament/actions",
