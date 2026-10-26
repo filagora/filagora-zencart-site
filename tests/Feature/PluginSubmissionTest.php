@@ -77,7 +77,7 @@ class PluginSubmissionTest extends TestCase
             'plugin_zc_version_id' => $zcVersion->id,
         ]);
         Notification::assertSentTo($user, PluginNotification::class);
-        Notification::assertSentOnDemand(PluginNotification::class, fn (PluginNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin_support@zen-cart.com');
+        Notification::assertSentOnDemand(PluginNotification::class, fn (PluginNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin-support@example.test');
         Storage::disk('public')->assertExists($release->zip_path);
     }
 
@@ -167,7 +167,7 @@ class PluginSubmissionTest extends TestCase
         $this->assertSame(PluginStatus::ACTIVE, $release->status);
 
         Notification::assertSentTo($user, PluginNotification::class, fn (PluginNotification $notification): bool => $notification->kind === 'submitted_live');
-        Notification::assertSentOnDemand(PluginNotification::class, fn (PluginNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin_support@zen-cart.com');
+        Notification::assertSentOnDemand(PluginNotification::class, fn (PluginNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin-support@example.test');
     }
 
     public function test_auto_published_submission_updates_the_manifest_plugin_id_to_the_real_id(): void
@@ -1230,7 +1230,7 @@ class PluginSubmissionTest extends TestCase
             'plugin_zc_version_id' => $zcVersion->id,
         ]);
         Notification::assertSentTo($user, PluginNotification::class);
-        Notification::assertSentOnDemand(PluginNotification::class, fn (PluginNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin_support@zen-cart.com');
+        Notification::assertSentOnDemand(PluginNotification::class, fn (PluginNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin-support@example.test');
     }
 
     public function test_authenticated_user_can_submit_encapsulated_plugin_with_derived_zip_root(): void
@@ -1423,7 +1423,7 @@ class PluginSubmissionTest extends TestCase
         $this->assertSame('trusted_release_plugin', $plugin->fresh()->zip_root);
 
         Notification::assertSentTo($user, PluginNotification::class, fn (PluginNotification $notification): bool => $notification->kind === 'submitted_live');
-        Notification::assertSentOnDemand(PluginNotification::class, fn (PluginNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin_support@zen-cart.com');
+        Notification::assertSentOnDemand(PluginNotification::class, fn (PluginNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin-support@example.test');
     }
 
     public function test_submitting_a_plugin_with_backslash_separated_zip_entries_is_repaired_on_upload(): void
@@ -1641,7 +1641,7 @@ class PluginSubmissionTest extends TestCase
     {
         parent::setUp();
 
-        config()->set('filagora-plugins.mail.support_email', 'plugin_support@zen-cart.com');
+        config()->set('filagora-plugins.mail.support_email', 'plugin-support@example.test');
     }
 
     public function test_staff_can_submit_release_for_active_plugin_they_do_not_own(): void
