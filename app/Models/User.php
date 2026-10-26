@@ -10,6 +10,8 @@ use Filagora\Forums\Models\Thread;
 use Filagora\Forums\Support\Models;
 use Filagora\Memberships\Concerns\HasMemberships;
 use Filagora\Notifications\Concerns\HasNotificationPreferences;
+use Filagora\Plugins\Models\Plugin;
+use Filagora\Plugins\Support\Models as PluginModels;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -86,6 +88,21 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     protected $appends = [
         'avatar_url',
     ];
+
+    /**
+     * The plugins this account follows.
+     *
+     * @return BelongsToMany<Plugin, $this>
+     */
+    public function subscribedPlugins(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            PluginModels::class('plugin'),
+            (new (PluginModels::class('subscription')))->getTable(),
+            'user_id',
+            'plugin_id',
+        )->withTimestamps();
+    }
 
     /**
      * The threads this account follows.

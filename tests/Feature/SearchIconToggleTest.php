@@ -34,8 +34,6 @@ class SearchIconToggleTest extends TestCase
 
     public function test_profile_settings_shows_the_control(): void
     {
-        $this->markTestSkipped('Needs the profile settings page: slice S5 (account).');
-
         $user = User::factory()->create();
 
         $this->actingAs($user)
@@ -46,8 +44,6 @@ class SearchIconToggleTest extends TestCase
 
     public function test_profile_settings_updates_the_preference(): void
     {
-        $this->markTestSkipped('Needs the profile settings page: slice S5 (account).');
-
         $user = User::factory()->create(['search_icon_enabled' => false]);
 
         $this->actingAs($user)
@@ -68,8 +64,6 @@ class SearchIconToggleTest extends TestCase
 
     public function test_profile_settings_requires_the_search_icon_field(): void
     {
-        $this->markTestSkipped('Needs the profile settings page: slice S5 (account).');
-
         $user = User::factory()->create(['search_icon_enabled' => false]);
 
         $this->actingAs($user)

@@ -18,9 +18,6 @@ Route::post('/notifications/clear-all', NotYetPorted::class)->name('notification
 Route::get('/notifications', NotYetPorted::class)->name('notifications.index');
 Route::get('/notifications/{notification}/go', NotYetPorted::class)->name('notifications.open');
 Route::post('/notifications/read-all', NotYetPorted::class)->name('notifications.read-all');
-Route::post('/profile/privacy-policy/accept', NotYetPorted::class)->name('profile.privacy-policy.accept');
-Route::get('/profile', NotYetPorted::class)->name('profile.show');
-Route::post('/profile/staff-frontend-preview', NotYetPorted::class)->name('profile.staff-frontend-preview.update');
 Route::post('/staff/impersonation/stop', NotYetPorted::class)->name('staff.impersonation.stop');
 Route::get('/account/billing', NotYetPorted::class)->name('billing.index');
 Route::get('/members/{user}', NotYetPorted::class)->name('members.show');
@@ -29,4 +26,3 @@ Route::post('/profile/hide-resolved-bug-threads', NotYetPorted::class)->name('pr
 Route::post('/threads/{thread}/bug-reports', NotYetPorted::class)->name('threads.bug-reports.store');
 Route::get('/messages/{conversation}', NotYetPorted::class)->name('messages.show');
 Route::get('/members', NotYetPorted::class)->name('members.index');
-Route::post('/profile/plugin-subscriptions/{plugin}/remove', NotYetPorted::class)->name('profile.plugin-subscriptions.remove');

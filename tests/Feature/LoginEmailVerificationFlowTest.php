@@ -23,8 +23,6 @@ class LoginEmailVerificationFlowTest extends TestCase
 
     public function test_unverified_users_ajax_requests_do_not_clobber_the_sessions_intended_path(): void
     {
-        $this->markTestSkipped('Needs /profile/cookie-consent: slice S5 (account).');
-
         // Regression test: the cookie-consent widget's JS polls
         // GET /profile/cookie-consent (Accept: application/json) on every
         // page load for any authenticated user, unverified or not. That

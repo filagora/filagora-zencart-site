@@ -170,5 +170,14 @@ class AppServiceProvider extends ServiceProvider
                 $request->user()?->id !== null ? 'user:'.$request->user()->id : 'ip:'.$request->ip(),
             ));
         }
+
+        RateLimiter::for('privacy-request-submit', function (Request $request): array {
+            $key = $request->user()?->id !== null ? 'user:'.$request->user()->id : 'ip:'.$request->ip();
+
+            return [
+                Limit::perHour(3)->by('privacy-request-submit:hour:'.$key),
+                Limit::perDay(10)->by('privacy-request-submit:day:'.$key),
+            ];
+        });
     }
 }
