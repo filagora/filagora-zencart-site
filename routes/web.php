@@ -10,7 +10,9 @@ use App\Http\Controllers\ForumSearchController;
 use App\Http\Controllers\FrontendLogoutController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PollController;
 use App\Http\Controllers\PostAttachmentController;
+use App\Http\Controllers\PostInteractionController;
 use App\Http\Controllers\RelocationTargetsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\ThreadPostingController;
@@ -66,6 +68,16 @@ Route::middleware('frontend.verified')->group(function (): void {
     Route::put('/posts/{post}', [ThreadPostingController::class, 'updatePost'])->name('posts.update');
     Route::post('/threads/{thread}/subscribe', [ThreadPostingController::class, 'subscribe'])->name('threads.subscribe');
     Route::post('/threads/{thread}/unsubscribe', [ThreadPostingController::class, 'unsubscribe'])->name('threads.unsubscribe');
+
+    Route::post('/posts/{post}/report', [PostInteractionController::class, 'reportPost'])->name('posts.report');
+    Route::post('/posts/{post}/reactions/toggle', [PostInteractionController::class, 'toggleReaction'])->name('posts.reactions.toggle');
+
+    Route::get('/threads/{thread}/poll/new', [PollController::class, 'createForm'])->name('threads.poll.create');
+    Route::post('/threads/{thread}/poll', [PollController::class, 'store'])->name('threads.poll.store');
+    Route::get('/polls/{poll}/edit', [PollController::class, 'editForm'])->name('polls.edit');
+    Route::put('/polls/{poll}', [PollController::class, 'update'])->name('polls.update');
+    Route::post('/polls/{poll}/moderate', [PollController::class, 'moderate'])->name('polls.moderate');
+    Route::post('/polls/{poll}/vote', [PollController::class, 'vote'])->name('polls.vote');
 
     Route::get('/threads/search/for-move', [RelocationTargetsController::class, 'threads'])->middleware('throttle:message-user-search')->name('threads.search-for-move');
     Route::get('/forums/search/for-move', [RelocationTargetsController::class, 'forums'])->middleware('throttle:message-user-search')->name('forums.search-for-move');
