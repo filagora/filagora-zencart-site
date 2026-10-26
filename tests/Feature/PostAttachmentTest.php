@@ -23,8 +23,6 @@ class PostAttachmentTest extends TestCase
 
     public function test_creating_a_thread_with_an_image_attachment_stores_it_and_renders_inline(): void
     {
-        $this->markTestSkipped('Image thumbnails need intervention/image, which the site does not install yet: a dependency to approve.');
-
         Storage::fake('local');
         [$forum] = $this->createPublicForum();
         $user = User::factory()->create();
