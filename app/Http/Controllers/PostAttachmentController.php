@@ -10,7 +10,9 @@ use Filagora\Forums\Services\Attachments;
 use Filagora\Forums\Services\ForumAccess;
 use Filagora\Forums\Support\Models;
 use Filagora\ZenCart\Models\Thread;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -25,6 +27,32 @@ class PostAttachmentController extends Controller
         private readonly Attachments $attachments,
         private readonly ForumAccess $access,
     ) {}
+
+    /**
+     * Stores an image pasted or dropped into the editor before its post exists. The editor puts the
+     * returned URL in the body; saving the post then claims the file.
+     */
+    public function storeInline(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        abort_unless($user instanceof User, 403);
+
+        $validated = $request->validate([
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:10240'],
+        ]);
+
+        try {
+            $attachment = $this->attachments->storeInline($user, $validated['image']);
+        } catch (AttachmentRefused $refusal) {
+            throw ValidationException::withMessages(['image' => $refusal->getMessage()]);
+        }
+
+        return response()->json([
+            'attachment_id' => $attachment->id,
+            'url' => route('post.attachments.show', ['attachment' => $attachment->id, 'disposition' => 'inline']),
+        ]);
+    }
 
     public function index(Thread $thread, Request $request): View
     {

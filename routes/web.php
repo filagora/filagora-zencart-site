@@ -9,6 +9,7 @@ use App\Http\Controllers\ForumModerationController;
 use App\Http\Controllers\ForumSearchController;
 use App\Http\Controllers\FrontendLogoutController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MarkdownPreviewController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PollController;
 use App\Http\Controllers\PostAttachmentController;
@@ -68,6 +69,9 @@ Route::middleware('frontend.verified')->group(function (): void {
     Route::put('/posts/{post}', [ThreadPostingController::class, 'updatePost'])->name('posts.update');
     Route::post('/threads/{thread}/subscribe', [ThreadPostingController::class, 'subscribe'])->name('threads.subscribe');
     Route::post('/threads/{thread}/unsubscribe', [ThreadPostingController::class, 'unsubscribe'])->name('threads.unsubscribe');
+
+    Route::post('/markdown/preview', MarkdownPreviewController::class)->middleware('throttle:markdown-preview')->name('markdown.preview');
+    Route::post('/post-attachments/inline-upload', [PostAttachmentController::class, 'storeInline'])->name('post.attachments.inline-upload');
 
     Route::post('/posts/{post}/report', [PostInteractionController::class, 'reportPost'])->name('posts.report');
     Route::post('/posts/{post}/reactions/toggle', [PostInteractionController::class, 'toggleReaction'])->name('posts.reactions.toggle');
