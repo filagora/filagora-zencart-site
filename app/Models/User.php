@@ -6,12 +6,15 @@ use App\Models\Concerns\HasSiteAccount;
 use App\TimeFormat;
 use Database\Factories\UserFactory;
 use Filagora\Entitlements\Concerns\HasEntitlements;
+use Filagora\Forums\Models\Thread;
+use Filagora\Forums\Support\Models;
 use Filagora\Memberships\Concerns\HasMemberships;
 use Filagora\Notifications\Concerns\HasNotificationPreferences;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -82,6 +85,21 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     protected $appends = [
         'avatar_url',
     ];
+
+    /**
+     * The threads this account follows.
+     *
+     * @return BelongsToMany<Thread, $this>
+     */
+    public function subscribedThreads(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Models::class('thread'),
+            (new (Models::class('thread_subscription')))->getTable(),
+            'user_id',
+            'thread_id',
+        )->withTimestamps();
+    }
 
     /**
      * The dashboard is for staff: the site's `operator.dashboard.access` entitlement opens the

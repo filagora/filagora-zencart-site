@@ -5,7 +5,7 @@
 
 @section('content')
     @php
-        $threadRequiresApproval = $forum->threadRequiresApproval(auth()->user());
+        $threadRequiresApproval = app(\Filagora\Forums\Services\ApprovalRules::class)->threadRequiresApproval($forum, auth()->user());
         $decodedForumName = \App\Support\LegacyTextDecoder::decode($forum->name);
     @endphp
     <div class="mx-auto max-w-[1320px] px-6 py-8 md:px-10">

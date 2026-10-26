@@ -69,8 +69,6 @@ class ForumsIndexTest extends TestCase
 
     public function test_registered_user_can_enter_paid_or_author_forum_and_create_a_private_thread(): void
     {
-        $this->markTestSkipped('Needs thread creation and moderation: slice S3 (forum writing).');
-
         $group = ForumGroup::query()->create([
             'name' => 'Commercial',
             'slug' => 'commercial-private-threads',
@@ -680,8 +678,6 @@ class ForumsIndexTest extends TestCase
 
     public function test_forums_index_moderation_queue_lists_reported_posts(): void
     {
-        $this->markTestSkipped('Needs thread creation and moderation: slice S3 (forum writing).');
-
         $group = ForumGroup::query()->create([
             'name' => 'General', 'slug' => 'general-reported-index-queue', 'is_active' => true,
         ]);
@@ -775,8 +771,6 @@ class ForumsIndexTest extends TestCase
 
     public function test_forums_index_moderation_queue_offers_reject_permanently_through_the_delete_dialog(): void
     {
-        $this->markTestSkipped('Needs thread creation and moderation: slice S3 (forum writing).');
-
         $group = ForumGroup::query()->create([
             'name' => 'General',
             'slug' => 'general-reject-permanently-queue',

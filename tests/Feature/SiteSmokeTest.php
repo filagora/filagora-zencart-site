@@ -6,6 +6,7 @@ use Filagora\Messages\Contracts\MessagingPolicy;
 use Filagora\Notifications\Bridges\MessagesBridge;
 use Filagora\Notifications\Contracts\EmailSuppression;
 use Filagora\Plugins\Contracts\Compatibility;
+use Filagora\Search\Support\SearchEngines;
 use Filagora\ZenCart\Models\Plugin;
 use Filagora\ZenCart\Plugins\ZcVersionCompatibility;
 use Filagora\ZenCart\Support\EntitlementEmailSuppression;
@@ -22,6 +23,10 @@ beforeEach(function () {
 });
 
 it('passes the Filagora doctor on a migrated install', function () {
+    // The suite searches in memory; the doctor checks the engine the installed app really uses.
+    config()->set('filagora-search.engine', 'database');
+    app()->forgetInstance(SearchEngines::class);
+
     artisan('filagora:doctor')->expectsOutputToContain('All checks passed.')->assertExitCode(0);
 });
 

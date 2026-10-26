@@ -4,8 +4,15 @@ namespace App\Providers;
 
 use App\Filament\Auth\Responses\LoginResponse as AppLoginResponse;
 use App\Filament\Auth\Responses\RegistrationResponse as AppRegistrationResponse;
+use App\Markdown\BlankLineGapExtension;
+use App\Markdown\ZenCartHtmlTransformer;
 use App\Models\BugReport;
+use App\Models\User;
 use App\Observers\FlushForumsIndexCacheObserver;
+use App\Observers\SyncUserPostCountObserver;
+use App\Policies\ForumPostPolicy;
+use App\Policies\ForumThreadPolicy;
+use App\Services\UserPostCountService;
 use App\Support\FormattedContentRenderer;
 use App\Support\ForumsIndexCache;
 use App\Support\ForumStaffPreview;
@@ -13,17 +20,25 @@ use App\View\Composers\ChromeComposer;
 use App\View\Composers\ForumPagesComposer;
 use App\View\Composers\HeaderComposer;
 use App\View\Composers\ModerationQueueComposer;
+use Filagora\Core\Content\ExtensionRegistry;
 use Filagora\Core\Content\MarkdownRenderer;
 use Filagora\Core\Settings\SettingDefinition;
 use Filagora\Core\Settings\SettingsRegistry;
 use Filagora\Core\Settings\SettingType;
 use Filagora\Forums\Contracts\StaffPreview;
 use Filagora\Forums\Events\ForumStatsChanged;
+use Filagora\Forums\Events\ThreadDeleted;
+use Filagora\Forums\Models\Post;
+use Filagora\Forums\Models\Thread;
 use Filagora\Forums\Support\Models;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse as FilamentLoginResponse;
 use Filament\Auth\Http\Responses\Contracts\RegistrationResponse as FilamentRegistrationResponse;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -65,9 +80,20 @@ class AppServiceProvider extends ServiceProvider
             ));
         });
 
+        // The site's additions to markdown rendering: blank-line gaps, the old forum's tags, issue
+        // and mention links.
+        $this->callAfterResolving(ExtensionRegistry::class, function (ExtensionRegistry $registry): void {
+            $registry->extension(new BlankLineGapExtension);
+            $registry->transformer(new ZenCartHtmlTransformer);
+        });
+
         Blade::directive('cmsMarkdown', fn (string $expression): string => "<?php echo \\App\\Support\\CmsMarkdown::block({$expression}); ?>");
         Blade::directive('cmsMarkdownInline', fn (string $expression): string => "<?php echo \\App\\Support\\CmsMarkdown::inline({$expression}); ?>");
 
+        Gate::policy(Post::class, ForumPostPolicy::class);
+        Gate::policy(Thread::class, ForumThreadPolicy::class);
+
+        $this->registerRateLimiters();
         $this->registerForumRelations();
         $this->registerForumCacheFlush();
 
@@ -79,14 +105,16 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Relations the public forum pages use that the forums package does not define: a post's
-     * attachments, a thread's poll, followers and bug reports.
+     * attachments and reactions, a thread's poll and bug reports. Registered on the package's base
+     * models, which the site's own subclasses inherit.
      */
     private function registerForumRelations(): void
     {
-        Models::class('post')::resolveRelationUsing('attachments', fn ($post) => $post->hasMany(Models::class('post_attachment'), 'post_id'));
-        Models::class('post')::resolveRelationUsing('reactions', fn ($post) => $post->hasMany(Models::class('reaction'), 'post_id'));
-        Models::class('thread')::resolveRelationUsing('poll', fn ($thread) => $thread->hasOne(Models::class('poll'), 'thread_id'));
-        Models::class('thread')::resolveRelationUsing('bugReports', fn ($thread) => $thread->hasMany(BugReport::class, 'thread_id'));
+        Post::resolveRelationUsing('attachments', fn ($post) => $post->hasMany(Models::class('post_attachment'), 'post_id'));
+        Post::resolveRelationUsing('reactions', fn ($post) => $post->hasMany(Models::class('reaction'), 'post_id'));
+        Thread::resolveRelationUsing('subscribedUsers', fn ($thread) => $thread->belongsToMany(User::class, (new (Models::class('thread_subscription')))->getTable(), 'thread_id', 'user_id')->withTimestamps());
+        Thread::resolveRelationUsing('poll', fn ($thread) => $thread->hasOne(Models::class('poll'), 'thread_id'));
+        Thread::resolveRelationUsing('bugReports', fn ($thread) => $thread->hasMany(BugReport::class, 'thread_id'));
     }
 
     /**
@@ -99,6 +127,31 @@ class AppServiceProvider extends ServiceProvider
             Models::class($key)::observe(FlushForumsIndexCacheObserver::class);
         }
 
+        // The author post-count badge on the thread page is a column kept in step with every post.
+        Models::class('post')::observe(SyncUserPostCountObserver::class);
+
+        // A deleted thread takes its posts with a database cascade, which fires no model events, so
+        // the authors' badge counters are rebuilt from the posts that are left.
+        Event::listen(ThreadDeleted::class, fn (ThreadDeleted $event) => app(UserPostCountService::class)->syncForUserIds($event->postAuthorIds));
+
         Event::listen(ForumStatsChanged::class, fn () => ForumsIndexCache::flushAll());
+    }
+
+    /**
+     * Per-minute limits keyed by the signed-in user, or the address for a guest.
+     */
+    private function registerRateLimiters(): void
+    {
+        foreach ([
+            'markdown-preview' => 30,
+            'message-user-search' => 30,
+            'notifications' => 120,
+            'push-subscription' => 20,
+            'moderation-action' => 60,
+        ] as $name => $perMinute) {
+            RateLimiter::for($name, fn (Request $request): Limit => Limit::perMinute($perMinute)->by(
+                $request->user()?->id !== null ? 'user:'.$request->user()->id : 'ip:'.$request->ip(),
+            ));
+        }
     }
 }

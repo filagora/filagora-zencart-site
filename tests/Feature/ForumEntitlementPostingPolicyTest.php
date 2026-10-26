@@ -21,8 +21,6 @@ class ForumEntitlementPostingPolicyTest extends TestCase
 
     public function test_user_without_entitlement_cannot_see_the_new_thread_form(): void
     {
-        $this->markTestSkipped('Needs thread creation or replying: slice S3 (forum writing).');
-
         $forum = $this->entitlementGatedForum();
         $user = User::factory()->create();
 
@@ -33,8 +31,6 @@ class ForumEntitlementPostingPolicyTest extends TestCase
 
     public function test_user_without_entitlement_cannot_start_a_thread(): void
     {
-        $this->markTestSkipped('Needs thread creation or replying: slice S3 (forum writing).');
-
         $forum = $this->entitlementGatedForum();
         $user = User::factory()->create();
 
@@ -50,8 +46,6 @@ class ForumEntitlementPostingPolicyTest extends TestCase
 
     public function test_user_with_entitlement_can_start_a_thread(): void
     {
-        $this->markTestSkipped('Needs thread creation or replying: slice S3 (forum writing).');
-
         $forum = $this->entitlementGatedForum();
         $user = User::factory()->create();
         $this->grantEntitlement($user, 'forums.entitlement_gated.post');
@@ -76,8 +70,6 @@ class ForumEntitlementPostingPolicyTest extends TestCase
 
     public function test_user_with_entitlement_can_reply_to_another_users_thread(): void
     {
-        $this->markTestSkipped('Needs thread creation or replying: slice S3 (forum writing).');
-
         $forum = $this->entitlementGatedForum();
         $author = User::factory()->create();
         $this->grantEntitlement($author, 'forums.entitlement_gated.post');
@@ -99,8 +91,6 @@ class ForumEntitlementPostingPolicyTest extends TestCase
 
     public function test_thread_author_without_entitlement_cannot_reply_to_their_own_thread(): void
     {
-        $this->markTestSkipped('Needs thread creation or replying: slice S3 (forum writing).');
-
         $forum = $this->entitlementGatedForum();
         $author = User::factory()->create();
         $this->grantEntitlement($author, 'forums.entitlement_gated.post');

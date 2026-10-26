@@ -23,7 +23,7 @@ class PostAttachmentTest extends TestCase
 
     public function test_creating_a_thread_with_an_image_attachment_stores_it_and_renders_inline(): void
     {
-        $this->markTestSkipped('Needs thread creation, replying or post editing: slice S3 (forum writing).');
+        $this->markTestSkipped('Image thumbnails need intervention/image, which the site does not install yet: a dependency to approve.');
 
         Storage::fake('local');
         [$forum] = $this->createPublicForum();
@@ -52,8 +52,6 @@ class PostAttachmentTest extends TestCase
 
     public function test_inline_pasted_image_is_not_duplicated_in_the_attachments_strip(): void
     {
-        $this->markTestSkipped('Needs thread creation, replying or post editing: slice S3 (forum writing).');
-
         Storage::fake('local');
         [$forum] = $this->createPublicForum();
         $user = User::factory()->create();
@@ -86,8 +84,6 @@ class PostAttachmentTest extends TestCase
 
     public function test_replying_with_an_attachment_stores_it_on_the_new_post(): void
     {
-        $this->markTestSkipped('Needs thread creation, replying or post editing: slice S3 (forum writing).');
-
         Storage::fake('local');
         [$forum, $thread] = $this->createPublicForum(withThread: true);
         $user = User::factory()->create();
@@ -106,8 +102,6 @@ class PostAttachmentTest extends TestCase
 
     public function test_removing_an_attachment_via_edit_deletes_the_row_and_file(): void
     {
-        $this->markTestSkipped('Needs thread creation, replying or post editing: slice S3 (forum writing).');
-
         Storage::fake('local');
         [$forum, $thread, $post, $author] = $this->createPublicForum(withThread: true, withPost: true);
 
@@ -140,8 +134,6 @@ class PostAttachmentTest extends TestCase
 
     public function test_adding_an_attachment_via_edit_stores_it(): void
     {
-        $this->markTestSkipped('Needs thread creation, replying or post editing: slice S3 (forum writing).');
-
         Storage::fake('local');
         [$forum, $thread, $post, $author] = $this->createPublicForum(withThread: true, withPost: true);
 
@@ -157,8 +149,6 @@ class PostAttachmentTest extends TestCase
 
     public function test_oversized_attachment_is_rejected(): void
     {
-        $this->markTestSkipped('Needs thread creation, replying or post editing: slice S3 (forum writing).');
-
         Storage::fake('local');
         [$forum, $thread] = $this->createPublicForum(withThread: true);
         $user = User::factory()->create();
@@ -174,8 +164,6 @@ class PostAttachmentTest extends TestCase
 
     public function test_disallowed_mime_type_is_rejected(): void
     {
-        $this->markTestSkipped('Needs thread creation, replying or post editing: slice S3 (forum writing).');
-
         Storage::fake('local');
         [$forum, $thread] = $this->createPublicForum(withThread: true);
         $user = User::factory()->create();
@@ -191,8 +179,6 @@ class PostAttachmentTest extends TestCase
 
     public function test_more_than_five_attachments_is_rejected(): void
     {
-        $this->markTestSkipped('Needs thread creation, replying or post editing: slice S3 (forum writing).');
-
         Storage::fake('local');
         [$forum, $thread] = $this->createPublicForum(withThread: true);
         $user = User::factory()->create();
