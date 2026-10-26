@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Api\ApiRequestUserResolver;
 use App\Models\User;
 use App\Plugins\PluginLibrary;
 use App\Plugins\PluginReviewQueue;
@@ -43,6 +44,7 @@ class PluginLibraryController extends Controller
         private readonly DownloadAccess $downloads,
         private readonly PluginReviewQueue $reviewQueue,
         private readonly StaffFrontendPreview $staffPreview,
+        private readonly ApiRequestUserResolver $callers,
     ) {}
 
     public function index(Request $request): View
@@ -174,7 +176,7 @@ class PluginLibraryController extends Controller
 
     public function download(Request $request, Plugin $plugin): BinaryFileResponse|RedirectResponse
     {
-        $canModerate = $this->canModerate($request, $request->user() instanceof User ? $request->user() : null);
+        $canModerate = $this->canModerateDownload($request, $plugin);
 
         abort_unless($this->isPublic($plugin) || $canModerate, 404);
 
@@ -195,7 +197,7 @@ class PluginLibraryController extends Controller
 
     public function downloadRelease(Request $request, Plugin $plugin, PluginRelease $release): BinaryFileResponse|RedirectResponse
     {
-        $canModerate = $this->canModerate($request, $request->user() instanceof User ? $request->user() : null);
+        $canModerate = $this->canModerateDownload($request, $plugin);
 
         abort_unless($this->isPublic($plugin) || $canModerate, 404);
         abort_unless($release->plugin_id === $plugin->id, 404);
@@ -287,9 +289,19 @@ class PluginLibraryController extends Controller
      */
     private function refuseDownload(Request $request, Plugin $plugin): ?RedirectResponse
     {
+        $resolved = $this->callers->resolve($request);
+        $this->callers->ensureAbilityForBearerToken($request, $resolved, 'plugins:download');
+
         $required = $this->downloads->requiredScope($plugin);
 
         if ($required === '') {
+            return null;
+        }
+
+        // A request with an API key gets an answer, never a redirect to a sign-in page.
+        if ($this->callers->hasBearerToken($request)) {
+            abort_if(! $resolved instanceof User || ! $this->downloads->canDownloadPlugin($resolved, $plugin), 403, __('plugin.errors.download_entitlement_required', ['entitlement' => $required]));
+
             return null;
         }
 
@@ -306,6 +318,19 @@ class PluginLibraryController extends Controller
         return redirect()
             ->route('plugins.show', $plugin)
             ->with('plugin_error', __('plugin.errors.download_entitlement_required', ['entitlement' => $required]));
+    }
+
+    /**
+     * Reviewing a submission means opening the package, so staff may download what is still in the
+     * queue. A request with an API key is not staff acting as staff: a key is held to its abilities.
+     */
+    private function canModerateDownload(Request $request, Plugin $plugin): bool
+    {
+        if ($this->callers->hasBearerToken($request)) {
+            return false;
+        }
+
+        return $this->canModerate($request, $request->user() instanceof User ? $request->user() : null);
     }
 
     private function serve(Plugin $plugin, PluginRelease $release): BinaryFileResponse|RedirectResponse

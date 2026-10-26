@@ -99,8 +99,6 @@ class PluginQuarantineVisibilityTest extends TestCase
 
     public function test_quarantined_release_is_absent_from_the_api_release_list(): void
     {
-        $this->markTestSkipped('Needs the plugins JSON API: slice S5 (account tokens)');
-
         $response = $this->getJson("/api/v1/plugins/{$this->plugin->slug}/releases");
 
         $response->assertOk();

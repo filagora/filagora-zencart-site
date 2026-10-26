@@ -18,14 +18,14 @@ return [
         'plugin' => 'plugins.show',
         'thread' => 'threads.show',
 
-        // The package's JSON API and download routes stay off while the site's own pages serve
-        // downloads (they redirect a guest to sign in rather than answer 401). The API needs
-        // account tokens, which arrive with slice S5.
+        // The JSON API is on, signed in by account API keys (Sanctum). The package's download routes
+        // stay off: the site's own pages serve downloads (they redirect a guest to sign in rather
+        // than answer 401).
         'api' => [
-            'enabled' => (bool) env('FILAGORA_PLUGINS_API_ENABLED', false),
+            'enabled' => (bool) env('FILAGORA_PLUGINS_API_ENABLED', true),
             'prefix' => 'api/v1',
             'middleware' => ['api'],
-            'guard' => null,
+            'guard' => 'sanctum',
             'per_page' => 15,
             'max_upload_kb' => 102400,
             'keys' => [

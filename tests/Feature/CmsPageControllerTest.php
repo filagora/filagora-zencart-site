@@ -307,8 +307,6 @@ class CmsPageControllerTest extends TestCase
 
     public function test_api_pages_and_page_routes_enforce_published_or_preview_rules(): void
     {
-        $this->markTestSkipped('Needs the /api/cms routes and API tokens: slice S5 (account and API keys).');
-
         Carbon::setTestNow(now());
 
         $published = CmsPage::query()->create([
@@ -359,8 +357,6 @@ class CmsPageControllerTest extends TestCase
 
     public function test_api_navigation_returns_payload_and_404_for_unknown_navigation(): void
     {
-        $this->markTestSkipped('Needs the /api/cms routes and API tokens: slice S5 (account and API keys).');
-
         CmsNavigation::query()->create([
             'name' => 'header-contract-test',
             'items' => [
@@ -378,8 +374,6 @@ class CmsPageControllerTest extends TestCase
 
     public function test_api_block_returns_only_published_reusable_block(): void
     {
-        $this->markTestSkipped('Needs the /api/cms routes and API tokens: slice S5 (account and API keys).');
-
         CmsBlock::query()->create([
             'cms_page_id' => null,
             'slug' => 'hero-banner',
@@ -414,8 +408,6 @@ class CmsPageControllerTest extends TestCase
 
     public function test_bearer_token_without_api_cms_entitlement_is_forbidden_for_cms_api(): void
     {
-        $this->markTestSkipped('Needs the /api/cms routes and API tokens: slice S5 (account and API keys).');
-
         $user = User::factory()->create();
         $token = $user->createToken('cms-api', ['cms:read']);
 
@@ -429,8 +421,6 @@ class CmsPageControllerTest extends TestCase
 
     public function test_entitled_bearer_token_can_read_cms_api(): void
     {
-        $this->markTestSkipped('Needs the /api/cms routes and API tokens: slice S5 (account and API keys).');
-
         $page = CmsPage::query()->create([
             'slug' => 'cms-token-page',
             'title' => 'CMS Token Page',
@@ -1325,8 +1315,6 @@ class CmsPageControllerTest extends TestCase
 
     public function test_api_pages_list_uses_expected_contract_keys(): void
     {
-        $this->markTestSkipped('Needs the /api/cms routes and API tokens: slice S5 (account and API keys).');
-
         $page = CmsPage::query()->create([
             'slug' => 'contract-list-page',
             'title' => 'Contract List Page',
@@ -1377,8 +1365,6 @@ class CmsPageControllerTest extends TestCase
 
     public function test_api_page_single_uses_expected_contract_keys(): void
     {
-        $this->markTestSkipped('Needs the /api/cms routes and API tokens: slice S5 (account and API keys).');
-
         $page = CmsPage::query()->create([
             'slug' => 'contract-single-page',
             'title' => 'Contract Single Page',
@@ -1451,8 +1437,6 @@ class CmsPageControllerTest extends TestCase
 
     public function test_api_navigation_uses_expected_contract_keys(): void
     {
-        $this->markTestSkipped('Needs the /api/cms routes and API tokens: slice S5 (account and API keys).');
-
         CmsNavigation::query()->create([
             'name' => 'footer-contract-test',
             'items' => [
@@ -1485,8 +1469,6 @@ class CmsPageControllerTest extends TestCase
 
     public function test_api_page_with_non_string_preview_query_is_rejected_as_not_found(): void
     {
-        $this->markTestSkipped('Needs the /api/cms routes and API tokens: slice S5 (account and API keys).');
-
         $page = CmsPage::query()->create([
             'slug' => 'preview-shape-test',
             'title' => 'Preview Shape Test',
@@ -1503,8 +1485,6 @@ class CmsPageControllerTest extends TestCase
 
     public function test_api_pages_tag_filter_handles_oversized_unmatched_input_with_stable_contract(): void
     {
-        $this->markTestSkipped('Needs the /api/cms routes and API tokens: slice S5 (account and API keys).');
-
         $this->getJson('/api/cms/pages?tag='.str_repeat('x', 4096))
             ->assertOk()
             ->assertJsonPath('data', []);

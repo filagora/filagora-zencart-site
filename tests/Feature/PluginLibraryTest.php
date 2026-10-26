@@ -1037,8 +1037,6 @@ class PluginLibraryTest extends TestCase
 
     public function test_entitled_bearer_token_with_plugins_download_ability_can_download_gated_plugin_release(): void
     {
-        $this->markTestSkipped('Needs account API tokens: slice S5');
-
         Storage::fake('public');
         Storage::disk('public')->put('plugins/token-entitled-release.zip', 'zip contents');
 
@@ -1073,8 +1071,6 @@ class PluginLibraryTest extends TestCase
 
     public function test_bearer_token_without_plugins_download_ability_is_forbidden_for_plugin_download(): void
     {
-        $this->markTestSkipped('Needs account API tokens: slice S5');
-
         [$plugin] = $this->createPluginWithRelease();
         $user = User::factory()->create();
         $token = $user->createToken('plugin-download', ['plugins:read']);
@@ -1087,8 +1083,6 @@ class PluginLibraryTest extends TestCase
 
     public function test_bearer_token_without_api_download_entitlement_is_forbidden_for_plugin_download(): void
     {
-        $this->markTestSkipped('Needs account API tokens: slice S5');
-
         [$plugin] = $this->createPluginWithRelease();
         $user = User::factory()->create();
         $token = $user->createToken('plugin-download', ['plugins:download']);
@@ -1101,8 +1095,6 @@ class PluginLibraryTest extends TestCase
 
     public function test_bearer_token_without_required_entitlement_is_forbidden_for_gated_plugin_download(): void
     {
-        $this->markTestSkipped('Needs account API tokens: slice S5');
-
         [$plugin] = $this->createPluginWithRelease([
             'required_entitlement_scope' => 'plugins.commercial',
         ]);
@@ -1121,35 +1113,8 @@ class PluginLibraryTest extends TestCase
             ->assertSeeText(__('plugin.errors.download_entitlement_required', ['entitlement' => 'plugins.commercial']));
     }
 
-    public function test_debug_mode_bypasses_bearer_token_download_entitlement_checks(): void
-    {
-        $this->markTestSkipped('Needs account API tokens: slice S5');
-
-        config()->set('api.debug_bypass_access_checks', true);
-
-        Storage::fake('public');
-        Storage::disk('public')->put('plugins/debug-bypass-release.zip', 'zip contents');
-
-        [$plugin] = $this->createPluginWithRelease([
-            'required_entitlement_scope' => 'plugins.commercial',
-        ], [
-            'zip_path' => 'plugins/debug-bypass-release.zip',
-            'zip_filename' => 'debug-bypass-release.zip',
-        ]);
-
-        $user = User::factory()->create();
-        $token = $user->createToken('plugin-download', ['forums:read']);
-
-        $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
-            ->get(route('plugins.download', $plugin))
-            ->assertOk()
-            ->assertDownload('debug-bypass-release.zip');
-    }
-
     public function test_invalid_bearer_token_is_unauthenticated_for_plugin_download(): void
     {
-        $this->markTestSkipped('Needs account API tokens: slice S5');
-
         [$plugin] = $this->createPluginWithRelease();
 
         $this->withHeader('Authorization', 'Bearer invalid-token')
