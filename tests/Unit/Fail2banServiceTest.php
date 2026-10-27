@@ -151,15 +151,15 @@ class Fail2banServiceTest extends TestCase
                 `- Actions
                    |- Currently banned:  1
                    |- Total banned:      11
-                   `- Banned IP list:    47.251.165.65
-                                         43.160.214.230
+                   `- Banned IP list:    198.51.100.65
+                                         203.0.113.230
                 OUT),
         ]);
 
         $snapshot = app(Fail2banService::class)->getStatusSnapshot();
 
         $this->assertSame(2, $snapshot['jails'][0]['currently_banned']);
-        $this->assertSame(['47.251.165.65', '43.160.214.230'], $snapshot['jails'][0]['banned_ips']);
+        $this->assertSame(['198.51.100.65', '203.0.113.230'], $snapshot['jails'][0]['banned_ips']);
     }
 
     public function test_it_rejects_invalid_unban_input(): void
