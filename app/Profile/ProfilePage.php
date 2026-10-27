@@ -15,6 +15,9 @@ use Filagora\Compliance\Services\PolicyAcceptance;
 use Filagora\Entitlements\Models\EntitlementDefinition;
 use Filagora\Entitlements\Models\EntitlementRequest;
 use Filagora\Entitlements\Services\EntitlementResolver;
+use Filagora\Memberships\Models\MembershipPlan;
+use Filagora\Memberships\Models\UserMembership;
+use Filagora\Memberships\Services\Memberships;
 use Filagora\Notifications\Services\Preferences;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
@@ -28,7 +31,7 @@ use PragmaRX\Google2FA\Google2FA;
  */
 class ProfilePage
 {
-    private const TABS = ['details', 'password', 'settings', 'avatar', 'two-factor', 'api-keys', 'subscriptions', 'entitlements'];
+    private const TABS = ['details', 'password', 'settings', 'avatar', 'two-factor', 'api-keys', 'subscriptions', 'billing', 'entitlements'];
 
     public function __construct(
         private readonly Google2FA $google2fa,
@@ -36,6 +39,7 @@ class ProfilePage
         private readonly Preferences $preferences,
         private readonly ApiScopeCatalog $apiScopes,
         private readonly EntitlementResolver $entitlementResolver,
+        private readonly Memberships $memberships,
     ) {}
 
     /**
@@ -68,7 +72,8 @@ class ProfilePage
                 ->orderBy('plugin_subscriptions.id', 'desc')
                 ->paginate(20, ['*'], 'plugin_page')
                 ->withQueryString(),
-            'effectiveEntitlements' => $tab === 'entitlements' ? $this->entitlementResolver->entitlementsFor($user) : [],
+            'effectiveEntitlements' => in_array($tab, ['billing', 'entitlements'], true) ? $this->entitlementResolver->entitlementsFor($user) : [],
+            ...($tab === 'billing' ? $this->billingTab($user) : []),
             ...($tab === 'entitlements' ? $this->entitlementsTab($user) : []),
             ...($tab === 'api-keys' ? $this->apiKeysTab($user) : ['apiTokens' => collect(), 'availableApiScopes' => [], 'apiTokenAbilityLabels' => []]),
             'newApiToken' => session('new_api_token'),
@@ -82,6 +87,17 @@ class ProfilePage
             'hasAcknowledgedActivePrivacyPolicy' => $privacy['hasAcknowledgedActivePolicy'],
             'gdprEnforcementEnabled' => $gdprEnforced,
             'richComposerDefault' => ($user->prefers_rich_editor ?? true) ? 'rich' : 'source',
+        ];
+    }
+
+    /**
+     * @return array{plans: Collection<int, MembershipPlan>, memberships: Collection<int, UserMembership>}
+     */
+    private function billingTab(User $user): array
+    {
+        return [
+            'plans' => $this->memberships->availablePlans(),
+            'memberships' => $user->userMemberships()->with('plan')->latest('id')->get(),
         ];
     }
 
