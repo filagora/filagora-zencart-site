@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApiDocsController;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\Cms\CmsPageController;
 use App\Http\Controllers\Cms\CmsPreviewController;
 use App\Http\Controllers\Cms\CmsPreviewSessionController;
@@ -116,6 +117,12 @@ Route::middleware('frontend.verified')->group(function (): void {
         Route::post('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('notifications.clear-all');
         Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
     });
+
+    Route::get('/account/billing', [BillingController::class, 'index'])->name('billing.index');
+    Route::post('/account/billing/subscribe/{plan}', [BillingController::class, 'subscribe'])->name('billing.subscribe');
+    Route::post('/account/billing/cancel/{membership}', [BillingController::class, 'cancel'])->name('billing.cancel');
+    Route::get('/account/billing/checkout/success', [BillingController::class, 'checkoutSuccess'])->name('billing.checkout.success');
+    Route::get('/account/billing/checkout/cancel', [BillingController::class, 'checkoutCancel'])->name('billing.checkout.cancel');
 
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::post('/profile/details', [ProfileController::class, 'updateDetails'])->name('profile.details.update');

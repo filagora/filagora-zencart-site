@@ -82,6 +82,9 @@ Profile
             <a href="{{ route('profile.show', ['tab' => 'subscriptions']) }}" class="{{ $activeTab === 'subscriptions' ? $tabActiveClass : $tabBaseClass }}" @if($activeTab === 'subscriptions') aria-current="page" @endif>
                 Subscriptions
             </a>
+            <a href="{{ route('profile.show', ['tab' => 'billing']) }}" class="{{ $activeTab === 'billing' ? $tabActiveClass : $tabBaseClass }}" @if($activeTab === 'billing') aria-current="page" @endif>
+                Memberships & Billing
+            </a>
             <a href="{{ route('profile.show', ['tab' => 'entitlements']) }}" class="{{ $activeTab === 'entitlements' ? $tabActiveClass : $tabBaseClass }}" @if($activeTab === 'entitlements') aria-current="page" @endif>
                 Entitlements
             </a>
@@ -782,6 +785,16 @@ Profile
                     ])
                 @endif
                 @endif
+            @endif
+        </div>
+
+        <div class="{{ $activeTab === 'billing' ? 'block' : 'hidden' }} {{ $panelBaseClass }}">
+            @if($activeTab === 'billing')
+                @include('profile.partials.billing', [
+                    'plans' => $plans ?? collect(),
+                    'memberships' => $memberships ?? collect(),
+                    'entitlements' => $effectiveEntitlements ?? [],
+                ])
             @endif
         </div>
 
