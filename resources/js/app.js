@@ -19,6 +19,7 @@ const pageModules = [
     ['[data-poll-builder]', () => import('./modules/poll-builder')],
     ['[data-thread-attachments-popup]', () => import('./modules/forum-thread-list')],
     ['[data-forum-search-bar]', () => import('./modules/forum-search-bar')],
+    ['[data-push-settings]', () => import('./modules/notification-settings')],
     ['#messages-to-input', () => import('./modules/messages-compose')],
     ['[data-pm-inbox]', () => import('./modules/messages-index')],
     ['#moderation-queue', () => import('./modules/plugins-index')],

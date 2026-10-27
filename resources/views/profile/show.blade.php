@@ -478,6 +478,31 @@ Profile
                 <button type="submit" class="{{ $primaryButtonClass }}">Save Newsletter Consent</button>
             </form>
 
+            <section
+                class="{{ $formClass }} mt-8 border-t border-[#d8dce2] pt-6"
+                data-push-settings
+                data-push-text-unsupported="{{ __('profile.push_preferences.state_unsupported') }}"
+                data-push-text-denied="{{ __('profile.push_preferences.state_denied') }}"
+                data-push-text-off="{{ __('profile.push_preferences.state_off') }}"
+                data-push-text-on="{{ __('profile.push_preferences.state_on') }}"
+                aria-label="{{ __('profile.push_preferences.heading') }}"
+            >
+                <div>
+                    <h2 class="text-lg font-semibold text-[#0f2133]">{{ __('profile.push_preferences.heading') }}</h2>
+                    <p class="mt-1 {{ $metaClass }}">{{ __('profile.push_preferences.intro') }}</p>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-surface border border-[#d8dce2] bg-[#faf7f2] px-3 py-3">
+                    <p class="flex items-center gap-2 text-sm text-[#0f2133]">
+                        <span class="inline-block h-2 w-2 shrink-0 rounded-pill bg-[#c2b8a6]" data-push-state-dot aria-hidden="true"></span>
+                        <span data-push-state role="status" aria-live="polite">{{ __('profile.push_preferences.state_off') }}</span>
+                    </p>
+                    <button type="button" class="{{ $primaryButtonClass }}" data-push-enable hidden>{{ __('profile.push_preferences.enable') }}</button>
+                    <button type="button" class="{{ $secondaryButtonClass }}" data-push-disable hidden>{{ __('profile.push_preferences.disable') }}</button>
+                </div>
+                <p class="{{ $metaClass }}">Choose which alerts reach this browser in the notification preferences below (the Push column).</p>
+            </section>
+
             @if(! empty($notificationMatrix))
                 <form method="post" action="{{ route('profile.notifications.update') }}" class="{{ $formClass }} mt-8 border-t border-[#d8dce2] pt-6">
                     @csrf

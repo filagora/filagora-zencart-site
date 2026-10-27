@@ -656,6 +656,18 @@ class ProfilePageTest extends TestCase
         $this->assertTrue($preferences->allows($user, $category));
     }
 
+    public function test_settings_tab_offers_browser_push_controls_and_the_page_carries_the_vapid_key(): void
+    {
+        config(['webpush.vapid.public_key' => 'BExamplePublicKey']);
+        $user = $this->makeAcknowledgedUser();
+
+        $this->actingAs($user)->get('/profile?tab=settings')
+            ->assertOk()
+            ->assertSee('data-push-settings', false)
+            ->assertSee('data-push-enable', false)
+            ->assertSee('<meta name="vapid-public-key" content="BExamplePublicKey">', false);
+    }
+
     public function test_time_format_defaults_to_twelve_hour_for_a_new_user(): void
     {
         $user = User::factory()->create();
