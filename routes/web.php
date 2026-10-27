@@ -37,6 +37,7 @@ use App\Http\Controllers\Profile\ResolvedBugThreadVisibilityController;
 use App\Http\Controllers\Profile\StaffPreviewController;
 use App\Http\Controllers\Profile\SubscriptionController;
 use App\Http\Controllers\Profile\TwoFactorController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\RelocationTargetsController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
@@ -105,6 +106,13 @@ Route::middleware('frontend.verified')->group(function (): void {
     Route::post('/members/{user}/ignore', [MembersController::class, 'storeIgnore'])->name('members.ignore.store');
     Route::delete('/members/{user}/ignore', [MembersController::class, 'destroyIgnore'])->name('members.ignore.destroy');
     Route::get('/members/{user}', [MembersController::class, 'show'])->name('members.show');
+
+    Route::post('/push/subscriptions', [PushSubscriptionController::class, 'store'])->middleware('throttle:push-subscription')->name('push.subscriptions.store');
+    // Exempt from CSRF (bootstrap/app.php): the service worker posts a rotated subscription from a
+    // background context with no page and so no token. The controller requires the old endpoint to
+    // be on file for the member.
+    Route::post('/push/subscriptions/resync', [PushSubscriptionController::class, 'resync'])->middleware('throttle:push-subscription')->name('push.subscriptions.resync');
+    Route::delete('/push/subscriptions', [PushSubscriptionController::class, 'destroy'])->middleware('throttle:push-subscription')->name('push.subscriptions.destroy');
 
     Route::get('/staff/newsletters/{newsletter}/preview', NewsletterPreviewController::class)->name('newsletters.preview');
     Route::post('/profile/newsletter', [NewsletterConsentController::class, 'update'])->name('profile.newsletter.update');
