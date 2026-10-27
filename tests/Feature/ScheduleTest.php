@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Console\Scheduling\Schedule;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -37,9 +38,7 @@ class ScheduleTest extends TestCase
         ];
     }
 
-    /**
-     */
-    #[\PHPUnit\Framework\Attributes\DataProvider('jobs')]
+    #[DataProvider('jobs')]
     public function test_the_job_is_scheduled(string $command, string $expression): void
     {
         $event = collect(app(Schedule::class)->events())->first(fn ($scheduled): bool => str_contains((string) $scheduled->command, $command));
