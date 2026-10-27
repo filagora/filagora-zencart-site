@@ -11,6 +11,9 @@ Profile
         /** @var \App\Models\User|null $authUser */
         $authUser = auth()->user();
         $activeTab = $activeTab ?? 'details';
+        $newsletterSubscriber = $newsletterSubscriber ?? null;
+        $newsletterSubscribed = $newsletterSubscriber?->status === \App\NewsletterSubscriberStatus::Subscribed;
+        $newsletterStatusLabel = $newsletterSubscriber?->status?->value ?? 'not subscribed';
         $detailsBag = $errors->getBag('details');
         $passwordBag = $errors->getBag('password');
         $apiTokenBag = $errors->getBag('apiToken');
@@ -434,6 +437,45 @@ Profile
                 </section>
 
                 <button type="submit" class="{{ $primaryButtonClass }}">Save Settings</button>
+            </form>
+
+            <form method="post" action="{{ route('profile.newsletter.update') }}" class="{{ $formClass }} mt-8 border-t border-[#d8dce2] pt-6">
+                @csrf
+                <div>
+                    <h2 class="text-lg font-semibold text-[#0f2133]">Newsletter Consent</h2>
+                    <p class="mt-1 {{ $metaClass }}">Manage the Zen Cart newsletter separately from forum and plugin notification emails.</p>
+                    <p class="mt-1 {{ $metaClass }}">Current status: <strong>{{ ucfirst(str_replace('_', ' ', $newsletterStatusLabel)) }}</strong></p>
+                </div>
+
+                <label class="{{ $fieldClass }}">
+                    <span class="{{ $labelClass }}">Newsletter Subscription (required)</span>
+                    <select
+                        class="{{ $inputClass }}"
+                        name="newsletter_subscribed"
+                        required
+                        aria-required="true"
+                    >
+                        <option value="1" @selected($newsletterSubscribed)>Subscribe me to the Zen Cart newsletter</option>
+                        <option value="0" @selected(! $newsletterSubscribed)>Do not send me the Zen Cart newsletter</option>
+                    </select>
+                </label>
+
+                <label class="flex items-start gap-3 text-sm text-[#5c6570]">
+                    <input
+                        type="checkbox"
+                        name="newsletter_consent"
+                        value="1"
+                        class="mt-1"
+                        @checked($newsletterSubscribed)
+                    >
+                    <span>I agree to receive the Zen Cart newsletter by email.</span>
+                </label>
+
+                @if($errors->getBag('newsletter')->any())
+                    <p class="{{ $errorClass }}">{{ $errors->getBag('newsletter')->first() }}</p>
+                @endif
+
+                <button type="submit" class="{{ $primaryButtonClass }}">Save Newsletter Consent</button>
             </form>
 
             @if(! empty($notificationMatrix))
