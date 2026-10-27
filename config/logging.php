@@ -1,5 +1,7 @@
 <?php
 
+use App\Logging\AddObservabilityContext;
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -113,6 +115,22 @@ return [
             'processors' => [PsrLogMessageProcessor::class],
         ],
 
+        'observability' => [
+            'driver' => 'monolog',
+            'level' => env('OBSERVABILITY_LOG_LEVEL', 'info'),
+            'handler' => StreamHandler::class,
+            'handler_with' => [
+                'stream' => 'php://stderr',
+            ],
+            'formatter' => JsonFormatter::class,
+            'formatter_with' => [
+                'appendNewline' => true,
+                'includeStacktraces' => true,
+            ],
+            'processors' => [PsrLogMessageProcessor::class],
+            'tap' => [AddObservabilityContext::class],
+        ],
+
         'syslog' => [
             'driver' => 'syslog',
             'level' => env('LOG_LEVEL', 'debug'),
@@ -133,6 +151,40 @@ return [
 
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
+        ],
+
+        'mailgun' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/mailgun-webhooks.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => 30,
+        ],
+
+        'mailtrap' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/mailtrap-webhooks.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => 30,
+        ],
+
+        /*
+         * PayPal webhook deliveries that could not be verified. Kept out of the
+         * main stack so a retry storm does not bury unrelated errors, and held
+         * longer than the mail channels because these entries exist to be
+         * reconciled by hand against the PayPal dashboard before deletion.
+         */
+        'paypal' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/paypal.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('PAYPAL_LOG_DAYS', 90),
+        ],
+
+        'backup' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/backup.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'max_files' => env('LOG_DAILY_DAYS', 14),
         ],
 
     ],

@@ -57,7 +57,8 @@ it('lets the local administrator open the dashboard and the index page of every 
 it('keeps the dashboard closed to someone without the staff entitlement', function () {
     $member = User::factory()->create();
 
-    actingAs($member)->get('/dashboard')->assertForbidden();
+    // As on the old site: a member without the entitlement is sent home, not shown a bare 403.
+    actingAs($member)->get('/dashboard')->assertRedirect(route('home'));
 });
 
 it('wires the Zen Cart profile over the packages\' defaults', function () {
