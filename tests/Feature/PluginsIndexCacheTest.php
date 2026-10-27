@@ -20,8 +20,6 @@ class PluginsIndexCacheTest extends TestCase
 
     public function test_plugins_warm_cache_command_populates_index_cache_entry(): void
     {
-        $this->markTestSkipped('Needs the plugins:warm-cache command: slice S9');
-
         $this->seedActivePluginLibrary();
 
         PluginsIndexCache::resetVersion();
@@ -36,8 +34,6 @@ class PluginsIndexCacheTest extends TestCase
 
     public function test_plugins_warm_cache_command_bypasses_frontend_maintenance_mode(): void
     {
-        $this->markTestSkipped('Needs the plugins:warm-cache command: slice S9');
-
         $this->seedActivePluginLibrary();
 
         config()->set('app.frontend_maintenance.enabled', true);
@@ -54,8 +50,6 @@ class PluginsIndexCacheTest extends TestCase
 
     public function test_plugins_warm_cache_command_restores_frontend_maintenance_flag_after_run(): void
     {
-        $this->markTestSkipped('Needs the plugins:warm-cache command: slice S9');
-
         $this->seedActivePluginLibrary();
 
         config()->set('app.frontend_maintenance.enabled', true);

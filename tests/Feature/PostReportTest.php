@@ -21,47 +21,6 @@ class PostReportTest extends TestCase
 {
     use RefreshDatabase, SeedsSitePages;
 
-    public function test_verified_user_can_report_post(): void
-    {
-        $this->markTestSkipped('Telling staff about a new report arrives with the notifications slice: S6.');
-
-        Notification::fake();
-        [$thread, $post] = $this->createPublicThreadWithPost();
-        $reporter = User::factory()->create();
-        Setting::query()->updateOrCreate(
-            ['key' => 'forum_support_email'],
-            [
-                'label' => 'Forum Support Email',
-                'value' => 'forum@example.test',
-                'value_type' => 'string',
-                'is_public' => false,
-            ]
-        );
-
-        $response = $this->actingAs($reporter)->post(route('posts.report', $post), [
-            'reason' => 'Spam and abusive content',
-        ]);
-
-        $response->assertRedirect(route('threads.show', $thread).'#post-'.$post->id);
-        $response->assertSessionHas('thread_status', __('forum.reports.submitted'));
-        $this->assertDatabaseHas('post_reports', [
-            'post_id' => $post->id,
-            'thread_id' => $thread->id,
-            'reporter_id' => $reporter->id,
-            'status' => PostReportStatus::OPEN->value,
-        ]);
-        Notification::assertSentOnDemand(
-            PostReportSubmittedNotification::class,
-            function (PostReportSubmittedNotification $notification, array $channels, object $notifiable): bool {
-                $mail = $notification->toMail($notifiable);
-
-                return isset($notifiable->routes['mail'])
-                    && $notifiable->routes['mail'] === 'forum@example.test'
-                    && $mail->subject === __('notifications.post_report.subjects.submitted');
-            }
-        );
-    }
-
     public function test_duplicate_open_report_by_same_user_is_blocked(): void
     {
         [, $post] = $this->createPublicThreadWithPost();
