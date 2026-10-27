@@ -135,9 +135,14 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      * The dashboard is for staff: the site's `operator.dashboard.access` entitlement opens the
      * door, and the individual `operator.*` entitlements decide what is inside it.
      */
+    /**
+     * Always true: who may open the dashboard is decided by `EnsureDashboardAccess`, which sends a
+     * member without the entitlement back to the home page. Answering false here would show them
+     * a bare 403 instead.
+     */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->hasEntitlement('operator.dashboard.access');
+        return true;
     }
 
     /**
