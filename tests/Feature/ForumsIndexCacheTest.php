@@ -24,8 +24,6 @@ class ForumsIndexCacheTest extends TestCase
 
     public function test_forums_warm_cache_command_populates_guest_cache_entry(): void
     {
-        $this->markTestSkipped('The forums:warm-cache command arrives with the scheduler and ops slice: S9.');
-
         $group = ForumGroup::query()->create([
             'name' => 'General',
             'slug' => 'general',
@@ -104,8 +102,6 @@ class ForumsIndexCacheTest extends TestCase
 
     public function test_warmed_registered_cache_hides_paid_or_author_thread_metadata(): void
     {
-        $this->markTestSkipped('The forums:warm-cache command arrives with the scheduler and ops slice: S9.');
-
         $group = ForumGroup::query()->create([
             'name' => 'Commercial',
             'slug' => 'commercial-cache',
