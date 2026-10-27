@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Forum\ThreadListings;
 use App\Models\Contact;
-use App\Models\LegacyImportUserMap;
 use App\Models\User;
 use App\Support\CacheMetrics;
 use App\Support\StaffFrontendPreview;
@@ -15,6 +14,7 @@ use Filagora\Forums\Support\Models as ForumModels;
 use Filagora\Messages\Services\IgnoredUsers;
 use Filagora\Plugins\Enums\PluginStatus;
 use Filagora\Plugins\Support\Models as PluginModels;
+use Filagora\ZenCart\Legacy\OldForumProfile;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -37,6 +37,7 @@ class MembersController extends Controller
         private readonly IgnoredUsers $ignored,
         private readonly AuthorizationService $authorization,
         private readonly StaffFrontendPreview $staffPreview,
+        private readonly OldForumProfile $oldForum,
     ) {}
 
     public function index(Request $request): ViewContract
@@ -88,7 +89,7 @@ class MembersController extends Controller
     public function show(Request $request, User $user): ViewContract
     {
         $viewer = $this->viewer($request);
-        $this->fillMissingProfileFromOldForum($user);
+        $this->oldForum->fill($user);
         $seesAll = $this->seesNonPublic($viewer, $user);
         $other = (int) $viewer->id !== (int) $user->id;
         $pluginModel = PluginModels::class('plugin');
@@ -327,65 +328,12 @@ class MembersController extends Controller
     }
 
     /**
-     * Imported members whose profile fields are empty get them from the old forum's own table, when
-     * it is still in the database.
+     * When the member was last active: their newest session, else the old forum's record of them.
      */
-    private function fillMissingProfileFromOldForum(User $user): void
-    {
-        $missing = collect(['biography' => $user->biography, 'location' => $user->location, 'interests' => $user->interests, 'occupation' => $user->occupation])
-            ->filter(fn (mixed $value): bool => ! filled($value))
-            ->keys()
-            ->all();
-
-        $name = trim((string) $user->name);
-
-        if ($name === '' || ($user->username !== '' && strcasecmp($name, trim((string) $user->username)) === 0)) {
-            $missing[] = 'name';
-        }
-
-        $legacyId = $missing === [] ? null : LegacyImportUserMap::query()->where('user_id', $user->id)->value('legacy_user_id');
-
-        if (! is_numeric($legacyId) || (int) $legacyId <= 0 || ! DB::getSchemaBuilder()->hasTable('vb_userfield')) {
-            return;
-        }
-
-        $profile = DB::table('vb_userfield')->where('userid', (int) $legacyId)->first();
-
-        if ($profile === null) {
-            return;
-        }
-
-        $columns = ['name' => ['realname', 'field5'], 'biography' => ['biography', 'aboutme', 'field1'], 'location' => ['location', 'field2'], 'interests' => ['interests', 'field3'], 'occupation' => ['occupation', 'field4']];
-
-        foreach ($missing as $field) {
-            foreach ($columns[$field] as $column) {
-                $value = $profile->{$column} ?? null;
-
-                if (is_string($value) && trim($value) !== '') {
-                    $user->setAttribute($field, trim($value));
-
-                    break;
-                }
-            }
-        }
-    }
-
     private function latestActivityTimestamp(User $user): ?int
     {
         $session = DB::table('sessions')->where('user_id', $user->id)->max('last_activity');
 
-        if (is_numeric($session)) {
-            return (int) $session;
-        }
-
-        $legacyId = LegacyImportUserMap::query()->where('user_id', $user->id)->value('legacy_user_id');
-
-        if (! is_numeric($legacyId) || (int) $legacyId <= 0 || ! DB::getSchemaBuilder()->hasTable('vb_user')) {
-            return null;
-        }
-
-        $last = DB::table('vb_user')->where('userid', (int) $legacyId)->value('lastactivity');
-
-        return is_numeric($last) && (int) $last > 0 ? (int) $last : null;
+        return is_numeric($session) ? (int) $session : $this->oldForum->lastActivity($user);
     }
 }

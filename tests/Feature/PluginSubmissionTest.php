@@ -83,8 +83,6 @@ class PluginSubmissionTest extends TestCase
 
     public function test_creating_a_plugin_does_not_crash_when_its_id_collides_with_an_existing_legacy_vbulletin_file_id(): void
     {
-        $this->markTestSkipped('Needs filagora-zencart 0.5.1 (library id collision guard)');
-
         // plugins.id is a plain auto-increment counter unrelated to
         // historical vBulletin file ids stored in legacy_vbulletin_file_id,
         // so a brand-new plugin's id can coincidentally match a number an
@@ -117,7 +115,7 @@ class PluginSubmissionTest extends TestCase
 
         $collidingPlugin->refresh();
         $this->assertSame(100000, $collidingPlugin->legacy_vbulletin_file_id);
-        $this->assertSame(100000, $collidingPlugin->canonicalId());
+        $this->assertSame(100000, $collidingPlugin->versionCheckId());
         $this->assertSame(99999, (int) $importedLegacyPlugin->fresh()->legacy_vbulletin_file_id);
     }
 
