@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/newsletter', NotYetPorted::class)->name('newsletter.show');
 Route::post('/staff/impersonation/stop', NotYetPorted::class)->name('staff.impersonation.stop');
 Route::get('/account/billing', NotYetPorted::class)->name('billing.index');
-Route::get('/members/{user}', NotYetPorted::class)->name('members.show');
 Route::post('/bug-reports/{bugReport}', NotYetPorted::class)->name('bug-reports.update');
 Route::post('/profile/hide-resolved-bug-threads', NotYetPorted::class)->name('profile.hide-resolved-bug-threads.update');
 Route::post('/threads/{thread}/bug-reports', NotYetPorted::class)->name('threads.bug-reports.store');
-Route::get('/members', NotYetPorted::class)->name('members.index');

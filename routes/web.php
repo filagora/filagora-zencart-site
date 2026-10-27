@@ -11,6 +11,7 @@ use App\Http\Controllers\ForumSearchController;
 use App\Http\Controllers\FrontendLogoutController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MarkdownPreviewController;
+use App\Http\Controllers\MembersController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PageController;
@@ -85,6 +86,15 @@ Route::middleware('frontend.verified')->group(function (): void {
     Route::put('/posts/{post}', [ThreadPostingController::class, 'updatePost'])->name('posts.update');
     Route::post('/threads/{thread}/subscribe', [ThreadPostingController::class, 'subscribe'])->name('threads.subscribe');
     Route::post('/threads/{thread}/unsubscribe', [ThreadPostingController::class, 'unsubscribe'])->name('threads.unsubscribe');
+
+    Route::get('/members', [MembersController::class, 'index'])->name('members.index');
+    Route::post('/members/{user}/contacts', [MembersController::class, 'storeContact'])->name('members.contacts.store');
+    Route::delete('/members/{user}/contacts', [MembersController::class, 'destroyContact'])->name('members.contacts.destroy');
+    Route::get('/members/{user}/posts', [MembersController::class, 'latestPosts'])->name('members.posts');
+    Route::get('/members/{user}/threads', [MembersController::class, 'latestThreads'])->name('members.threads');
+    Route::post('/members/{user}/ignore', [MembersController::class, 'storeIgnore'])->name('members.ignore.store');
+    Route::delete('/members/{user}/ignore', [MembersController::class, 'destroyIgnore'])->name('members.ignore.destroy');
+    Route::get('/members/{user}', [MembersController::class, 'show'])->name('members.show');
 
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/compose', [MessageController::class, 'compose'])->name('messages.compose');
