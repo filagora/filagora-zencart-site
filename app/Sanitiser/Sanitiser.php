@@ -145,7 +145,31 @@ class Sanitiser
         }
 
         if ($updates !== []) {
+            $this->vacateIdentityColumns($table, $definition);
             $this->db->table($table)->update($updates);
+        }
+    }
+
+    /**
+     * Moves every column that will get a generated name out of the way first. A real member
+     * may already hold "user17", which would collide with the generated name of account 17
+     * partway through the update.
+     *
+     * @param  array{key: string, columns: array<string, string>}  $definition
+     */
+    private function vacateIdentityColumns(string $table, array $definition): void
+    {
+        $grammar = $this->db->getQueryGrammar();
+        $temporary = [];
+
+        foreach ($definition['columns'] as $column => $rule) {
+            if (in_array(explode(':', $rule)[0], ['email', 'username', 'name'], true)) {
+                $temporary[$column] = new Expression("CONCAT('~', ".$grammar->wrap(explode(':', $rule)[1] ?? $definition['key']).')');
+            }
+        }
+
+        if ($temporary !== []) {
+            $this->db->table($table)->update($temporary);
         }
     }
 

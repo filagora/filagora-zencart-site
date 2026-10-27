@@ -81,6 +81,17 @@ class SanitiserTest extends TestCase
         $this->assertSame([], $this->sanitiser()->violations());
     }
 
+    public function test_a_real_username_that_looks_like_a_generated_one_does_not_collide(): void
+    {
+        $first = User::factory()->create(['username' => 'placeholder-a']);
+        $second = User::factory()->create(['username' => 'user'.$first->id]);
+
+        $this->sanitiser()->run();
+
+        $this->assertSame('user'.$first->id, $first->fresh()->username);
+        $this->assertSame('user'.$second->id, $second->fresh()->username);
+    }
+
     public function test_the_password_is_the_one_given(): void
     {
         $user = User::factory()->create();
