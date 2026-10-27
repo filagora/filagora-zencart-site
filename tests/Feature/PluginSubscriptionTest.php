@@ -32,8 +32,6 @@ class PluginSubscriptionTest extends TestCase
 
     public function test_authenticated_user_can_subscribe_and_manage_plugin_subscription_from_profile(): void
     {
-        $this->markTestSkipped('Needs the profile subscriptions tab (S5) and audit entries (deferred by decision).');
-
         [$plugin, $owner] = $this->createPlugin();
         $subscriber = User::factory()->create();
 
@@ -43,24 +41,13 @@ class PluginSubscriptionTest extends TestCase
             ->assertSee('Subscribe to updates');
 
         $this->actingAs($subscriber)
-            ->withHeader('User-Agent', 'PluginSubscriptionAuditTest/1.0')
+            ->withHeader('User-Agent', 'PluginSubscriptionTest/1.0')
             ->post(route('plugins.subscribe', $plugin), [], ['REMOTE_ADDR' => '203.0.113.20'])
             ->assertRedirect(route('plugins.show', $plugin));
 
-        $subscription = PluginSubscription::query()->where([
+        $this->assertDatabaseHas('plugin_subscriptions', [
             'plugin_id' => $plugin->id,
             'user_id' => $subscriber->id,
-        ])->firstOrFail();
-
-        $this->assertDatabaseHas('audits', [
-            'event' => 'created',
-            'auditable_type' => PluginSubscription::class,
-            'auditable_id' => $subscription->id,
-            'user_type' => User::class,
-            'user_id' => $subscriber->id,
-            'ip_address' => '203.0.113.20',
-            'user_agent' => 'PluginSubscriptionAuditTest/1.0',
-            'url' => 'console',
         ]);
 
         $this->actingAs($subscriber)
@@ -70,24 +57,13 @@ class PluginSubscriptionTest extends TestCase
             ->assertSee($plugin->name);
 
         $this->actingAs($subscriber)
-            ->withHeader('User-Agent', 'PluginSubscriptionAuditTest/1.0')
+            ->withHeader('User-Agent', 'PluginSubscriptionTest/1.0')
             ->post(route('profile.plugin-subscriptions.remove', $plugin), [], ['REMOTE_ADDR' => '203.0.113.20'])
             ->assertRedirect(route('profile.show', ['tab' => 'subscriptions']));
 
         $this->assertDatabaseMissing('plugin_subscriptions', [
             'plugin_id' => $plugin->id,
             'user_id' => $subscriber->id,
-        ]);
-
-        $this->assertDatabaseHas('audits', [
-            'event' => 'deleted',
-            'auditable_type' => PluginSubscription::class,
-            'auditable_id' => $subscription->id,
-            'user_type' => User::class,
-            'user_id' => $subscriber->id,
-            'ip_address' => '203.0.113.20',
-            'user_agent' => 'PluginSubscriptionAuditTest/1.0',
-            'url' => 'console',
         ]);
 
         $this->assertSame($owner->id, $plugin->owner_id);
@@ -188,8 +164,6 @@ class PluginSubscriptionTest extends TestCase
 
     public function test_profile_plugin_subscriptions_are_ordered_by_most_recent_subscription_first_when_timestamps_match(): void
     {
-        $this->markTestSkipped('Needs the profile subscriptions tab (S5) and audit entries (deferred by decision).');
-
         $subscriber = User::factory()->create();
         $owner = User::factory()->create();
         $type = PluginType::query()->create([

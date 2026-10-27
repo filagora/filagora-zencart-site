@@ -142,8 +142,6 @@ class CmsPageControllerTest extends TestCase
 
     public function test_pages_that_are_not_cms_pages_do_not_emit_structured_data(): void
     {
-        $this->markTestSkipped('Needs the forums and plugins pages: slices S2 and S4.');
-
         $this->get(route('forums.index'))
             ->assertOk()
             ->assertDontSee('application/ld+json', false);

@@ -119,4 +119,18 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Test Banner
+    |--------------------------------------------------------------------------
+    |
+    | Prefixes every markdown mail with a notice, for staging and rehearsal sites.
+    |
+    */
+
+    'test_banner' => [
+        'enabled' => env('MAIL_TEST_BANNER_ENABLED', false),
+        'message' => env('MAIL_TEST_BANNER_MESSAGE', 'This is a test email from our new test site.'),
+    ],
+
 ];
