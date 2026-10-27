@@ -10,6 +10,7 @@ use App\Support\CrawlerUserAgent;
 use App\Support\ForumStructuredDataFactory;
 use App\Support\LegacyTextDecoder;
 use App\Support\MetaDescription;
+use App\Support\ResolvedBugThreadVisibility;
 use App\Support\ThreadOpeningText;
 use Filagora\Forums\Enums\ContentModerationStatus;
 use Filagora\Forums\Enums\PostReportStatus;
@@ -47,6 +48,7 @@ class ForumController extends Controller
         private readonly ReadTracking $readTracking,
         private readonly ThreadListings $listings,
         private readonly ForumIndex $forumIndex,
+        private readonly ResolvedBugThreadVisibility $resolvedBugs,
     ) {}
 
     public function index(Request $request): View
@@ -106,7 +108,9 @@ class ForumController extends Controller
 
         $ownThreadsOnly = $this->access->seesOnlyOwnThreads($forum, $user);
 
-        $threads = $this->listings->inForum($forum->id, $user, $ownThreadsOnly)
+        $hideResolvedBugs = $this->resolvedBugs->hiddenFor($request, $user);
+
+        $threads = $this->listings->inForum($forum->id, $user, $ownThreadsOnly, $hideResolvedBugs)
             ->paginate(30)
             ->withQueryString();
         $this->listings->hydrateIndicators($threads->getCollection(), $user);
@@ -128,9 +132,8 @@ class ForumController extends Controller
             'threadPostsPerPage' => self::THREAD_POSTS_PER_PAGE,
             'canPostThread' => $this->access->canPostInForum($forum, $user),
             'showModerationActions' => $this->access->actsAsStaff($user),
-            // Resolved-bug filtering arrives with the bug-report slice (S8).
-            'canHideResolvedBugThreads' => false,
-            'hideResolvedBugThreads' => false,
+            'canHideResolvedBugThreads' => $this->resolvedBugs->availableFor($user),
+            'hideResolvedBugThreads' => $hideResolvedBugs,
             'threadRequiresApproval' => $this->approvals->threadRequiresApproval($forum, $viewerForApproval),
             'replyRequiresApproval' => $this->approvals->replyRequiresApproval($forum, $viewerForApproval),
         ]);

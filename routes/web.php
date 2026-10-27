@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ApiDocsController;
 use App\Http\Controllers\BillingController;
+use App\Http\Controllers\BugReportController;
 use App\Http\Controllers\Cms\CmsPageController;
 use App\Http\Controllers\Cms\CmsPreviewController;
 use App\Http\Controllers\Cms\CmsPreviewSessionController;
@@ -28,12 +29,14 @@ use App\Http\Controllers\Profile\AnnouncementDismissalController;
 use App\Http\Controllers\Profile\ApiKeyController;
 use App\Http\Controllers\Profile\CookieConsentController;
 use App\Http\Controllers\Profile\ProfileController;
+use App\Http\Controllers\Profile\ResolvedBugThreadVisibilityController;
 use App\Http\Controllers\Profile\StaffPreviewController;
 use App\Http\Controllers\Profile\SubscriptionController;
 use App\Http\Controllers\Profile\TwoFactorController;
 use App\Http\Controllers\RelocationTargetsController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\StaffUserImpersonationController;
 use App\Http\Controllers\ThreadPostingController;
 use App\Http\Controllers\UserAvatarController;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -143,6 +146,14 @@ Route::middleware('frontend.verified')->group(function (): void {
     Route::post('/profile/entitlement-requests', [AccountRequestController::class, 'storeEntitlementRequest'])->name('profile.entitlement-requests.store');
     Route::post('/profile/privacy-requests', [AccountRequestController::class, 'storePrivacyRequest'])->middleware('throttle:privacy-request-submit')->name('profile.privacy-requests.store');
     Route::get('/profile/privacy-requests/{privacyRequest}/export', [AccountRequestController::class, 'downloadPrivacyExport'])->middleware('signed')->name('profile.privacy-requests.export.download');
+    Route::post('/profile/hide-resolved-bug-threads', ResolvedBugThreadVisibilityController::class)->name('profile.hide-resolved-bug-threads.update');
+    Route::post('/threads/{thread}/bug-reports', [BugReportController::class, 'store'])->name('threads.bug-reports.store');
+    Route::post('/bug-reports/{bugReport}', [BugReportController::class, 'update'])->name('bug-reports.update');
+    Route::post('/staff/impersonation/stop', [StaffUserImpersonationController::class, 'stop'])->name('staff.impersonation.stop');
+    Route::get('/staff/impersonation/{user}', static function (): never {
+        abort(405);
+    });
+    Route::post('/staff/impersonation/{user}', [StaffUserImpersonationController::class, 'start'])->name('staff.impersonation.start');
     Route::post('/profile/staff-frontend-preview', StaffPreviewController::class)->name('profile.staff-frontend-preview.update');
     Route::get('/profile/cookie-consent', [CookieConsentController::class, 'show'])->name('profile.cookie-consent.show');
     Route::post('/profile/cookie-consent', [CookieConsentController::class, 'store'])->name('profile.cookie-consent.store');

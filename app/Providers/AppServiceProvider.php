@@ -9,9 +9,11 @@ use App\Markdown\ZenCartHtmlTransformer;
 use App\Models\BugReport;
 use App\Models\User;
 use App\Notifications\BellListeners;
+use App\Observers\BugReportObserver;
 use App\Observers\BumpPluginsIndexCacheObserver;
 use App\Observers\FlushForumsIndexCacheObserver;
 use App\Observers\SyncUserPostCountObserver;
+use App\Policies\BugReportPolicy;
 use App\Policies\ForumPostPolicy;
 use App\Policies\ForumThreadPolicy;
 use App\Policies\PluginPolicy;
@@ -29,6 +31,7 @@ use Filagora\Core\Content\MarkdownRenderer;
 use Filagora\Core\Settings\SettingDefinition;
 use Filagora\Core\Settings\SettingsRegistry;
 use Filagora\Core\Settings\SettingType;
+use Filagora\Entitlements\Services\AuthorizationService;
 use Filagora\Forums\Contracts\StaffPreview;
 use Filagora\Forums\Events\ForumStatsChanged;
 use Filagora\Forums\Events\PostModerated;
@@ -107,6 +110,19 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive('cmsMarkdownInline', fn (string $expression): string => "<?php echo \\App\\Support\\CmsMarkdown::inline({$expression}); ?>");
 
         Gate::policy(Post::class, ForumPostPolicy::class);
+        Gate::policy(BugReport::class, BugReportPolicy::class);
+        BugReport::observe(BugReportObserver::class);
+
+        // Staff acting as another member: needs the "act as" entitlement, never as themselves, and
+        // never as an operator they could not themselves make.
+        Gate::define('impersonate', function (User $actor, User $target): bool {
+            $access = app(AuthorizationService::class);
+
+            return $access->allows($actor, 'operator.users.act_as')
+                && ! $actor->is($target)
+                && ($access->allows($actor, 'operator.users.assign_operator_access')
+                    || ! $access->allowsAny($target, ['operator.users.assign_operator_access', 'operator.system.settings.manage']));
+        });
         Gate::policy(Thread::class, ForumThreadPolicy::class);
         Gate::policy(PluginModel::class, PluginPolicy::class);
         Gate::policy(PluginReleaseModel::class, PluginReleasePolicy::class);
