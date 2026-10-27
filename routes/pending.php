@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\NotYetPorted;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -10,5 +9,3 @@ use Illuminate\Support\Facades\Route;
  * deletes its own lines from this file; the file must be empty before cutover, and the route
  * parity test treats anything still here as not done.
  */
-
-Route::get('/newsletter', NotYetPorted::class)->name('newsletter.show');

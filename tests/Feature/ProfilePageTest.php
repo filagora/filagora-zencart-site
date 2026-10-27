@@ -2,7 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\NewsletterSubscriber;
 use App\Models\User;
+use App\NewsletterSubscriberStatus;
+use App\Services\NewsletterSubscriberService;
 use App\TimeFormat;
 use Filagora\Compliance\Models\PrivacyPolicyVersion;
 use Filagora\Compliance\Models\UserPrivacyPolicyAcceptance;
@@ -420,8 +423,6 @@ class ProfilePageTest extends TestCase
 
     public function test_email_change_keeps_newsletter_consent_with_old_address(): void
     {
-        $this->markTestSkipped('Needs the newsletter subscriptions: slice S8.');
-
         Notification::fake();
 
         $user = $this->makeAcknowledgedUser([
@@ -733,8 +734,6 @@ class ProfilePageTest extends TestCase
 
     public function test_authenticated_user_can_manage_newsletter_consent_from_profile(): void
     {
-        $this->markTestSkipped('Needs the newsletter subscriptions: slice S8.');
-
         $user = $this->makeAcknowledgedUser([
             'email' => 'Subscriber@Example.test',
             'name' => 'Subscriber Name',
@@ -783,8 +782,6 @@ class ProfilePageTest extends TestCase
 
     public function test_newsletter_profile_subscription_requires_explicit_consent(): void
     {
-        $this->markTestSkipped('Needs the newsletter subscriptions: slice S8.');
-
         $user = $this->makeAcknowledgedUser();
 
         $this->actingAs($user)

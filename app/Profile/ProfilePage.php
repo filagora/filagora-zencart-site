@@ -4,6 +4,7 @@ namespace App\Profile;
 
 use App\Api\ApiScopeCatalog;
 use App\Models\User;
+use App\Services\NewsletterSubscriberService;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -40,6 +41,7 @@ class ProfilePage
         private readonly ApiScopeCatalog $apiScopes,
         private readonly EntitlementResolver $entitlementResolver,
         private readonly Memberships $memberships,
+        private readonly NewsletterSubscriberService $newsletter,
     ) {}
 
     /**
@@ -57,6 +59,7 @@ class ProfilePage
             'activeTab' => $tab,
             'timezoneOptions' => $this->timezoneOptions($user->timezone),
             'notificationMatrix' => $this->preferences->matrix($user),
+            'newsletterSubscriber' => $this->newsletter->forUser($user),
             'twoFactorSetup' => $this->twoFactorSetup($user),
             'newRecoveryCodes' => session('new_recovery_codes'),
             'recoveryCodesRemainingCount' => $user->recoveryCodesRemainingCount(),

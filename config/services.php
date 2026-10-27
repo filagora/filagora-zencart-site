@@ -48,4 +48,17 @@ return [
         'enforce_in_non_production' => env('TURNSTILE_ENFORCE_NON_PRODUCTION', false),
     ],
 
+    'mailgun' => [
+        'domain' => env('MAILGUN_DOMAIN'),
+        'secret' => env('MAILGUN_SECRET'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
+        'webhook_signing_key' => env('MAILGUN_WEBHOOK_SIGNING_KEY'),
+    ],
+
+    'mailtrap' => [
+        'token' => env('MAILTRAP_API_TOKEN'),
+        'endpoint' => env('MAILTRAP_API_ENDPOINT', 'https://send.api.mailtrap.io/api/send'),
+        'webhook_signing_key' => env('MAILTRAP_WEBHOOK_SIGNING_KEY'),
+    ],
+
 ];

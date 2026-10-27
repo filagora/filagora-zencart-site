@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Profile;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Profile\ProfilePage;
+use App\Services\NewsletterSubscriberService;
 use App\TimeFormat;
 use Closure;
 use Filagora\Notifications\Services\Preferences;
@@ -27,6 +28,7 @@ class ProfileController extends Controller
     public function __construct(
         private readonly ProfilePage $page,
         private readonly Preferences $preferences,
+        private readonly NewsletterSubscriberService $newsletter,
     ) {}
 
     public function show(Request $request): View|RedirectResponse
@@ -55,7 +57,8 @@ class ProfileController extends Controller
             'biography' => ['nullable', 'string', 'max:20000'],
         ]);
 
-        $emailChanged = ! hash_equals(mb_strtolower((string) $user->email), mb_strtolower((string) $validated['email']));
+        $oldEmail = (string) $user->email;
+        $emailChanged = ! hash_equals(mb_strtolower($oldEmail), mb_strtolower((string) $validated['email']));
 
         $user->fill($validated);
 
@@ -66,6 +69,8 @@ class ProfileController extends Controller
         $user->save();
 
         if ($emailChanged) {
+            // The newsletter list keeps the old address with its consent; it must not follow the account.
+            $this->newsletter->unlinkUserForEmailChange($user, $oldEmail);
             $this->sendVerification($user);
 
             $intended = '/profile?tab=details';

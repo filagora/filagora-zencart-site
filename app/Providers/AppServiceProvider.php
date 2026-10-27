@@ -4,9 +4,13 @@ namespace App\Providers;
 
 use App\Filament\Auth\Responses\LoginResponse as AppLoginResponse;
 use App\Filament\Auth\Responses\RegistrationResponse as AppRegistrationResponse;
+use App\Mail\Transport\MailtrapApiTransport;
 use App\Markdown\BlankLineGapExtension;
 use App\Markdown\ZenCartHtmlTransformer;
 use App\Models\BugReport;
+use App\Models\Newsletter;
+use App\Models\NewsletterBlock;
+use App\Models\NewsletterSubscriber;
 use App\Models\User;
 use App\Notifications\BellListeners;
 use App\Observers\BugReportObserver;
@@ -16,6 +20,9 @@ use App\Observers\SyncUserPostCountObserver;
 use App\Policies\BugReportPolicy;
 use App\Policies\ForumPostPolicy;
 use App\Policies\ForumThreadPolicy;
+use App\Policies\NewsletterBlockPolicy;
+use App\Policies\NewsletterPolicy;
+use App\Policies\NewsletterSubscriberPolicy;
 use App\Policies\PluginPolicy;
 use App\Policies\PluginReleasePolicy;
 use App\Services\UserPostCountService;
@@ -28,6 +35,8 @@ use App\View\Composers\HeaderComposer;
 use App\View\Composers\ModerationQueueComposer;
 use Filagora\Core\Content\ExtensionRegistry;
 use Filagora\Core\Content\MarkdownRenderer;
+use Filagora\Core\Navigation\NavigationGroupDefinition;
+use Filagora\Core\Navigation\NavigationGroupRegistry;
 use Filagora\Core\Settings\SettingDefinition;
 use Filagora\Core\Settings\SettingsRegistry;
 use Filagora\Core\Settings\SettingType;
@@ -57,6 +66,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -111,6 +121,9 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(Post::class, ForumPostPolicy::class);
         Gate::policy(BugReport::class, BugReportPolicy::class);
+        Gate::policy(Newsletter::class, NewsletterPolicy::class);
+        Gate::policy(NewsletterBlock::class, NewsletterBlockPolicy::class);
+        Gate::policy(NewsletterSubscriber::class, NewsletterSubscriberPolicy::class);
         BugReport::observe(BugReportObserver::class);
 
         // Staff acting as another member: needs the "act as" entitlement, never as themselves, and
@@ -176,6 +189,18 @@ class AppServiceProvider extends ServiceProvider
         // the authors' badge counters are rebuilt from the posts that are left.
         Event::listen(ThreadDeleted::class, fn (ThreadDeleted $event) => app(UserPostCountService::class)->syncForUserIds($event->postAuthorIds));
 
+        Mail::extend('mailtrap', fn (array $config): MailtrapApiTransport => new MailtrapApiTransport(
+            $config['token'] ?? config('services.mailtrap.token'),
+            $config['endpoint'] ?? config('services.mailtrap.endpoint'),
+        ));
+
+        $this->app->make(NavigationGroupRegistry::class)->register(new NavigationGroupDefinition(
+            key: 'newsletters',
+            label: fn (): string => __('dashboard.navigation_groups.newsletters'),
+            icon: 'heroicon-o-envelope',
+            sort: 50,
+        ));
+
         Event::listen(ForumStatsChanged::class, fn () => ForumsIndexCache::flushAll());
 
         // The in-app side of what the packages announce (they send the mail).
@@ -205,6 +230,8 @@ class AppServiceProvider extends ServiceProvider
                 $request->user()?->id !== null ? 'user:'.$request->user()->id : 'ip:'.$request->ip(),
             ));
         }
+
+        RateLimiter::for('newsletter-signup', fn (Request $request): Limit => Limit::perMinute(5)->by('newsletter-signup:'.($request->ip() ?: 'unknown')));
 
         RateLimiter::for('privacy-request-submit', function (Request $request): array {
             $key = $request->user()?->id !== null ? 'user:'.$request->user()->id : 'ip:'.$request->ip();

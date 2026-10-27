@@ -34,6 +34,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // the middleware with a subclass repairs what it can and still 400s the rest.
         $middleware->replace(ValidatePathEncoding::class, RepairLegacyPathEncoding::class);
 
+        // Mail providers post their delivery events here with no session or token; each request is
+        // checked by the controller.
+        $middleware->preventRequestForgery([
+            'webhooks/mailgun',
+            'webhooks/mailtrap',
+        ]);
+
         $middleware->alias([
             'frontend.verified' => EnsureFrontendEmailIsVerified::class,
             'plugins.submissions.open' => EnsurePluginSubmissionsAreOpen::class,
