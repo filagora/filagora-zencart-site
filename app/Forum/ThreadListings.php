@@ -2,6 +2,7 @@
 
 namespace App\Forum;
 
+use App\BugReportStatus;
 use App\Models\BugReport;
 use App\Models\User;
 use Carbon\CarbonInterface;
@@ -97,7 +98,7 @@ class ThreadListings
      *
      * @return Builder<Thread>
      */
-    public function inForum(int $forumId, ?User $user, bool $ownThreadsOnly): Builder
+    public function inForum(int $forumId, ?User $user, bool $ownThreadsOnly, bool $hideResolvedBugs = false): Builder
     {
         $thread = Models::class('thread');
 
@@ -115,6 +116,13 @@ class ThreadListings
 
         if ($ownThreadsOnly && $user instanceof User) {
             $query->where('author_id', $user->id);
+        }
+
+        if ($hideResolvedBugs) {
+            // A thread stays unless every bug report on it is closed out: none at all, or one still open.
+            $query->where(fn (Builder $threads) => $threads
+                ->whereDoesntHave('bugReports')
+                ->orWhereHas('bugReports', fn (Builder $reports) => $reports->whereNotIn('status', BugReportStatus::terminalValues())));
         }
 
         return $query;
