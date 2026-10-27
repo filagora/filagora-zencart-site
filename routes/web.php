@@ -11,6 +11,7 @@ use App\Http\Controllers\ForumSearchController;
 use App\Http\Controllers\FrontendLogoutController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MarkdownPreviewController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PluginCommunityController;
@@ -84,6 +85,18 @@ Route::middleware('frontend.verified')->group(function (): void {
     Route::put('/posts/{post}', [ThreadPostingController::class, 'updatePost'])->name('posts.update');
     Route::post('/threads/{thread}/subscribe', [ThreadPostingController::class, 'subscribe'])->name('threads.subscribe');
     Route::post('/threads/{thread}/unsubscribe', [ThreadPostingController::class, 'unsubscribe'])->name('threads.unsubscribe');
+
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::get('/messages/compose', [MessageController::class, 'compose'])->name('messages.compose');
+    Route::get('/messages/users/search', [MessageController::class, 'searchUsers'])->middleware('throttle:message-user-search')->name('messages.users.search');
+    Route::post('/messages', [MessageController::class, 'store'])->name('messages.store');
+    Route::post('/messages/bulk', [MessageController::class, 'bulk'])->name('messages.bulk');
+    Route::post('/messages/trash/empty', [MessageController::class, 'emptyTrash'])->name('messages.trash.empty');
+    Route::post('/messages/folders', [MessageController::class, 'createFolder'])->name('messages.folders.store');
+    Route::post('/messages/folders/{folder}/delete', [MessageController::class, 'deleteFolder'])->name('messages.folders.delete');
+    Route::get('/messages/{conversation}', [MessageController::class, 'show'])->name('messages.show');
+    Route::post('/messages/{conversation}/reply', [MessageController::class, 'reply'])->name('messages.reply');
+    Route::post('/messages/{conversation}/move', [MessageController::class, 'move'])->name('messages.move');
 
     Route::middleware('throttle:notifications')->group(function (): void {
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

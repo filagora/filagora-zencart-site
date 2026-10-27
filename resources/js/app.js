@@ -19,6 +19,12 @@ const pageModules = [
     ['[data-poll-builder]', () => import('./modules/poll-builder')],
     ['[data-thread-attachments-popup]', () => import('./modules/forum-thread-list')],
     ['[data-forum-search-bar]', () => import('./modules/forum-search-bar')],
+    ['#messages-to-input', () => import('./modules/messages-compose')],
+    ['[data-pm-inbox]', () => import('./modules/messages-index')],
+    ['#moderation-queue', () => import('./modules/plugins-index')],
+    ['#report-plugin-modal', () => import('./modules/plugin-show')],
+    ['[data-description-expander]', () => import('./modules/plugin-show')],
+    ['[data-support-thread-field]', () => import('./modules/plugin-submit')],
     ['[data-home-motion-root]', () => import('./modules/home-motion')],
     ['#deploySteps', () => import('./modules/home-deploy-steps')],
 ];
