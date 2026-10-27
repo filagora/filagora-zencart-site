@@ -55,6 +55,25 @@ class ThreadListings
 
         $this->access->scopeVisibleThreads($query, $user);
 
+        return $this->restrictToVisibleForums($query, $user);
+    }
+
+    /**
+     * Narrows a query joined to `threads` (as `threads`) to the forums the viewer may read: every
+     * thread in a forum they can see in full, and their own threads in a forum where they see only
+     * those. Staff acting as staff are not narrowed.
+     *
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
+    public function restrictToVisibleForums(Builder $query, ?User $user): Builder
+    {
+        if ($this->access->actsAsStaff($user)) {
+            return $query;
+        }
+
         $scope = $this->access->forumScopeFor($user);
 
         return $query->where(function (Builder $visible) use ($scope, $user): void {

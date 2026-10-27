@@ -8,6 +8,7 @@ use App\Markdown\BlankLineGapExtension;
 use App\Markdown\ZenCartHtmlTransformer;
 use App\Models\BugReport;
 use App\Models\User;
+use App\Notifications\BellListeners;
 use App\Observers\BumpPluginsIndexCacheObserver;
 use App\Observers\FlushForumsIndexCacheObserver;
 use App\Observers\SyncUserPostCountObserver;
@@ -30,10 +31,18 @@ use Filagora\Core\Settings\SettingsRegistry;
 use Filagora\Core\Settings\SettingType;
 use Filagora\Forums\Contracts\StaffPreview;
 use Filagora\Forums\Events\ForumStatsChanged;
+use Filagora\Forums\Events\PostModerated;
+use Filagora\Forums\Events\PostReported;
+use Filagora\Forums\Events\SubscribersToNotify;
 use Filagora\Forums\Events\ThreadDeleted;
+use Filagora\Forums\Events\ThreadModerated;
+use Filagora\Forums\Events\UsersMentioned;
 use Filagora\Forums\Models\Post;
 use Filagora\Forums\Models\Thread;
 use Filagora\Forums\Support\Models;
+use Filagora\Messages\Events\MessageReceived;
+use Filagora\Plugins\Events\ReleaseRejected;
+use Filagora\Plugins\Events\SubscribersToNotify as PluginSubscribersToNotify;
 use Filagora\Plugins\Models\Plugin as PluginModel;
 use Filagora\Plugins\Models\PluginRelease as PluginReleaseModel;
 use Filagora\Plugins\Support\Models as PluginModels;
@@ -152,6 +161,16 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(ThreadDeleted::class, fn (ThreadDeleted $event) => app(UserPostCountService::class)->syncForUserIds($event->postAuthorIds));
 
         Event::listen(ForumStatsChanged::class, fn () => ForumsIndexCache::flushAll());
+
+        // The in-app side of what the packages announce (they send the mail).
+        Event::listen(SubscribersToNotify::class, [BellListeners::class, 'threadUpdated']);
+        Event::listen(UsersMentioned::class, [BellListeners::class, 'mentioned']);
+        Event::listen(PostModerated::class, [BellListeners::class, 'postModerated']);
+        Event::listen(ThreadModerated::class, [BellListeners::class, 'threadModerated']);
+        Event::listen(PostReported::class, [BellListeners::class, 'postReported']);
+        Event::listen(MessageReceived::class, [BellListeners::class, 'messageReceived']);
+        Event::listen(PluginSubscribersToNotify::class, [BellListeners::class, 'pluginUpdated']);
+        Event::listen(ReleaseRejected::class, [BellListeners::class, 'releaseRejected']);
     }
 
     /**

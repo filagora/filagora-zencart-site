@@ -6,6 +6,7 @@ use App\Models\Concerns\HasSiteAccount;
 use App\TimeFormat;
 use Database\Factories\UserFactory;
 use Filagora\Entitlements\Concerns\HasEntitlements;
+use Filagora\Forums\Models\Post;
 use Filagora\Forums\Models\Thread;
 use Filagora\Forums\Support\Models;
 use Filagora\Memberships\Concerns\HasMemberships;
@@ -17,6 +18,7 @@ use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -88,6 +90,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     protected $appends = [
         'avatar_url',
     ];
+
+    /**
+     * The posts this account wrote.
+     *
+     * @return HasMany<Post, $this>
+     */
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Models::class('post'), 'author_id');
+    }
 
     /**
      * The plugins this account follows.

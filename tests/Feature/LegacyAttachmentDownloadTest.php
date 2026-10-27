@@ -2,15 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Models\PrivateConversation;
-use App\Models\PrivateConversationParticipant;
-use App\Models\PrivateMessage;
-use App\Models\PrivateMessageFolder;
 use App\Models\User;
 use Filagora\Entitlements\Models\UserEntitlementGrant;
 use Filagora\Forums\Enums\ContentModerationStatus;
 use Filagora\Forums\Enums\ForumVisibility;
 use Filagora\Forums\Models\ForumGroup;
+use Filagora\Messages\Models\PrivateConversation;
+use Filagora\Messages\Models\PrivateConversationParticipant;
+use Filagora\Messages\Models\PrivateMessage;
+use Filagora\Messages\Models\PrivateMessageFolder;
 use Filagora\ZenCart\Models\Forum;
 use Filagora\ZenCart\Models\Post;
 use Filagora\ZenCart\Models\PostAttachment;
@@ -164,8 +164,6 @@ class LegacyAttachmentDownloadTest extends TestCase
 
     public function test_private_message_attachment_requires_conversation_participation(): void
     {
-        $this->markTestSkipped('Needs private messages: slice S6 (members and messages).');
-
         Storage::fake('local');
         [$attachment, $sender, $recipient] = $this->seedPrivateMessageAttachment();
         Storage::disk('local')->put((string) $attachment->storage_path, 'pm-attachment-content');
@@ -511,7 +509,7 @@ class LegacyAttachmentDownloadTest extends TestCase
             'is_read' => false,
         ]);
 
-        $attachment = PostAttachment::query()->create([
+        $attachment = PostAttachment::query()->forceCreate([
             'legacy_attachment_id' => 91234,
             'legacy_filedata_id' => 91235,
             'legacy_pmtext_id' => 81231,

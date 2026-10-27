@@ -1,6 +1,9 @@
 <?php
 
 return [
+    // Where a report of a post is mailed (FORUM_SUPPORT_EMAIL). Blank sends nothing.
+    'support_email' => env('FORUM_SUPPORT_EMAIL'),
+
     // Cache TTL for /forums index metadata payloads (seconds).
     'index_cache_ttl_seconds' => env('FORUMS_INDEX_CACHE_TTL_SECONDS', 300),
 
