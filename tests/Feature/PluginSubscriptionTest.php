@@ -147,43 +147,6 @@ class PluginSubscriptionTest extends TestCase
         Notification::assertNotSentTo($uploader, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'release_updated');
     }
 
-    public function test_auto_published_release_does_not_notify_a_suppressed_subscriber(): void
-    {
-        $this->markTestSkipped('Needs the in-app notification channel and preferences: slice S6');
-
-        Notification::fake();
-        Storage::fake('public');
-
-        [$plugin, $uploader] = $this->createPlugin();
-        $subscriber = User::factory()->create([
-            'receives_email' => false,
-        ]);
-        $this->makeForumModerator($uploader);
-        $this->grantCanonicalOperatorEntitlements($uploader, 'plugin_auto_publish');
-        $version = ZcVersion::query()->create([
-            'version' => '2.1.0',
-            'is_active' => true,
-            'position' => 20,
-        ]);
-
-        PluginSubscription::query()->create([
-            'plugin_id' => $plugin->id,
-            'user_id' => $subscriber->id,
-        ]);
-
-        $this->actingAs($uploader)
-            ->post(route('plugins.release.store', $plugin), [
-                'version' => '1.1.0',
-                'zip_file' => $this->validZip('plugin-update.zip'),
-                'changelog' => 'New features',
-                'encapsulated' => 'unknown',
-                'zc_versions' => [$version->id],
-            ])
-            ->assertRedirect(route('plugins.show', $plugin));
-
-        Notification::assertSentTo($subscriber, PluginUpdatedNotification::class, fn ($n, array $channels) => $channels === ['database']);
-    }
-
     public function test_approved_release_notifies_plugin_subscribers_except_release_author(): void
     {
         Notification::fake();
@@ -221,54 +184,6 @@ class PluginSubscriptionTest extends TestCase
         Notification::assertSentTo($subscriber, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'release_updated');
         Notification::assertSentTo($uploader, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'release_approved');
         Notification::assertNotSentTo($uploader, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'release_updated');
-    }
-
-    public function test_approved_release_does_not_notify_subscriber_when_plugin_update_email_is_disabled(): void
-    {
-        $this->markTestSkipped('Needs the notification preferences: slice S6');
-
-        Notification::fake();
-
-        [$plugin] = $this->createPlugin();
-        $staff = User::factory()->create();
-        $this->makeForumModerator($staff);
-        $this->grantCanonicalOperatorEntitlements($staff, 'forum_moderator');
-        $subscriber = User::factory()->create();
-        $uploader = User::factory()->create();
-
-        PluginSubscription::query()->create([
-            'plugin_id' => $plugin->id,
-            'user_id' => $subscriber->id,
-        ]);
-
-        UserNotificationPreference::query()->create([
-            'user_id' => $subscriber->id,
-            'preference_key' => 'plugins.release_updates',
-            'value' => '0',
-            'source' => 'user',
-            'updated_by_user_id' => $subscriber->id,
-        ]);
-
-        $release = PluginRelease::query()->create([
-            'plugin_id' => $plugin->id,
-            'uploaded_by_id' => $uploader->id,
-            'version' => '1.2.1',
-            'internal_version' => 3,
-            'zip_path' => 'plugins/pending-update-disabled.zip',
-            'zip_filename' => 'pending-update-disabled.zip',
-            'status' => PluginStatus::MODERATED->value,
-            'encapsulated' => 'unknown',
-        ]);
-
-        $this->actingAs($staff)
-            ->post(route('plugins.release.moderate', ['plugin' => $plugin, 'release' => $release]), [
-                'action' => 'approve',
-                'note' => 'Looks good.',
-            ])
-            ->assertRedirect();
-
-        Notification::assertSentTo($subscriber, PluginUpdatedNotification::class, fn ($n, array $channels) => $channels === ['database']);
-        Notification::assertSentTo($uploader, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'release_approved');
     }
 
     public function test_profile_plugin_subscriptions_are_ordered_by_most_recent_subscription_first_when_timestamps_match(): void

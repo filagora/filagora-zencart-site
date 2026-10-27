@@ -2,6 +2,7 @@
 
 namespace App\Search;
 
+use App\Forum\PostLinks;
 use App\Http\Controllers\ForumController;
 use App\Models\User;
 use App\Plugins\PluginSearcher;
@@ -39,6 +40,7 @@ class SiteSearch
         private readonly PluginSearcher $plugins,
         private readonly CmsSearch $pages,
         private readonly ReleaseSelection $releases,
+        private readonly PostLinks $links,
     ) {}
 
     /**
@@ -158,19 +160,12 @@ class SiteSearch
 
     private function postUrl(object $thread, object $post): string
     {
-        $position = ForumModels::class('post')::query()
-            ->where('thread_id', $thread->id)
-            ->where('is_deleted', false)
-            ->where('moderation_status', ContentModerationStatus::APPROVED->value)
-            ->where('id', '<=', $post->id)
-            ->count();
-
-        return $this->threadPageUrl($thread, (int) ceil($position / ForumController::THREAD_POSTS_PER_PAGE)).'#post-'.$post->id;
+        return $this->links->urlFor($thread, $post);
     }
 
     private function threadPageUrl(object $thread, int $page): string
     {
-        return $page <= 1 ? route('threads.show', $thread) : route('threads.show', ['thread' => $thread, 'page' => $page]);
+        return $this->links->pageUrl($thread, $page);
     }
 
     /**

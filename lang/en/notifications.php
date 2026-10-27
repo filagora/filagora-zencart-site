@@ -218,6 +218,12 @@ return [
             'title' => ':author mentioned you',
         ],
     ],
+    'plugin_updated' => [
+        'title' => ':plugin :version is out',
+    ],
+    'plugin_release_rejected' => [
+        'title' => ':plugin :version was not accepted',
+    ],
     'private_message' => [
         'push' => [
             'title' => 'New message from :sender',
