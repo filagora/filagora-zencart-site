@@ -1,0 +1,17 @@
+services:
+  meilisearch:
+    container_name: ddev-${DDEV_SITENAME}-meilisearch
+    image: getmeili/meilisearch:v1.16
+    restart: "no"
+    command: ["meilisearch", "--http-addr", "0.0.0.0:7700"]
+    environment:
+      MEILI_MASTER_KEY: masterKey
+      MEILI_NO_ANALYTICS: "true"
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+    volumes:
+      - "meilisearch_data:/meili_data"
+
+volumes:
+  meilisearch_data:

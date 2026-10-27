@@ -1,0 +1,13 @@
+# Raises the meilisearch service's file-descriptor limit above Docker's
+# default 1024, which is too low for Meilisearch managing many indexes at
+# real production data scale (docs/ai-chat-plan.md) - it started failing
+# settings updates and indexing tasks with "too_many_open_files" once the
+# post-embedding backfill was running against 1.3M+ documents. Kept as a
+# separate override file (not edited into docker-compose.meilisearch.yaml)
+# so it survives `ddev add-on get` regenerating that file.
+services:
+  meilisearch:
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
