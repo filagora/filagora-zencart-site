@@ -121,6 +121,44 @@ class BellListenersTest extends TestCase
         $this->assertSame(route('threads.show', $thread), $row->data['url']);
     }
 
+    public function test_a_moderator_acting_on_their_own_post_tells_nobody(): void
+    {
+        [$thread] = $this->thread();
+        $post = Post::query()->where('thread_id', $thread->id)->firstOrFail();
+
+        PostModerated::dispatch($post, $post->author, 'delete', 'Duplicate.');
+
+        $this->assertSame(0, $post->author->notifications()->count());
+    }
+
+    public function test_approving_or_restoring_a_post_is_not_news_to_its_author(): void
+    {
+        [$thread] = $this->thread();
+        $post = Post::query()->where('thread_id', $thread->id)->firstOrFail();
+
+        foreach (['approve', 'restore', 'promote'] as $action) {
+            PostModerated::dispatch($post, User::factory()->create(), $action, null);
+        }
+
+        $this->assertSame(0, $post->author->notifications()->count());
+    }
+
+    public function test_deleting_several_posts_tells_each_author_once(): void
+    {
+        [$thread] = $this->thread(3);
+        $moderator = User::factory()->create();
+        $other = User::factory()->create();
+        $posts = Post::query()->where('thread_id', $thread->id)->get();
+        $posts[1]->forceFill(['author_id' => $other->id])->save();
+
+        foreach ($posts as $post) {
+            PostModerated::dispatch($post->fresh(), $moderator, 'delete', 'Spam');
+        }
+
+        $this->assertSame(2, $posts[0]->author->notifications()->count());
+        $this->assertSame(1, $other->notifications()->count());
+    }
+
     public function test_an_author_who_turned_off_moderation_notices_is_not_told(): void
     {
         [$thread] = $this->thread();

@@ -87,9 +87,22 @@ class BellListeners
         }
     }
 
+    /**
+     * The moderator actions the post's author is told about; approving or restoring is not news.
+     *
+     * @var list<string>
+     */
+    private const ADVERSE_ACTIONS = ['delete', 'reject', 'reject_permanently', 'move'];
+
     public function postModerated(PostModerated $event): void
     {
         $post = $event->post;
+
+        // Not a moderator acting on their own post, and only for adverse actions.
+        if (! in_array($event->action, self::ADVERSE_ACTIONS, true) || (string) $post->author_id === (string) $event->moderator->getAuthIdentifier()) {
+            return;
+        }
+
         $thread = $post->thread;
 
         $this->tellAuthor(
