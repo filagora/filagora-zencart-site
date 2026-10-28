@@ -25,6 +25,7 @@ use App\Policies\NewsletterPolicy;
 use App\Policies\NewsletterSubscriberPolicy;
 use App\Policies\PluginPolicy;
 use App\Policies\PluginReleasePolicy;
+use App\Search\ForumSearchIndex;
 use App\Services\UserPostCountService;
 use App\Support\FormattedContentRenderer;
 use App\Support\ForumsIndexCache;
@@ -58,6 +59,7 @@ use Filagora\Plugins\Events\SubscribersToNotify as PluginSubscribersToNotify;
 use Filagora\Plugins\Models\Plugin as PluginModel;
 use Filagora\Plugins\Models\PluginRelease as PluginReleaseModel;
 use Filagora\Plugins\Support\Models as PluginModels;
+use Filagora\Search\Support\SearchIndexRegistry;
 use Filagora\ZenCart\Models\ZcVersion;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse as FilamentLoginResponse;
 use Filament\Auth\Http\Responses\Contracts\RegistrationResponse as FilamentRegistrationResponse;
@@ -97,6 +99,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Forums are searchable on the site-wide search page, as they were with Scout.
+        $this->callAfterResolving(SearchIndexRegistry::class, fn (SearchIndexRegistry $indexes) => $indexes->register($this->app->make(ForumSearchIndex::class)));
+
         // Settings the site itself reads (the packages declare their own). Production already holds
         // the value; this gives the dashboard its label and the code its type.
         $this->callAfterResolving(SettingsRegistry::class, function (SettingsRegistry $settings): void {

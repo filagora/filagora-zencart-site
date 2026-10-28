@@ -7,6 +7,7 @@ use App\Http\Controllers\ForumController;
 use App\Models\User;
 use App\Plugins\PluginSearcher;
 use Carbon\CarbonInterface;
+use Filagora\Cms\Search\BlockText;
 use Filagora\Cms\Search\CmsSearch;
 use Filagora\Forums\Enums\ContentModerationStatus;
 use Filagora\Forums\Search\ForumSearch;
@@ -15,6 +16,10 @@ use Filagora\Forums\Services\ForumAccess;
 use Filagora\Forums\Support\Models as ForumModels;
 use Filagora\Plugins\Models\Plugin;
 use Filagora\Plugins\Services\ReleaseSelection;
+use Filagora\Search\Enums\MatchingStrategy;
+use Filagora\Search\Filters\Equals;
+use Filagora\Search\Search;
+use Filagora\Search\Support\SearchQuery;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -22,8 +27,9 @@ use Illuminate\Support\Str;
 /**
  * What the site-wide search page shows: a few of the best matches from each of the forums, threads,
  * plugins and CMS pages the viewer may see. Each kind is the search of the package that owns it
- * (ranking, visibility and the engine's fallback to the database are theirs); this only asks, takes
- * the top few and describes each result as a row.
+ * (visibility and the engine's fallback to the database are theirs). Forums, threads and pages ask
+ * for the engine's looser word matching and score a preload of candidates the way the old site did
+ * (`Relevance`) before keeping the top few; plugins keep the plugin package's own ranking.
  *
  * @phpstan-type Item array{title: string, url: string, note?: string, excerpt?: ?string, meta?: list<array{text: string, url: ?string}>, encapsulated_badge?: ?string, supported_versions?: list<string>}
  * @phpstan-type Section array{title: string, source: string, items: list<Item>}
@@ -34,6 +40,9 @@ class SiteSearch
 
     private const SECTION_RESULT_LIMIT = 8;
 
+    /** How many candidates the engine hands back to be scored before the top few are kept. */
+    private const PRELOAD_LIMIT = 40;
+
     public function __construct(
         private readonly ForumAccess $access,
         private readonly ForumSearch $threads,
@@ -41,6 +50,8 @@ class SiteSearch
         private readonly CmsSearch $pages,
         private readonly ReleaseSelection $releases,
         private readonly PostLinks $links,
+        private readonly Search $search,
+        private readonly BlockText $blockText,
     ) {}
 
     /**
@@ -91,16 +102,22 @@ class SiteSearch
      */
     private function forumItems(string $query, ?User $viewer): array
     {
-        $like = '%'.$this->escapeLike($query).'%';
         $authored = $this->access->authoredForumIds($viewer);
+        $tokens = Relevance::tokens($query);
 
-        return ForumModels::class('forum')::query()
-            ->where('is_active', true)
-            ->where(fn ($match) => $match->where('name', 'like', $like)->orWhere('description', 'like', $like))
-            ->orderBy('sort_order')
-            ->limit(40)
-            ->get()
-            ->filter(fn ($forum): bool => $this->access->canViewForum($forum, $viewer, $authored))
+        $result = $this->search->search(ForumSearchIndex::NAME, new SearchQuery(
+            text: $query,
+            filter: new Equals('is_active', true),
+            perPage: self::PRELOAD_LIMIT,
+            matching: MatchingStrategy::Last,
+        ));
+
+        $rows = ForumModels::class('forum')::query()->whereIn('id', $result->ids() ?: [0])->get()->keyBy(fn ($forum): string => (string) $forum->getKey());
+
+        return collect($result->ids())
+            ->map(fn (int|string $id) => $rows->get((string) $id))
+            ->filter(fn ($forum): bool => $forum !== null && $forum->is_active && $this->access->canViewForum($forum, $viewer, $authored))
+            ->sortByDesc(fn ($forum): int => Relevance::score((string) $forum->name, $tokens, 12) + Relevance::score((string) ($forum->description ?? ''), $tokens, 4))
             ->take(self::SECTION_RESULT_LIMIT)
             ->map(fn ($forum): array => [
                 'title' => (string) $forum->name,
@@ -116,7 +133,16 @@ class SiteSearch
      */
     private function threadItems(string $query, ?User $viewer): array
     {
-        $found = $this->threads->threads(new ForumSearchCriteria(query: $query), $viewer)->getCollection()->take(self::SECTION_RESULT_LIMIT);
+        $tokens = Relevance::tokens($query);
+        $criteria = new ForumSearchCriteria(query: $query, sort: 'relevance', matching: MatchingStrategy::Last);
+
+        $found = $this->threads->threads($criteria, $viewer)->getCollection()
+            ->concat($this->threads->threads($criteria, $viewer, 2)->getCollection())
+            ->sortByDesc(fn ($thread): int => Relevance::score((string) $thread->title, $tokens, 12)
+                + Relevance::score((string) ($thread->forum?->name ?? ''), $tokens, 5)
+                + Relevance::freshnessBonus($thread->last_post_at ?? $thread->created_at))
+            ->take(self::SECTION_RESULT_LIMIT)
+            ->values();
         $matching = $this->matchingPosts($found->pluck('id')->all(), $query);
 
         return $found->map(function ($thread) use ($matching): array {
@@ -265,11 +291,20 @@ class SiteSearch
      */
     private function pageItems(string $query): array
     {
-        return $this->pages->pages($query, 1, self::SECTION_RESULT_LIMIT)->getCollection()->map(fn ($page): array => [
-            'title' => (string) $page->title,
-            'url' => route('cms.pages.show', ['slug' => $page->slug]),
-            'note' => Str::limit((string) ($page->excerpt ?? $page->seo_description ?? ''), 180),
-        ])->values()->all();
+        $tokens = Relevance::tokens($query);
+
+        return $this->pages->pages($query, 1, self::PRELOAD_LIMIT, MatchingStrategy::Last)->getCollection()
+            ->sortByDesc(fn ($page): int => Relevance::score((string) $page->title, $tokens, 12)
+                + Relevance::score((string) ($page->excerpt ?? ''), $tokens, 5)
+                + Relevance::score((string) ($page->seo_title ?? ''), $tokens, 4)
+                + Relevance::score((string) ($page->seo_description ?? ''), $tokens, 3)
+                + Relevance::score($this->blockText->forPage($page), $tokens, 2))
+            ->take(self::SECTION_RESULT_LIMIT)
+            ->map(fn ($page): array => [
+                'title' => (string) $page->title,
+                'url' => route('cms.pages.show', ['slug' => $page->slug]),
+                'note' => Str::limit((string) ($page->excerpt ?? $page->seo_description ?? ''), 180),
+            ])->values()->all();
     }
 
     private function escapeLike(string $value): string
