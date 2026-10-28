@@ -12,4 +12,25 @@ return [
         // nearly every thread ever posted, which is unusable and a full table scan.
         'unread_max_lookback_days' => env('FORUM_UNREAD_MAX_LOOKBACK_DAYS', 365),
     ],
+
+    // The mail links back to the thread. Each key replaces the package's whole array, so the
+    // package's other values are carried here.
+    'subscriptions' => [
+        'user_attributes' => [
+            'frequency' => 'thread_subscription_email_frequency',
+            'auto_subscribe' => 'auto_subscribe_on_post',
+        ],
+        'auto_subscribe_default' => false,
+        'mail' => ['enabled' => true],
+        'routes' => ['thread' => 'threads.show'],
+    ],
+
+    'mentions' => [
+        'enabled' => true,
+        'user_attribute' => 'username',
+        'max_per_post' => 10,
+        // The old site told people about mentions with the bell and browser push only, never mail.
+        'mail' => ['enabled' => false],
+        'routes' => ['thread' => 'threads.show'],
+    ],
 ];

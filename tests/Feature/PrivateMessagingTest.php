@@ -39,7 +39,7 @@ class PrivateMessagingTest extends TestCase
         $this->assertSame(0, $sender->notifications()->count());
     }
 
-    public function test_a_new_private_message_is_mailed_to_the_recipient_by_the_package(): void
+    public function test_a_new_private_message_is_not_mailed_as_on_the_old_site(): void
     {
         Notification::fake();
 
@@ -48,7 +48,7 @@ class PrivateMessagingTest extends TestCase
 
         $this->actingAs($sender)->post(route('messages.store'), ['subject' => 'Ping', 'to' => 'pm_recipient3', 'body' => 'You have a message'])->assertRedirect();
 
-        Notification::assertSentTo($recipient, MessageReceivedNotification::class);
+        Notification::assertNotSentTo($recipient, MessageReceivedNotification::class);
         Notification::assertNotSentTo($sender, MessageReceivedNotification::class);
     }
 
