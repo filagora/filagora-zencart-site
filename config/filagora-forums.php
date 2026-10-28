@@ -29,7 +29,8 @@ return [
         'enabled' => true,
         'user_attribute' => 'username',
         'max_per_post' => 10,
-        'mail' => ['enabled' => true],
+        // The old site told people about mentions with the bell and browser push only, never mail.
+        'mail' => ['enabled' => false],
         'routes' => ['thread' => 'threads.show'],
     ],
 ];

@@ -5,9 +5,10 @@
  * array, so each key listed here carries all of its own values.
  */
 return [
-    // The new-message mail links to the conversation.
+    // The old site told people about new messages with the bell and browser push only, never mail.
+    // The mail is built and links to the conversation if it is ever switched on.
     'mail' => [
-        'enabled' => true,
+        'enabled' => false,
         'routes' => ['conversation' => 'messages.show'],
     ],
 ];

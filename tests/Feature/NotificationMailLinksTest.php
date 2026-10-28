@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Filagora\Forums\Events\UsersMentioned;
 use Filagora\Forums\Models\ForumGroup;
 use Filagora\Forums\Notifications\ThreadUpdatedNotification;
 use Filagora\Forums\Notifications\UserMentionedNotification;
+use Filagora\Messages\Events\MessageReceived;
 use Filagora\Messages\Models\PrivateConversation;
 use Filagora\Messages\Models\PrivateMessage;
 use Filagora\Messages\Notifications\MessageReceivedNotification;
@@ -13,6 +15,7 @@ use Filagora\ZenCart\Models\Forum;
 use Filagora\ZenCart\Models\Post;
 use Filagora\ZenCart\Models\Thread;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 /**
@@ -51,6 +54,20 @@ class NotificationMailLinksTest extends TestCase
         $mail = (new MessageReceivedNotification($conversation, $message))->toMail($recipient);
 
         $this->assertSame(route('messages.show', $conversation), $mail->actionUrl);
+    }
+
+    public function test_mentions_and_new_messages_are_not_emailed_as_on_the_old_site(): void
+    {
+        Notification::fake();
+        [, $post, $recipient] = $this->threadWithReply();
+        $conversation = PrivateConversation::query()->forceCreate(['created_by_id' => $recipient->id, 'subject' => 'Hello']);
+        $message = PrivateMessage::query()->forceCreate(['conversation_id' => $conversation->id, 'sender_id' => $recipient->id, 'body' => 'Hi']);
+
+        event(new UsersMentioned($post, [$recipient]));
+        event(new MessageReceived($conversation, $message, [$recipient]));
+
+        Notification::assertNotSentTo($recipient, UserMentionedNotification::class);
+        Notification::assertNotSentTo($recipient, MessageReceivedNotification::class);
     }
 
     /**
