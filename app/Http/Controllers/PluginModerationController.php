@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Notifications\PluginMailNotification;
 use App\Plugins\PluginDeletion;
 use Filagora\Entitlements\Models\UserEntitlementGrant;
 use Filagora\Entitlements\Services\AuthorizationService;
@@ -189,15 +190,18 @@ class PluginModerationController extends Controller
             return $this->backToQueue($flash);
         }
 
-        $grant = UserEntitlementGrant::query()->firstOrNew(['user_id' => $author->id, 'entitlement_key' => $key, 'grant_type' => 'manual']);
+        // A new row each time, so an earlier grant and its revocation stay on record.
+        UserEntitlementGrant::query()->create([
+            'user_id' => $author->id,
+            'entitlement_key' => $key,
+            'grant_type' => 'manual',
+            'granted_by_id' => $staff->id,
+            'starts_at' => now(),
+            'reason' => 'Granted from plugin moderation queue.',
+            'meta' => ['source' => 'plugin_moderation_queue'],
+        ]);
 
-        $grant->granted_by_id = $staff->id;
-        $grant->starts_at ??= now();
-        $grant->revoked_at = null;
-        $grant->revoked_by_id = null;
-        $grant->reason = 'Granted from plugin moderation queue.';
-        $grant->meta = ['source' => 'plugin_moderation_queue'];
-        $grant->save();
+        $author->notify(new PluginMailNotification('auto_publish_granted', 'auto_publish_granted', [], 'plugin-auto-publish-granted', ['actionUrl' => route('plugins.index')]));
 
         return $this->backToQueue($flash);
     }

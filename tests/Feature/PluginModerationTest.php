@@ -452,6 +452,24 @@ class PluginModerationTest extends TestCase
             'grant_type' => 'manual',
             'revoked_at' => null,
         ]);
+        Notification::assertSentTo($author, PluginMailNotification::class, fn (PluginMailNotification $n): bool => $n->kind === 'auto_publish_granted'
+            && $n->toMail($author)->subject === 'Plugin auto-publish access enabled');
+    }
+
+    public function test_granting_auto_publish_again_after_a_revocation_keeps_the_earlier_grant_on_record(): void
+    {
+        Notification::fake();
+
+        [$staff, $plugin] = $this->createPendingPluginWithRelease();
+        $author = $plugin->owner()->firstOrFail();
+        UserEntitlementGrant::query()->create(['user_id' => $author->id, 'entitlement_key' => 'operator.plugin.auto_publish', 'grant_type' => 'manual', 'starts_at' => now()->subDays(2), 'revoked_at' => now()->subDay()]);
+
+        $this->actingAs($staff)->post(route('plugins.grant-auto-publish', $plugin));
+
+        $grants = UserEntitlementGrant::query()->where('user_id', $author->id)->where('entitlement_key', 'operator.plugin.auto_publish')->orderBy('id')->get();
+        $this->assertCount(2, $grants);
+        $this->assertNotNull($grants[0]->revoked_at);
+        $this->assertNull($grants[1]->revoked_at);
     }
 
     public function test_staff_can_grant_auto_publish_entitlement_to_release_author_from_queue(): void
