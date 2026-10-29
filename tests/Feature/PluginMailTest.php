@@ -64,13 +64,13 @@ class PluginMailTest extends TestCase
     public function test_a_new_plugin_acknowledges_the_author_and_tells_support(): void
     {
         Notification::fake();
-        config(['filagora-plugins.mail.support_email' => 'plugins@zen-cart.com']);
+        config(['filagora-plugins.mail.support_email' => 'plugin-support@example.test']);
         [$plugin, $release, $owner] = $this->pluginWithRelease();
 
         event(new PluginSubmitted($plugin, $release, $owner));
 
         Notification::assertSentTo($owner, PluginMailNotification::class);
-        Notification::assertSentOnDemand(PluginMailNotification::class, fn (PluginMailNotification $mail, array $channels, object $notifiable): bool => $notifiable->routes['mail'] === 'plugins@zen-cart.com'
+        Notification::assertSentOnDemand(PluginMailNotification::class, fn (PluginMailNotification $mail, array $channels, object $notifiable): bool => $notifiable->routes['mail'] === 'plugin-support@example.test'
             && $mail->toMail($notifiable)->subject === 'Plugin submitted for moderation: Admin Audit Trail');
     }
 
