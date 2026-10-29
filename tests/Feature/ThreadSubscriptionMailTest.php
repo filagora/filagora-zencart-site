@@ -12,6 +12,9 @@ use Filagora\Forums\Models\ForumGroup;
 use Filagora\Forums\Models\ThreadSubscriptionDigestItem;
 use Filagora\Forums\Notifications\ThreadDigestNotification as PackageThreadDigestNotification;
 use Filagora\Forums\Notifications\ThreadUpdatedNotification as PackageThreadUpdatedNotification;
+use Filagora\Notifications\Enums\NotificationChannel;
+use Filagora\Notifications\Services\Preferences;
+use Filagora\Notifications\StandardCategories;
 use Filagora\ZenCart\Models\Forum;
 use Filagora\ZenCart\Models\Post;
 use Filagora\ZenCart\Models\Thread;
@@ -80,6 +83,37 @@ class ThreadSubscriptionMailTest extends TestCase
         Notification::assertSentTo($recipient, ThreadDigestNotification::class);
         Notification::assertNotSentTo($recipient, PackageThreadUpdatedNotification::class);
         Notification::assertNotSentTo($recipient, PackageThreadDigestNotification::class);
+    }
+
+    public function test_a_digest_is_capped_at_twenty_threads_with_a_note_that_there_are_more(): void
+    {
+        [$thread, $post, $recipient] = $this->threadWithReply();
+        $items = [];
+
+        for ($i = 0; $i < 25; $i++) {
+            $item = new ThreadSubscriptionDigestItem(['thread_id' => $thread->getKey(), 'post_id' => $post->getKey()]);
+            $items[] = $item->setRelation('thread', $thread)->setRelation('post', $post);
+        }
+
+        $html = (string) (new ThreadDigestNotification(DeliveryMode::DAILY, $items))->toMail($recipient)->render();
+
+        $this->assertSame(20, substr_count($html, 'A thread</a>'));
+        $this->assertStringContainsString('Additional updates are available when you visit your subscribed threads.', $html);
+    }
+
+    public function test_instant_mail_goes_only_to_members_who_take_instant_mail_and_have_not_unsubscribed(): void
+    {
+        [$thread, $post, $instant] = $this->threadWithReply();
+        $weekly = User::factory()->create();
+        $unsubscribed = User::factory()->create();
+        $preferences = app(Preferences::class);
+        $preferences->setMode($weekly, StandardCategories::THREAD_UPDATES_DIGEST_FREQUENCY, 'weekly');
+        $preferences->set($unsubscribed, StandardCategories::THREAD_UPDATES_INSTANT, NotificationChannel::EMAIL, false);
+        $notification = new ThreadUpdatedNotification($thread, $post);
+
+        $this->assertSame(['mail'], $notification->via($instant));
+        $this->assertSame([], $notification->via($weekly));
+        $this->assertSame([], $notification->via($unsubscribed));
     }
 
     /**

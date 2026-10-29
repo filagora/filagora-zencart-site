@@ -14,6 +14,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Str;
 
 /**
@@ -24,7 +25,12 @@ use Illuminate\Support\Str;
  */
 class ThreadUpdatedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SerializesModels;
+
+    /**
+     * A reply deleted before the worker runs is not mailed, and an edited one is mailed as it now reads.
+     */
+    public bool $deleteWhenMissingModels = true;
 
     public function __construct(private readonly Thread $thread, private readonly Post $post) {}
 
