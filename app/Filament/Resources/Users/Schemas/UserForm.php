@@ -125,7 +125,10 @@ class UserForm
                     ->searchable()
                     ->preload()
                     ->options(fn (): array => UserOperatorAccessAssignment::optionsFor(auth()->user()))
-                    ->helperText('Operator access is now managed as direct entitlement grants rather than assigned roles.')
+                    ->disabled(fn (?User $record): bool => self::isSelf($record))
+                    ->helperText(fn (?User $record): string => self::isSelf($record)
+                        ? 'You cannot change your own operator access.'
+                        : 'Operator access is now managed as direct entitlement grants rather than assigned roles.')
                     ->columnSpanFull(),
             ])
             ->columns(1);
@@ -144,7 +147,10 @@ class UserForm
                     ->label('Super Admin Access')
                     ->default(false)
                     ->dehydrated(false)
-                    ->helperText('Super admins bypass explicit operator grants and can access all operator-managed surfaces.')
+                    ->disabled(fn (?User $record): bool => self::isSelf($record))
+                    ->helperText(fn (?User $record): string => self::isSelf($record)
+                        ? 'You cannot change your own super admin access.'
+                        : 'Super admins bypass explicit operator grants and can access all operator-managed surfaces.')
                     ->visible($manageable),
             ])
             ->columns(1)
@@ -167,6 +173,7 @@ class UserForm
                     ->default(false)
                     ->helperText('The user’s first thread or reply requires approval, even in unmoderated forums.'),
                 Toggle::make('is_banned')
+                    ->disabled(fn (?User $record): bool => self::isSelf($record))
                     ->required()
                     ->default(false)
                     ->live()
@@ -250,5 +257,12 @@ class UserForm
                     ->columnSpanFull(),
             ])
             ->columns(2);
+    }
+
+    private static function isSelf(?User $record): bool
+    {
+        $actor = auth()->user();
+
+        return $record instanceof User && $actor instanceof User && $actor->is($record);
     }
 }

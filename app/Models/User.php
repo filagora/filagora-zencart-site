@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasSiteAccount;
+use App\Models\Concerns\HasSiteRoles;
 use App\TimeFormat;
 use Database\Factories\UserFactory;
 use Filagora\Entitlements\Concerns\HasEntitlements;
@@ -26,7 +27,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasEntitlements, HasFactory, HasMemberships, HasNotificationPreferences, HasSiteAccount, Notifiable;
+    use HasApiTokens, HasEntitlements, HasFactory, HasMemberships, HasNotificationPreferences, HasSiteAccount, HasSiteRoles, Notifiable;
 
     /**
      * The columns of the site's users table that may be filled in bulk, as the site this one
