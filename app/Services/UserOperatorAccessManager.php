@@ -54,10 +54,6 @@ class UserOperatorAccessManager
         $allowedEntitlements = UserOperatorAccessAssignment::sanitize($actor, $requestedEntitlements);
         $manageableEntitlements = UserOperatorAccessAssignment::visibleEntitlementKeys($actor);
 
-        if ($manageableEntitlements === []) {
-            return;
-        }
-
         $activeManualGrants = UserEntitlementGrant::query()
             ->active()
             ->where('user_id', $user->id)
@@ -77,31 +73,16 @@ class UserOperatorAccessManager
                     continue;
                 }
 
-                $grant = UserEntitlementGrant::query()
-                    ->where('user_id', $user->id)
-                    ->where('grant_type', 'manual')
-                    ->where('entitlement_key', $entitlementKey)
-                    ->latest('id')
-                    ->first() ?? new UserEntitlementGrant([
-                        'user_id' => $user->id,
-                        'entitlement_key' => $entitlementKey,
-                        'grant_type' => 'manual',
-                    ]);
-
-                $grant->user_id = $user->id;
-                $grant->entitlement_key = $entitlementKey;
-                $grant->grant_type = 'manual';
-                $grant->granted_by_id = $actor?->id;
-                $grant->starts_at = now();
-                $grant->expires_at = null;
-                $grant->revoked_at = null;
-                $grant->revoked_by_id = null;
-                $grant->reason = 'Granted via the user admin operator access editor.';
-                $grant->meta = array_merge(
-                    is_array($grant->meta) ? $grant->meta : [],
-                    ['managed_via' => 'user_admin']
-                );
-                $grant->save();
+                // A new row each time: an earlier grant and its revocation stay on record.
+                UserEntitlementGrant::query()->create([
+                    'user_id' => $user->id,
+                    'entitlement_key' => $entitlementKey,
+                    'grant_type' => 'manual',
+                    'granted_by_id' => $actor?->id,
+                    'starts_at' => now(),
+                    'reason' => 'Granted via the user admin operator access editor.',
+                    'meta' => ['managed_via' => 'user_admin'],
+                ]);
 
                 continue;
             }

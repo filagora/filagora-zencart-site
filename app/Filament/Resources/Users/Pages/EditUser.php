@@ -4,14 +4,18 @@ namespace App\Filament\Resources\Users\Pages;
 
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
+use App\Services\Auth\RegistrationService;
+use App\Services\NewsletterSubscriberService;
 use App\Services\UserOperatorAccessManager;
 use App\Support\UserImpersonation;
 use App\Support\UserOperatorAccessAssignment;
 use App\Support\UserTwoFactorAdminStatus;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use PragmaRX\Google2FA\Google2FA;
 
 class EditUser extends EditRecord
@@ -59,18 +63,49 @@ class EditUser extends EditRecord
     }
 
     /**
-     * Verification is not mass-assignable, so it is set here rather than through fill().
+     * Verification is not mass-assignable, so it is set here rather than through fill(). A changed
+     * address is unverified again unless the editor set the verified date in the same save, and a
+     * confirmation mail goes to the new address, as when members change their own.
      *
      * @param  array<string, mixed>  $data
      */
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
+        $oldEmail = (string) $record->email;
+        $emailChanged = isset($data['email']) && ! hash_equals(mb_strtolower($oldEmail), mb_strtolower((string) $data['email']));
         $verifiedAt = array_key_exists('email_verified_at', $data) ? $data['email_verified_at'] : $record->email_verified_at;
+        $verifiedDateEdited = $verifiedAt !== $record->email_verified_at && (string) $verifiedAt !== (string) $record->email_verified_at;
         unset($data['email_verified_at']);
+
+        if ($emailChanged && ! $verifiedDateEdited) {
+            $verifiedAt = null;
+        }
 
         $record->forceFill(['email_verified_at' => $verifiedAt])->fill($data)->save();
 
+        if ($emailChanged) {
+            // The newsletter list keeps the old address with its consent; it must not follow the account.
+            app(NewsletterSubscriberService::class)->unlinkUserForEmailChange($record, $oldEmail);
+
+            if ($verifiedAt === null) {
+                $this->sendVerificationToNewAddress($record);
+            }
+        }
+
         return $record;
+    }
+
+    private function sendVerificationToNewAddress(Model $record): void
+    {
+        try {
+            app(RegistrationService::class)->sendEmailVerificationNotification($record);
+        } catch (ValidationException $exception) {
+            Notification::make()
+                ->warning()
+                ->title('The address was changed but no confirmation email was sent.')
+                ->body(collect($exception->errors())->flatten()->first())
+                ->send();
+        }
     }
 
     protected function afterSave(): void
@@ -81,9 +116,12 @@ class EditUser extends EditRecord
         ));
         $actor = auth()->user() instanceof User ? auth()->user() : null;
 
-        app(UserOperatorAccessManager::class)->sync($this->record, $requestedEntitlements, $actor);
-
-        $this->syncSuperAdminRole();
+        // Nobody changes their own operator access or super admin role here: a slip would lock out
+        // the one person who can put it right.
+        if (! $this->isEditingSelf()) {
+            app(UserOperatorAccessManager::class)->sync($this->record, $requestedEntitlements, $actor);
+            $this->syncSuperAdminRole();
+        }
 
         app(UserTwoFactorAdminStatus::class)->apply(
             $this->record,
@@ -92,8 +130,15 @@ class EditUser extends EditRecord
         );
     }
 
+    private function isEditingSelf(): bool
+    {
+        $actor = auth()->user();
+
+        return $actor instanceof User && $actor->is($this->record);
+    }
+
     /**
-     * Needs a roles package on the user model (the live site's super admins are a role).
+     * The super admin role, read and written through the user model's roles.
      */
     protected function syncSuperAdminRole(): void
     {
