@@ -27,6 +27,26 @@ class UserOperatorAccessManager
     }
 
     /**
+     * The selected operator entitlements of several users, in one query.
+     *
+     * @param  list<int|string>  $userIds
+     * @return array<int|string, list<string>>
+     */
+    public function selectedOperatorEntitlementsForMany(array $userIds): array
+    {
+        return UserEntitlementGrant::query()
+            ->active()
+            ->whereIn('user_id', $userIds)
+            ->where('grant_type', 'manual')
+            ->whereIn('entitlement_key', UserOperatorAccessAssignment::managedEntitlementKeys())
+            ->orderBy('entitlement_key')
+            ->get(['user_id', 'entitlement_key'])
+            ->groupBy('user_id')
+            ->map(fn ($grants): array => $grants->pluck('entitlement_key')->unique()->values()->all())
+            ->all();
+    }
+
+    /**
      * @param  list<string>  $requestedEntitlements
      */
     public function sync(User $user, array $requestedEntitlements, ?User $actor): void

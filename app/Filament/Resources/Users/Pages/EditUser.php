@@ -24,7 +24,12 @@ class EditUser extends EditRecord
      */
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $data['operator_entitlements'] = app(UserOperatorAccessManager::class)->selectedOperatorEntitlements($this->record);
+        // Only the keys this editor may manage are offered, so only those are filled in; a grant the
+        // editor cannot see stays as it is when they save.
+        $data['operator_entitlements'] = array_values(array_intersect(
+            app(UserOperatorAccessManager::class)->selectedOperatorEntitlements($this->record),
+            UserOperatorAccessAssignment::visibleEntitlementKeys(auth()->user() instanceof User ? auth()->user() : null),
+        ));
         $data['is_super_admin'] = method_exists($this->record, 'hasRole') && $this->record->hasRole('super_admin');
         $data['two_factor_status'] = app(UserTwoFactorAdminStatus::class)->current($this->record);
 
@@ -41,6 +46,11 @@ class EditUser extends EditRecord
 
         if (($data['is_banned'] ?? false) && blank($data['banned_at'] ?? null)) {
             $data['banned_at'] = now();
+        }
+
+        if (! ($data['is_banned'] ?? false)) {
+            $data['banned_at'] = null;
+            $data['banned_until'] = null;
         }
 
         unset($data['ban_duration'], $data['operator_entitlements'], $data['is_super_admin'], $data['two_factor_status']);

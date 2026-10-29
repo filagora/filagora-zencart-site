@@ -8,9 +8,11 @@ use App\Support\UserOperatorAccessAssignment;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use WeakMap;
 
 class UsersTable
 {
@@ -33,8 +35,8 @@ class UsersTable
                     ->copyable(),
                 TextColumn::make('operator_access')
                     ->label('Operator Access')
-                    ->state(function (User $record): string {
-                        $entitlements = app(UserOperatorAccessManager::class)->selectedOperatorEntitlements($record);
+                    ->state(function (User $record, HasTable $livewire): string {
+                        $entitlements = self::operatorEntitlementsOnPage($livewire)[$record->getKey()] ?? [];
 
                         return $entitlements !== []
                             ? implode(', ', UserOperatorAccessAssignment::labelsFor($entitlements))
@@ -94,5 +96,20 @@ class UsersTable
                 EditAction::make(),
             ])
             ->recordActionsPosition(RecordActionsPosition::BeforeCells);
+    }
+
+    /**
+     * Operator entitlements of every user on the current page, read once per page render rather than
+     * once per row.
+     *
+     * @return array<int|string, list<string>>
+     */
+    private static function operatorEntitlementsOnPage(HasTable $livewire): array
+    {
+        static $loaded = null;
+        $loaded ??= new WeakMap;
+
+        return $loaded[$livewire] ??= app(UserOperatorAccessManager::class)
+            ->selectedOperatorEntitlementsForMany($livewire->getTableRecords()->modelKeys());
     }
 }
