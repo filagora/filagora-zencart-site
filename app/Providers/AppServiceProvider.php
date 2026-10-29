@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Filament\Auth\Responses\LoginResponse as AppLoginResponse;
 use App\Filament\Auth\Responses\RegistrationResponse as AppRegistrationResponse;
+use App\Listeners\SendThreadSubscriptionMail;
 use App\Mail\Transport\MailtrapApiTransport;
 use App\Markdown\BlankLineGapExtension;
 use App\Markdown\ZenCartHtmlTransformer;
@@ -48,6 +49,7 @@ use Filagora\Forums\Events\PostModerated;
 use Filagora\Forums\Events\PostReported;
 use Filagora\Forums\Events\SubscribersToNotify;
 use Filagora\Forums\Events\ThreadDeleted;
+use Filagora\Forums\Events\ThreadDigestReady;
 use Filagora\Forums\Events\ThreadModerated;
 use Filagora\Forums\Events\UsersMentioned;
 use Filagora\Forums\Models\Post;
@@ -193,6 +195,10 @@ class AppServiceProvider extends ServiceProvider
         // A deleted thread takes its posts with a database cascade, which fires no model events, so
         // the authors' badge counters are rebuilt from the posts that are left.
         Event::listen(ThreadDeleted::class, fn (ThreadDeleted $event) => app(UserPostCountService::class)->syncForUserIds($event->postAuthorIds));
+
+        // The site's own thread-update and digest mail, in place of the forums package's.
+        Event::listen(SubscribersToNotify::class, [SendThreadSubscriptionMail::class, 'updated']);
+        Event::listen(ThreadDigestReady::class, [SendThreadSubscriptionMail::class, 'digest']);
 
         Mail::extend('mailtrap', fn (array $config): MailtrapApiTransport => new MailtrapApiTransport(
             $config['token'] ?? config('services.mailtrap.token'),

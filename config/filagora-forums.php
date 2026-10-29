@@ -21,7 +21,8 @@ return [
             'auto_subscribe' => 'auto_subscribe_on_post',
         ],
         'auto_subscribe_default' => false,
-        'mail' => ['enabled' => true],
+        // The site sends its own thread-update and digest mail (App\Listeners\SendThreadSubscriptionMail).
+        'mail' => ['enabled' => false],
         'routes' => ['thread' => 'threads.show'],
     ],
 
