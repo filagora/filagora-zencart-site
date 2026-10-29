@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Filament\Auth\Responses\LoginResponse as AppLoginResponse;
 use App\Filament\Auth\Responses\RegistrationResponse as AppRegistrationResponse;
+use App\Listeners\SendPluginMail;
 use App\Listeners\SendThreadSubscriptionMail;
 use App\Mail\Transport\MailtrapApiTransport;
 use App\Markdown\BlankLineGapExtension;
@@ -56,7 +57,13 @@ use Filagora\Forums\Models\Post;
 use Filagora\Forums\Models\Thread;
 use Filagora\Forums\Support\Models;
 use Filagora\Messages\Events\MessageReceived;
+use Filagora\Plugins\Events\PluginModerated;
+use Filagora\Plugins\Events\PluginReported;
+use Filagora\Plugins\Events\PluginReportReviewed;
+use Filagora\Plugins\Events\PluginSubmitted;
+use Filagora\Plugins\Events\ReleasePublished;
 use Filagora\Plugins\Events\ReleaseRejected;
+use Filagora\Plugins\Events\ReleaseSubmitted;
 use Filagora\Plugins\Events\SubscribersToNotify as PluginSubscribersToNotify;
 use Filagora\Plugins\Models\Plugin as PluginModel;
 use Filagora\Plugins\Models\PluginRelease as PluginReleaseModel;
@@ -195,6 +202,16 @@ class AppServiceProvider extends ServiceProvider
         // A deleted thread takes its posts with a database cascade, which fires no model events, so
         // the authors' badge counters are rebuilt from the posts that are left.
         Event::listen(ThreadDeleted::class, fn (ThreadDeleted $event) => app(UserPostCountService::class)->syncForUserIds($event->postAuthorIds));
+
+        // The site's own plugin mail, in place of the plugins package's.
+        Event::listen(PluginSubmitted::class, [SendPluginMail::class, 'pluginSubmitted']);
+        Event::listen(ReleaseSubmitted::class, [SendPluginMail::class, 'releaseSubmitted']);
+        Event::listen(ReleasePublished::class, [SendPluginMail::class, 'published']);
+        Event::listen(ReleaseRejected::class, [SendPluginMail::class, 'rejected']);
+        Event::listen(PluginModerated::class, [SendPluginMail::class, 'moderated']);
+        Event::listen(PluginSubscribersToNotify::class, [SendPluginMail::class, 'subscribers']);
+        Event::listen(PluginReported::class, [SendPluginMail::class, 'reported']);
+        Event::listen(PluginReportReviewed::class, [SendPluginMail::class, 'reviewed']);
 
         // The site's own thread-update and digest mail, in place of the forums package's.
         Event::listen(SubscribersToNotify::class, [SendThreadSubscriptionMail::class, 'updated']);

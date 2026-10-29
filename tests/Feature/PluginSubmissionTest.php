@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Notifications\PluginMailNotification;
 use Carbon\Carbon;
 use Filagora\Entitlements\Models\UserEntitlementGrant;
 use Filagora\Forums\Enums\ContentModerationStatus;
@@ -11,7 +12,6 @@ use Filagora\Forums\Models\ForumGroup;
 use Filagora\Plugins\Enums\PluginStatus;
 use Filagora\Plugins\Enums\ReleaseRefusal;
 use Filagora\Plugins\Models\PluginType;
-use Filagora\Plugins\Notifications\PluginNotification;
 use Filagora\ZenCart\Models\Forum;
 use Filagora\ZenCart\Models\Plugin;
 use Filagora\ZenCart\Models\PluginRelease;
@@ -76,8 +76,8 @@ class PluginSubmissionTest extends TestCase
             'plugin_release_id' => $release->id,
             'plugin_zc_version_id' => $zcVersion->id,
         ]);
-        Notification::assertSentTo($user, PluginNotification::class);
-        Notification::assertSentOnDemand(PluginNotification::class, fn (PluginNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin-support@example.test');
+        Notification::assertSentTo($user, PluginMailNotification::class);
+        Notification::assertSentOnDemand(PluginMailNotification::class, fn (PluginMailNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin-support@example.test');
         Storage::disk('public')->assertExists($release->zip_path);
     }
 
@@ -164,8 +164,8 @@ class PluginSubmissionTest extends TestCase
         $this->assertSame(PluginStatus::ACTIVE, $plugin->status);
         $this->assertSame(PluginStatus::ACTIVE, $release->status);
 
-        Notification::assertSentTo($user, PluginNotification::class, fn (PluginNotification $notification): bool => $notification->kind === 'submitted_live');
-        Notification::assertSentOnDemand(PluginNotification::class, fn (PluginNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin-support@example.test');
+        Notification::assertSentTo($user, PluginMailNotification::class, fn (PluginMailNotification $notification): bool => $notification->kind === 'submitted_live');
+        Notification::assertSentOnDemand(PluginMailNotification::class, fn (PluginMailNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin-support@example.test');
     }
 
     public function test_auto_published_submission_updates_the_manifest_plugin_id_to_the_real_id(): void
@@ -589,7 +589,7 @@ class PluginSubmissionTest extends TestCase
         // The submission emails still go out; they no longer carry an inline
         // lint result (the async scan result arrives later, only if there's a
         // problem). See PluginReleaseScanDispatchTest for the scan dispatch.
-        Notification::assertSentTo($user, PluginNotification::class, fn (PluginNotification $notification): bool => $notification->kind === 'submitted');
+        Notification::assertSentTo($user, PluginMailNotification::class, fn (PluginMailNotification $notification): bool => $notification->kind === 'submitted');
     }
 
     public function test_broken_php_does_not_block_a_new_plugin_submission(): void
@@ -1227,8 +1227,8 @@ class PluginSubmissionTest extends TestCase
             'plugin_release_id' => $release->id,
             'plugin_zc_version_id' => $zcVersion->id,
         ]);
-        Notification::assertSentTo($user, PluginNotification::class);
-        Notification::assertSentOnDemand(PluginNotification::class, fn (PluginNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin-support@example.test');
+        Notification::assertSentTo($user, PluginMailNotification::class);
+        Notification::assertSentOnDemand(PluginMailNotification::class, fn (PluginMailNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin-support@example.test');
     }
 
     public function test_authenticated_user_can_submit_encapsulated_plugin_with_derived_zip_root(): void
@@ -1420,8 +1420,8 @@ class PluginSubmissionTest extends TestCase
         $this->assertSame(PluginStatus::ACTIVE, $release->status);
         $this->assertSame('trusted_release_plugin', $plugin->fresh()->zip_root);
 
-        Notification::assertSentTo($user, PluginNotification::class, fn (PluginNotification $notification): bool => $notification->kind === 'submitted_live');
-        Notification::assertSentOnDemand(PluginNotification::class, fn (PluginNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin-support@example.test');
+        Notification::assertSentTo($user, PluginMailNotification::class, fn (PluginMailNotification $notification): bool => $notification->kind === 'submitted_live');
+        Notification::assertSentOnDemand(PluginMailNotification::class, fn (PluginMailNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'submitted_support' && ($notifiable->routes['mail'] ?? null) === 'plugin-support@example.test');
     }
 
     public function test_submitting_a_plugin_with_backslash_separated_zip_entries_is_repaired_on_upload(): void

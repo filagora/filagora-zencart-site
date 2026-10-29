@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Notifications\PluginMailNotification;
 use Filagora\Plugins\Enums\PluginStatus;
 use Filagora\Plugins\Models\PluginSubscription;
 use Filagora\Plugins\Models\PluginType;
-use Filagora\Plugins\Notifications\PluginNotification;
 use Filagora\ZenCart\Models\Plugin;
 use Filagora\ZenCart\Models\PluginRelease;
 use Filagora\ZenCart\Models\ZcVersion;
@@ -119,8 +119,8 @@ class PluginSubscriptionTest extends TestCase
             ])
             ->assertRedirect(route('plugins.show', $plugin));
 
-        Notification::assertSentTo($subscriber, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'release_updated');
-        Notification::assertNotSentTo($uploader, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'release_updated');
+        Notification::assertSentTo($subscriber, PluginMailNotification::class, fn (PluginMailNotification $n): bool => $n->kind === 'release_updated');
+        Notification::assertNotSentTo($uploader, PluginMailNotification::class, fn (PluginMailNotification $n): bool => $n->kind === 'release_updated');
     }
 
     public function test_approved_release_notifies_plugin_subscribers_except_release_author(): void
@@ -157,9 +157,9 @@ class PluginSubscriptionTest extends TestCase
             ])
             ->assertRedirect();
 
-        Notification::assertSentTo($subscriber, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'release_updated');
-        Notification::assertSentTo($uploader, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'release_approved');
-        Notification::assertNotSentTo($uploader, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'release_updated');
+        Notification::assertSentTo($subscriber, PluginMailNotification::class, fn (PluginMailNotification $n): bool => $n->kind === 'release_updated');
+        Notification::assertSentTo($uploader, PluginMailNotification::class, fn (PluginMailNotification $n): bool => $n->kind === 'release_approved');
+        Notification::assertNotSentTo($uploader, PluginMailNotification::class, fn (PluginMailNotification $n): bool => $n->kind === 'release_updated');
     }
 
     public function test_profile_plugin_subscriptions_are_ordered_by_most_recent_subscription_first_when_timestamps_match(): void

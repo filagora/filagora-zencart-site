@@ -3,11 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Notifications\PluginReportMailNotification;
 use Filagora\Plugins\Enums\PluginReportStatus;
 use Filagora\Plugins\Enums\PluginStatus;
 use Filagora\Plugins\Models\PluginReport;
 use Filagora\Plugins\Models\PluginType;
-use Filagora\Plugins\Notifications\PluginNotification;
 use Filagora\Plugins\Services\Reports;
 use Filagora\ZenCart\Models\Plugin;
 use Filagora\ZenCart\Models\PluginRelease;
@@ -39,7 +39,7 @@ class PluginReportTest extends TestCase
             'reporter_id' => $reporter->id,
             'status' => PluginReportStatus::OPEN->value,
         ]);
-        Notification::assertSentOnDemand(PluginNotification::class, fn (PluginNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'report_submitted' && ($notifiable->routes['mail'] ?? null) === 'plugins@example.test');
+        Notification::assertSentOnDemand(PluginReportMailNotification::class, fn (PluginReportMailNotification $notification, array $channels, object $notifiable): bool => $notification->kind === 'report_submitted' && ($notifiable->routes['mail'] ?? null) === 'plugins@example.test');
     }
 
     public function test_verified_user_can_report_a_specific_release(): void
@@ -91,7 +91,7 @@ class PluginReportTest extends TestCase
 
         $response->assertSessionHas('plugin_error', __('plugin.reports.already_reported'));
         $this->assertSame(1, PluginReport::query()->count());
-        Notification::assertSentOnDemandTimes(PluginNotification::class, 0);
+        Notification::assertSentOnDemandTimes(PluginReportMailNotification::class, 0);
     }
 
     public function test_guest_report_redirects_to_login_modal(): void
@@ -102,7 +102,7 @@ class PluginReportTest extends TestCase
         $this->post(route('plugins.report', $plugin), [
             'reason' => 'Report reason',
         ])->assertRedirect('/?auth=login&intended=%2Fplugins%2F'.$plugin->slug);
-        Notification::assertSentOnDemandTimes(PluginNotification::class, 0);
+        Notification::assertSentOnDemandTimes(PluginReportMailNotification::class, 0);
     }
 
     public function test_unverified_user_cannot_report_plugins(): void
@@ -118,7 +118,7 @@ class PluginReportTest extends TestCase
             ->assertRedirect(route('verification.notice', [
                 'intended' => '/plugins/'.$plugin->slug.'/report',
             ]));
-        Notification::assertSentOnDemandTimes(PluginNotification::class, 0);
+        Notification::assertSentOnDemandTimes(PluginReportMailNotification::class, 0);
     }
 
     public function test_reporting_does_not_send_staff_email_if_plugin_support_email_setting_is_missing_or_invalid(): void
@@ -131,14 +131,14 @@ class PluginReportTest extends TestCase
         $this->actingAs($reporter)->post(route('plugins.report', $plugin), [
             'reason' => 'Missing setting case',
         ]);
-        Notification::assertSentOnDemandTimes(PluginNotification::class, 0);
+        Notification::assertSentOnDemandTimes(PluginReportMailNotification::class, 0);
 
         config()->set('filagora-plugins.mail.support_email', 'not-an-email');
         $anotherReporter = User::factory()->create();
         $this->actingAs($anotherReporter)->post(route('plugins.report', $plugin), [
             'reason' => 'Invalid setting case',
         ]);
-        Notification::assertSentOnDemandTimes(PluginNotification::class, 0);
+        Notification::assertSentOnDemandTimes(PluginReportMailNotification::class, 0);
     }
 
     public function test_plugin_page_shows_report_button_for_verified_non_owner_and_hides_for_owner(): void
@@ -171,14 +171,14 @@ class PluginReportTest extends TestCase
             'status' => PluginReportStatus::OPEN->value,
         ]);
 
-        Notification::assertSentToTimes($reporter, PluginNotification::class, 0);
+        Notification::assertSentToTimes($reporter, PluginReportMailNotification::class, 0);
 
         $moderator = User::factory()->create();
         $this->makeForumModerator($moderator);
         $this->grantEntitlement($moderator, 'operator.plugin.moderate');
         app(Reports::class)->review($moderator, $report, PluginReportStatus::REVIEWED, 'We reviewed the report and took action.');
 
-        Notification::assertSentTo($reporter, PluginNotification::class, fn (PluginNotification $notification): bool => $notification->kind === 'report_reviewed');
+        Notification::assertSentTo($reporter, PluginReportMailNotification::class, fn (PluginReportMailNotification $notification): bool => $notification->kind === 'report_reviewed');
     }
 
     public function test_reporter_is_not_emailed_when_report_is_saved_without_status_change(): void
@@ -199,7 +199,7 @@ class PluginReportTest extends TestCase
             'resolution_note' => 'Needs another moderator review.',
         ]);
 
-        Notification::assertSentToTimes($reporter, PluginNotification::class, 0);
+        Notification::assertSentToTimes($reporter, PluginReportMailNotification::class, 0);
     }
 
     /**
