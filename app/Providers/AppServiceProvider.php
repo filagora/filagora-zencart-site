@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Filament\Auth\Responses\LoginResponse as AppLoginResponse;
 use App\Filament\Auth\Responses\RegistrationResponse as AppRegistrationResponse;
 use App\Listeners\SendPluginMail;
+use App\Listeners\SendPrivacyMail;
 use App\Listeners\SendThreadSubscriptionMail;
 use App\Mail\Transport\MailtrapApiTransport;
 use App\Markdown\BlankLineGapExtension;
@@ -17,6 +18,7 @@ use App\Models\User;
 use App\Notifications\BellListeners;
 use App\Observers\BugReportObserver;
 use App\Observers\BumpPluginsIndexCacheObserver;
+use App\Observers\EntitlementRequestObserver;
 use App\Observers\FlushForumsIndexCacheObserver;
 use App\Observers\SyncUserPostCountObserver;
 use App\Policies\BugReportPolicy;
@@ -36,6 +38,9 @@ use App\View\Composers\ChromeComposer;
 use App\View\Composers\ForumPagesComposer;
 use App\View\Composers\HeaderComposer;
 use App\View\Composers\ModerationQueueComposer;
+use Filagora\Compliance\Events\PrivacyReplySent;
+use Filagora\Compliance\Events\PrivacyRequestStatusChanged;
+use Filagora\Compliance\Events\PrivacyRequestSubmitted;
 use Filagora\Core\Content\ExtensionRegistry;
 use Filagora\Core\Content\MarkdownRenderer;
 use Filagora\Core\Navigation\NavigationGroupDefinition;
@@ -43,6 +48,7 @@ use Filagora\Core\Navigation\NavigationGroupRegistry;
 use Filagora\Core\Settings\SettingDefinition;
 use Filagora\Core\Settings\SettingsRegistry;
 use Filagora\Core\Settings\SettingType;
+use Filagora\Entitlements\Models\EntitlementRequest;
 use Filagora\Entitlements\Services\AuthorizationService;
 use Filagora\Forums\Contracts\StaffPreview;
 use Filagora\Forums\Events\ForumStatsChanged;
@@ -114,6 +120,13 @@ class AppServiceProvider extends ServiceProvider
         // Settings the site itself reads (the packages declare their own). Production already holds
         // the value; this gives the dashboard its label and the code its type.
         $this->callAfterResolving(SettingsRegistry::class, function (SettingsRegistry $settings): void {
+            $settings->define(new SettingDefinition(
+                key: 'entitlement_request_email',
+                type: SettingType::String,
+                default: '',
+                label: 'Entitlement Request Notification Email',
+                description: 'Staff address told about each new entitlement request. Leave empty to tell no one.',
+            ));
             $settings->define(new SettingDefinition(
                 key: 'moderate_first_post_for_new_users',
                 type: SettingType::Boolean,
@@ -202,6 +215,14 @@ class AppServiceProvider extends ServiceProvider
         // A deleted thread takes its posts with a database cascade, which fires no model events, so
         // the authors' badge counters are rebuilt from the posts that are left.
         Event::listen(ThreadDeleted::class, fn (ThreadDeleted $event) => app(UserPostCountService::class)->syncForUserIds($event->postAuthorIds));
+
+        // Members and staff are told about entitlement requests, as on the old site.
+        EntitlementRequest::observe(EntitlementRequestObserver::class);
+
+        // The site's own privacy request mail, in place of the compliance package's.
+        Event::listen(PrivacyRequestSubmitted::class, [SendPrivacyMail::class, 'submitted']);
+        Event::listen(PrivacyRequestStatusChanged::class, [SendPrivacyMail::class, 'statusChanged']);
+        Event::listen(PrivacyReplySent::class, [SendPrivacyMail::class, 'replied']);
 
         // The site's own plugin mail, in place of the plugins package's.
         Event::listen(PluginSubmitted::class, [SendPluginMail::class, 'pluginSubmitted']);
