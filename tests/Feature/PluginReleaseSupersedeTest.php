@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Notifications\PluginMailNotification;
 use Filagora\Plugins\Enums\PluginStatus;
 use Filagora\Plugins\Models\PluginModeratorNote;
 use Filagora\Plugins\Models\PluginType;
-use Filagora\Plugins\Notifications\PluginNotification;
 use Filagora\ZenCart\Models\Plugin;
 use Filagora\ZenCart\Models\PluginRelease;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -82,7 +82,7 @@ class PluginReleaseSupersedeTest extends TestCase
             PluginRelease::query()->where('plugin_id', $plugin->id)->where('version', 'v1.2.0')->firstOrFail()->status,
         );
         $this->assertSame(2, PluginModeratorNote::query()->where('plugin_id', $plugin->id)->where('moderator_id', $owner->id)->count());
-        Notification::assertNotSentTo($owner, PluginNotification::class, fn (PluginNotification $notification): bool => $notification->kind === 'release_rejected');
+        Notification::assertNotSentTo($owner, PluginMailNotification::class, fn (PluginMailNotification $notification): bool => $notification->kind === 'release_rejected');
     }
 
     public function test_another_uploader_is_told_when_their_pending_release_is_superseded(): void
@@ -98,7 +98,7 @@ class PluginReleaseSupersedeTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $this->assertSame(PluginStatus::REJECTED_FINAL, $pending->refresh()->status);
-        Notification::assertSentTo($coAuthor, PluginNotification::class, fn (PluginNotification $notification): bool => $notification->kind === 'release_rejected');
+        Notification::assertSentTo($coAuthor, PluginMailNotification::class, fn (PluginMailNotification $notification): bool => $notification->kind === 'release_rejected');
     }
 
     public function test_api_upload_needs_explicit_opt_in_to_supersede_pending_releases(): void

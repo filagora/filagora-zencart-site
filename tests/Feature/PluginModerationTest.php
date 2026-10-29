@@ -3,13 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Notifications\PluginMailNotification;
 use Filagora\Entitlements\Models\UserEntitlementGrant;
 use Filagora\Plugins\Enums\PluginStatus;
 use Filagora\Plugins\Filament\Resources\PluginReleases\PluginReleaseResource;
 use Filagora\Plugins\Filament\Resources\Plugins\PluginResource;
 use Filagora\Plugins\Models\PluginModeratorNote;
 use Filagora\Plugins\Models\PluginType;
-use Filagora\Plugins\Notifications\PluginNotification;
 use Filagora\ZenCart\Models\Plugin;
 use Filagora\ZenCart\Models\PluginRelease;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -57,8 +57,8 @@ class PluginModerationTest extends TestCase
         ]);
         $this->assertGreaterThanOrEqual(2, PluginModeratorNote::query()->count());
         $this->assertNotNull($release->fresh()->approved_at);
-        Notification::assertSentTo($owner, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'plugin_approved');
-        Notification::assertSentTo($uploader, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'release_approved');
+        Notification::assertSentTo($owner, PluginMailNotification::class, fn (PluginMailNotification $n): bool => $n->kind === 'plugin_approved');
+        Notification::assertSentTo($uploader, PluginMailNotification::class, fn (PluginMailNotification $n): bool => $n->kind === 'release_approved');
     }
 
     public function test_approving_the_first_release_also_approves_a_still_moderated_plugin(): void
@@ -83,7 +83,7 @@ class PluginModerationTest extends TestCase
             'id' => $release->id,
             'status' => PluginStatus::ACTIVE->value,
         ]);
-        Notification::assertSentTo($owner, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'release_approved');
+        Notification::assertSentTo($owner, PluginMailNotification::class, fn (PluginMailNotification $n): bool => $n->kind === 'release_approved');
     }
 
     public function test_approving_a_release_leaves_an_already_rejected_plugin_rejected(): void
@@ -104,7 +104,7 @@ class PluginModerationTest extends TestCase
             'id' => $plugin->id,
             'status' => PluginStatus::REJECTED_FINAL->value,
         ]);
-        Notification::assertNotSentTo($plugin->owner()->firstOrFail(), PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'plugin_approved');
+        Notification::assertNotSentTo($plugin->owner()->firstOrFail(), PluginMailNotification::class, fn (PluginMailNotification $n): bool => $n->kind === 'plugin_approved');
     }
 
     public function test_approving_a_release_sets_approved_at_independently_of_an_old_creation_date(): void
@@ -242,8 +242,8 @@ class PluginModerationTest extends TestCase
             ->assertRedirect('/plugins')
             ->assertSessionHas('plugin_keep_queue_open', true);
 
-        Notification::assertSentTo($owner, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'plugin_rejected');
-        Notification::assertSentTo($uploader, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'release_rejected');
+        Notification::assertSentTo($owner, PluginMailNotification::class, fn (PluginMailNotification $n): bool => $n->kind === 'plugin_rejected');
+        Notification::assertSentTo($uploader, PluginMailNotification::class, fn (PluginMailNotification $n): bool => $n->kind === 'release_rejected');
     }
 
     public function test_non_staff_cannot_moderate_plugin_or_release(): void
@@ -556,7 +556,7 @@ class PluginModerationTest extends TestCase
             'id' => $plugin->id,
             'status' => PluginStatus::REJECTED_FINAL->value,
         ]);
-        Notification::assertSentTo($owner, PluginNotification::class, fn (PluginNotification $n): bool => $n->kind === 'plugin_rejected');
+        Notification::assertSentTo($owner, PluginMailNotification::class, fn (PluginMailNotification $n): bool => $n->kind === 'plugin_rejected');
     }
 
     public function test_moderator_note_does_not_double_up_a_version_the_uploader_already_prefixed_with_v(): void

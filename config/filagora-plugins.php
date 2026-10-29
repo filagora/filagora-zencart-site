@@ -13,6 +13,14 @@ return [
         'disk' => env('FILAGORA_PLUGINS_DISK', 'public'),
     ],
 
+    // The site sends its own plugin mail (App\Listeners\SendPluginMail), so the package's is off;
+    // the support address and the author's receipt are still read from here.
+    'mail' => [
+        'enabled' => false,
+        'support_email' => env('FILAGORA_PLUGINS_SUPPORT_EMAIL'),
+        'acknowledge_submissions' => true,
+    ],
+
     'routes' => [
         // The named routes of the plugin page and a forum thread, used in mail and in the API.
         'plugin' => 'plugins.show',
