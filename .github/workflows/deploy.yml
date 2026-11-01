@@ -1,0 +1,257 @@
+name: Deploy
+
+# Manual only, on purpose. This repository is public, so nothing here may run on a pull request or on
+# a push, and the job that touches the server runs only from master, in the `production` environment
+# (set required reviewers on it), on a runner registered for this repository alone. Every server
+# detail comes from the environment's variables; none is written down in the repository.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Deployment action to run
+        required: true
+        default: deploy
+        type: choice
+        options:
+          - deploy
+          - rollback
+      release_id:
+        description: Existing release directory name to activate when action=rollback
+        required: false
+        type: string
+      run_adopt:
+        description: First deploy onto a database that already holds the packages' tables, run filagora:adopt (dry run first)
+        required: false
+        default: false
+        type: boolean
+      run_search_reindex:
+        description: Rebuild the search indexes after switching
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  package:
+    name: Package
+    if: inputs.action == 'deploy' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    outputs:
+      artifact_id: ${{ steps.upload_release.outputs.artifact-id }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer:2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install production PHP dependencies
+        run: composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader --no-plugins --no-scripts
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build production assets
+        run: npm run build
+
+      - name: Package release artifact
+        run: |
+          set -euo pipefail
+          mkdir -p build-artifacts
+          RELEASE_NAME="release-${{ github.run_number }}-${{ github.run_attempt }}-$(date +%s)-${GITHUB_SHA::12}"
+          php -r '
+            $metadata = [
+              "release_id" => $argv[1],
+              "deployment_id" => $argv[1],
+              "commit_sha" => $argv[2],
+              "built_at" => $argv[3],
+              "deployed_at" => null,
+            ];
+            file_put_contents("bootstrap/release.json", json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR).PHP_EOL);
+          ' "$RELEASE_NAME" "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          tar -czf "build-artifacts/${RELEASE_NAME}.tar.gz" \
+            --exclude=.git \
+            --exclude=.github \
+            --exclude=.env \
+            --exclude=.env.* \
+            --exclude=build-artifacts \
+            --exclude=node_modules \
+            --exclude=tests \
+            --exclude=storage \
+            --exclude=bootstrap/cache \
+            .
+          (
+            cd build-artifacts
+            sha256sum "${RELEASE_NAME}.tar.gz" > "${RELEASE_NAME}.tar.gz.sha256"
+          )
+          {
+            echo "RELEASE_NAME=${RELEASE_NAME}"
+            echo "ARTIFACT_PATH=build-artifacts/${RELEASE_NAME}.tar.gz"
+          } >> "$GITHUB_ENV"
+
+      - name: Upload release artifact
+        id: upload_release
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifact
+          path: |
+            ${{ env.ARTIFACT_PATH }}
+            ${{ env.ARTIFACT_PATH }}.sha256
+          if-no-files-found: error
+          retention-days: 1
+
+  deploy:
+    name: Deploy
+    needs:
+      - package
+    runs-on: [self-hosted, filagora-production]
+    timeout-minutes: 30
+    environment: production
+    permissions:
+      contents: read
+
+    steps:
+      - name: Validate required variables
+        env:
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          test -n "${DEPLOY_PATH:-}" || { echo "Missing variable: DEPLOY_PATH"; exit 1; }
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download release artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifact
+          path: build-artifacts
+
+      - name: Stage release artifact locally
+        run: |
+          set -euo pipefail
+          ARTIFACT_PATH="$(find build-artifacts -maxdepth 1 -type f -name 'release-*.tar.gz' | head -n 1)"
+          test -n "${ARTIFACT_PATH:-}" || { echo "Release artifact not found"; exit 1; }
+          RELEASE_NAME="$(basename "$ARTIFACT_PATH" .tar.gz)"
+          LOCAL_ARTIFACT="${RUNNER_TEMP}/${RELEASE_NAME}.tar.gz"
+          cp "${ARTIFACT_PATH}" "${LOCAL_ARTIFACT}"
+          cp "${ARTIFACT_PATH}.sha256" "${LOCAL_ARTIFACT}.sha256"
+          {
+            echo "RELEASE_NAME=${RELEASE_NAME}"
+            echo "LOCAL_ARTIFACT=${LOCAL_ARTIFACT}"
+          } >> "$GITHUB_ENV"
+
+      - name: Deploy locally on runner host
+        env:
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          DEPLOY_EXPECTED_APP_ENV: ${{ vars.DEPLOY_EXPECTED_APP_ENV }}
+          DEPLOY_KEEP_RELEASES: ${{ vars.DEPLOY_KEEP_RELEASES }}
+          DEPLOY_PHP_FPM_SERVICE: ${{ vars.DEPLOY_PHP_FPM_SERVICE }}
+          DEPLOY_WEB_GROUP: ${{ vars.DEPLOY_WEB_GROUP }}
+          DEPLOY_SHARED_ENV_PATH: ${{ vars.DEPLOY_SHARED_ENV_PATH }}
+          DEPLOY_WEB_SERVICE: ${{ vars.DEPLOY_WEB_SERVICE }}
+          DEPLOY_SCHEDULER_SERVICE: ${{ vars.DEPLOY_SCHEDULER_SERVICE }}
+          DEPLOY_QUEUE_WORKER_SERVICES: ${{ vars.DEPLOY_QUEUE_WORKER_SERVICES }}
+          DEPLOY_SEARCH_REINDEX_ARGS: ${{ vars.DEPLOY_SEARCH_REINDEX_ARGS }}
+          RUN_ADOPT: ${{ inputs.run_adopt }}
+          RUN_SEARCH_REINDEX: ${{ inputs.run_search_reindex }}
+        run: |
+          set -euo pipefail
+          DEPLOY_BASE_PATH="${DEPLOY_PATH}" \
+          RELEASE_ID="${RELEASE_NAME}" \
+          ARTIFACT_PATH="${LOCAL_ARTIFACT}" \
+          DEPLOY_EXPECTED_APP_ENV="${DEPLOY_EXPECTED_APP_ENV:-production}" \
+          DEPLOY_KEEP_RELEASES="${DEPLOY_KEEP_RELEASES:-5}" \
+          DEPLOY_PHP_FPM_SERVICE="${DEPLOY_PHP_FPM_SERVICE:-php8.4-fpm}" \
+          DEPLOY_WEB_GROUP="${DEPLOY_WEB_GROUP:-www-data}" \
+          DEPLOY_WEB_SERVICE="${DEPLOY_WEB_SERVICE:-nginx}" \
+          DEPLOY_SHARED_ENV_PATH="${DEPLOY_SHARED_ENV_PATH:-}" \
+          DEPLOY_SCHEDULER_SERVICE="${DEPLOY_SCHEDULER_SERVICE:-}" \
+          DEPLOY_QUEUE_WORKER_SERVICES="${DEPLOY_QUEUE_WORKER_SERVICES:-}" \
+          DEPLOY_SEARCH_REINDEX_ARGS="${DEPLOY_SEARCH_REINDEX_ARGS:---sync-settings}" \
+          DEPLOY_RUN_ADOPT="$([ "${RUN_ADOPT}" = "true" ] && echo 1 || echo 0)" \
+          DEPLOY_RUN_SEARCH_REINDEX="$([ "${RUN_SEARCH_REINDEX}" = "true" ] && echo 1 || echo 0)" \
+          bash scripts/deploy/release_deploy.sh
+
+  cleanup-artifact:
+    name: Cleanup release artifact
+    needs:
+      - package
+      - deploy
+    if: always() && needs.package.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+
+    # A separate job with only `actions: write`, no checkout and no third-party actions, so the
+    # elevated token never exists on the production runner. Deleting is what frees the storage;
+    # retention-days alone does not.
+    steps:
+      - name: Delete GitHub-side release artifact
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ARTIFACT_ID: ${{ needs.package.outputs.artifact_id }}
+        run: |
+          set -euo pipefail
+          test -n "${ARTIFACT_ID:-}" || { echo "No artifact id; nothing to delete."; exit 0; }
+          curl -fsS -X DELETE \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT_ID}"
+          echo "Deleted release artifact ${ARTIFACT_ID}."
+
+  rollback:
+    name: Rollback
+    if: inputs.action == 'rollback' && github.ref == 'refs/heads/master'
+    runs-on: [self-hosted, filagora-production]
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      contents: read
+
+    steps:
+      - name: Validate rollback inputs and variables
+        env:
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          RELEASE_ID: ${{ inputs.release_id }}
+        run: |
+          set -euo pipefail
+          test -n "${DEPLOY_PATH:-}" || { echo "Missing variable: DEPLOY_PATH"; exit 1; }
+          test -n "${RELEASE_ID:-}" || { echo "workflow_dispatch input 'release_id' is required for rollback"; exit 1; }
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Roll back locally on runner host
+        env:
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          DEPLOY_PHP_FPM_SERVICE: ${{ vars.DEPLOY_PHP_FPM_SERVICE }}
+          DEPLOY_WEB_SERVICE: ${{ vars.DEPLOY_WEB_SERVICE }}
+          DEPLOY_QUEUE_WORKER_SERVICES: ${{ vars.DEPLOY_QUEUE_WORKER_SERVICES }}
+          RELEASE_ID: ${{ inputs.release_id }}
+        run: |
+          set -euo pipefail
+          DEPLOY_BASE_PATH="${DEPLOY_PATH}" \
+          RELEASE_ID="${RELEASE_ID}" \
+          DEPLOY_PHP_FPM_SERVICE="${DEPLOY_PHP_FPM_SERVICE:-php8.4-fpm}" \
+          DEPLOY_WEB_SERVICE="${DEPLOY_WEB_SERVICE:-nginx}" \
+          DEPLOY_QUEUE_WORKER_SERVICES="${DEPLOY_QUEUE_WORKER_SERVICES:-}" \
+          bash scripts/deploy/rollback_release.sh
