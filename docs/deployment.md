@@ -30,8 +30,9 @@ on a pull request or a push, because this repository is public and a deploy runs
   reviewers on it), and calls `scripts/deploy/release_deploy.sh`.
 - **Rollback** (`action: rollback`, `release_id: <directory name>`) calls `scripts/deploy/rollback_release.sh`.
 
-Register the runner for this repository only, with the label `filagora-production`, and keep "require approval
-for outside collaborators' workflows" on.
+The deploy job needs a self-hosted runner because it changes the machine it runs on (it extracts into
+`DEPLOY_PATH`, repairs permissions, and reloads PHP-FPM and the web server), and GitHub's own runners cannot do
+that. Set one up once, as below.
 
 ### Variables (environment `production`)
 
@@ -49,6 +50,22 @@ for outside collaborators' workflows" on.
 | `DEPLOY_SEARCH_REINDEX_ARGS` | `--sync-settings` | arguments for `filagora:search:reindex` |
 
 Two inputs are chosen per run: `run_adopt` and `run_search_reindex`.
+
+## One-time setup
+
+1. **The runner.** In the repository's *Settings, Actions, Runners* add a self-hosted runner on the server and
+   give it the label `filagora-production`. Install it as a service under the **deploy user** (a user that can
+   write `DEPLOY_PATH`), not root. Register it for this repository alone, never for an organisation-wide group.
+   Because the repository is public, also keep *Settings, Actions, General, Fork pull request workflows* on
+   "Require approval", and leave the runner's labels off any workflow that runs on a pull request (none does).
+2. **Passwordless sudo for the deploy user**, limited to what the scripts run: `chgrp`, `chmod`, `find`,
+   `setfacl` and `rm` on paths under `DEPLOY_PATH`, and `systemctl reload` of the PHP-FPM and web services (and
+   `restart` of the scheduler unit, if one is set). The script stops with a clear message if `sudo -n` is refused.
+3. **The `production` environment.** In *Settings, Environments* create `production`, add required reviewers (so
+   a deploy waits for an approval), restrict it to the `master` branch, and set the variables in the table above.
+4. **The server.** Create `DEPLOY_PATH/shared/.env` (see below), the PHP-FPM pool and the nginx server block that
+   serves `DEPLOY_PATH/current/public`, and the systemd units for the scheduler and queue workers if you use them.
+5. **Protect `master`** (required reviews and status checks), since a deploy runs whatever is on it.
 
 ## What a deploy does, in order
 
