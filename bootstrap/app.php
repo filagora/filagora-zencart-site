@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsurePluginSubmissionsAreOpen;
 use App\Http\Middleware\FrontendMaintenanceMode;
 use App\Http\Middleware\RecordUserLastSeen;
 use App\Http\Middleware\RepairLegacyPathEncoding;
+use App\Support\TrustedHosts;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Opt-in: only enforced when APP_TRUSTED_HOSTS lists hostnames. See TrustedHosts.
+        $middleware->trustHosts(at: fn (): array => TrustedHosts::patterns(), subdomains: false);
+
         $middleware->web(prepend: [
             FrontendMaintenanceMode::class,
         ]);

@@ -79,6 +79,7 @@ use Filagora\ZenCart\Models\ZcVersion;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse as FilamentLoginResponse;
 use Filament\Auth\Http\Responses\Contracts\RegistrationResponse as FilamentRegistrationResponse;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
@@ -114,6 +115,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->configureDatabaseStatementTimeout();
+
         // Forums are searchable on the site-wide search page, as they were with Scout.
         $this->callAfterResolving(SearchIndexRegistry::class, fn (SearchIndexRegistry $indexes) => $indexes->register($this->app->make(ForumSearchIndex::class)));
 
@@ -289,6 +292,30 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perHour(3)->by('privacy-request-submit:hour:'.$key),
                 Limit::perDay(10)->by('privacy-request-submit:day:'.$key),
             ];
+        });
+    }
+
+    /**
+     * Bound how long a single database statement may run on a web request.
+     *
+     * MariaDB's max_statement_time is session scoped, so it is applied as each connection is
+     * established rather than set on the server, where it would also abort migrations and nightly
+     * maintenance. The console is exempt for the same reason.
+     */
+    protected function configureDatabaseStatementTimeout(): void
+    {
+        $seconds = (int) config('database.max_statement_time');
+
+        if ($seconds <= 0 || $this->app->runningInConsole()) {
+            return;
+        }
+
+        Event::listen(ConnectionEstablished::class, function (ConnectionEstablished $event) use ($seconds): void {
+            if (! in_array($event->connection->getDriverName(), ['mysql', 'mariadb'], true)) {
+                return;
+            }
+
+            $event->connection->statement('SET SESSION max_statement_time = '.$seconds);
         });
     }
 }

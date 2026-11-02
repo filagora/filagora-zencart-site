@@ -30,6 +30,21 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Maximum Statement Time
+    |--------------------------------------------------------------------------
+    |
+    | Seconds a single MariaDB statement may run during a web request before the server aborts it.
+    | PHP's max_execution_time cannot see time spent blocked on a database socket, which is how the
+    | pool saturated on 28 Aug 2026: 3,008 requests ran to the FPM ceiling blocked on I/O. Applied per
+    | connection by AppServiceProvider, for web requests only: migrations, importers and queue jobs
+    | legitimately run longer. 0 disables it.
+    |
+    */
+
+    'max_statement_time' => (int) env('DB_MAX_STATEMENT_TIME', 15),
+
     'connections' => [
 
         'sqlite' => [
@@ -58,6 +73,8 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,
+            // Session time_zone for TIMESTAMP columns. Unset leaves the server's own zone.
+            'timezone' => env('DB_TIMEZONE') ?: null,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
@@ -78,6 +95,8 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,
+            // Session time_zone for TIMESTAMP columns. Unset leaves the server's own zone.
+            'timezone' => env('DB_TIMEZONE') ?: null,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
@@ -173,6 +192,36 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_CACHE_DB', '1'),
+            'max_retries' => env('REDIS_MAX_RETRIES', 3),
+            'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
+            'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
+            'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
+        ],
+
+        // Sessions get their own database so `cache:clear` cannot reach them: RedisStore::flush() issues
+        // FLUSHDB against the cache connection, which would log everyone out on every deploy.
+        'session' => [
+            'url' => env('REDIS_URL'),
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'username' => env('REDIS_USERNAME'),
+            'password' => env('REDIS_PASSWORD'),
+            'port' => env('REDIS_PORT', '6379'),
+            'database' => env('REDIS_SESSION_DB', '2'),
+            'max_retries' => env('REDIS_MAX_RETRIES', 3),
+            'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
+            'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
+            'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
+        ],
+
+        // Rate limiter counters, for the same reason: they are the only record that a lockout is in
+        // progress. Selected through the `limiter` cache store and the cache.limiter key.
+        'limiter' => [
+            'url' => env('REDIS_URL'),
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'username' => env('REDIS_USERNAME'),
+            'password' => env('REDIS_PASSWORD'),
+            'port' => env('REDIS_PORT', '6379'),
+            'database' => env('REDIS_LIMITER_DB', '3'),
             'max_retries' => env('REDIS_MAX_RETRIES', 3),
             'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
             'backoff_base' => env('REDIS_BACKOFF_BASE', 100),

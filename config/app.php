@@ -56,6 +56,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Trusted Hosts
+    |--------------------------------------------------------------------------
+    |
+    | Comma-separated hostnames this app answers to. Empty (the default) enforces nothing; set it to
+    | every host nginx passes to PHP, because canonical links, the sitemap and mail are built from
+    | the request's Host header. See App\Support\TrustedHosts.
+    |
+    */
+
+    'trusted_hosts' => env('APP_TRUSTED_HOSTS', ''),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |
