@@ -21,13 +21,13 @@ class CutoverConfigurationTest extends TestCase
     {
         $seenBy = function (mixed $proxies): string {
             config(['trustedproxy.proxies' => $proxies]);
-            $request = Request::create('/', 'GET', server: ['REMOTE_ADDR' => '10.0.0.1', 'HTTP_X_FORWARDED_FOR' => '203.0.113.9', 'HTTP_X_FORWARDED_PROTO' => 'https']);
+            $request = Request::create('/', 'GET', server: ['REMOTE_ADDR' => '192.0.2.10', 'HTTP_X_FORWARDED_FOR' => '198.51.100.7', 'HTTP_X_FORWARDED_PROTO' => 'https']);
 
             return (new TrustProxies)->handle($request, fn (Request $request) => response($request->ip().'|'.($request->isSecure() ? 'https' : 'http')))->getContent();
         };
 
-        $this->assertSame('10.0.0.1|http', $seenBy(null));
-        $this->assertSame('203.0.113.9|https', $seenBy('*'));
+        $this->assertSame('192.0.2.10|http', $seenBy(null));
+        $this->assertSame('198.51.100.7|https', $seenBy('*'));
     }
 
     public function test_sessions_and_rate_limiter_counters_have_their_own_redis_databases(): void
@@ -41,6 +41,11 @@ class CutoverConfigurationTest extends TestCase
     public function test_the_limiter_store_falls_back_to_the_default_when_unset_or_blank(): void
     {
         $this->assertNull(config('cache.limiter'));
+    }
+
+    public function test_a_blank_time_zone_in_the_environment_file_is_not_sent_to_the_database(): void
+    {
+        $this->assertNull(config('database.connections.mariadb.timezone'));
     }
 
     public function test_a_web_statement_is_bounded_and_the_database_session_zone_can_be_set(): void

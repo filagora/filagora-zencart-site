@@ -74,7 +74,7 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             // Session time_zone for TIMESTAMP columns. Unset leaves the server's own zone.
-            'timezone' => env('DB_TIMEZONE'),
+            'timezone' => env('DB_TIMEZONE') ?: null,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
@@ -96,7 +96,7 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             // Session time_zone for TIMESTAMP columns. Unset leaves the server's own zone.
-            'timezone' => env('DB_TIMEZONE'),
+            'timezone' => env('DB_TIMEZONE') ?: null,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
