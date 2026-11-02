@@ -46,7 +46,7 @@ final class SanitiserPolicy
     /** Operational, personal or secret: removed entirely. */
     public const PURGE = [
         'ai_chat_conversations', 'ai_chat_messages', 'ai_chat_usages', 'ai_embedding_usages', 'audits',
-        'billing_event_logs', 'cache', 'cache_locks', 'email_logs', 'failed_jobs', 'jobs', 'job_batches',
+        'billing_event_logs', 'cache', 'cache_locks', 'code_chunk_locations', 'code_chunks', 'email_logs', 'failed_jobs', 'jobs', 'job_batches',
         'newsletter_events', 'newsletter_link_clicks', 'newsletter_sends', 'notifications',
         'password_reset_tokens', 'personal_access_tokens', 'privacy_operation_audits', 'privacy_requests',
         'push_subscriptions', 'queue_monitors', 'queue_monitor_failure_groups', 'sessions',

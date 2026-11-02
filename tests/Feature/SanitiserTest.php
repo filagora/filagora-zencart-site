@@ -17,6 +17,12 @@ class SanitiserTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_the_ai_code_index_tables_are_purged(): void
+    {
+        $this->assertSame('purge', SanitiserPolicy::treatmentFor('code_chunks'));
+        $this->assertSame('purge', SanitiserPolicy::treatmentFor('code_chunk_locations'));
+    }
+
     public function test_every_table_the_application_creates_is_named_by_the_policy(): void
     {
         $unclassified = array_values(array_filter(

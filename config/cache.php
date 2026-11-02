@@ -19,6 +19,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Deploy-Surviving Rate Limiter Store
+    |--------------------------------------------------------------------------
+    |
+    | RedisStore::flush() issues FLUSHDB against the cache connection, so every deploy's
+    | optimize:clear empties it. Rate limiter counters are security state with no database of
+    | record (flushing them hands anyone mid-lockout a fresh budget), so they live on their own
+    | connection, selected here. Unset or blank falls back to the default store, which is what local
+    | and test environments want; the blank coalesce matters, because Cache::store('') throws.
+    |
+    */
+
+    'limiter' => env('CACHE_LIMITER_STORE') ?: null,
+
+    /*
+    |--------------------------------------------------------------------------
     | Cache Stores
     |--------------------------------------------------------------------------
     |
@@ -81,6 +96,14 @@ return [
         'redis' => [
             'driver' => 'redis',
             'connection' => env('REDIS_CACHE_CONNECTION', 'cache'),
+            'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'default'),
+        ],
+
+        // Rate limiter counters, held off the 'cache' connection so a deploy's FLUSHDB cannot reset an
+        // in-progress lockout. Selected through cache.limiter above, never as the default store.
+        'limiter' => [
+            'driver' => 'redis',
+            'connection' => env('REDIS_LIMITER_CONNECTION', 'limiter'),
             'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'default'),
         ],
 
