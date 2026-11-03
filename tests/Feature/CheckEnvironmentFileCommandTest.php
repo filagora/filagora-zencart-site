@@ -38,6 +38,7 @@ class CheckEnvironmentFileCommandTest extends TestCase
             'PRIVACY_EXPORTS_DISK',
             'PLUGIN_SECURITY_SCAN_CLAMAV_ENABLED',
             'SCOUT_DRIVER',
+            'STRIPE_SECRET',
             'AI_CHAT_ENABLED',
             'PLUGIN_SECURITY_SCAN_LLM_API_KEY',
             'SOMETHING_ODD',
@@ -51,6 +52,7 @@ class CheckEnvironmentFileCommandTest extends TestCase
         $this->assertSame(EnvironmentKeyAudit::READ, $byKey['BCRYPT_ROUNDS']['status']);
         $this->assertSame(EnvironmentKeyAudit::READ, $byKey['DO_NOT_REDEPLOY']['status']);
         $this->assertSame(EnvironmentKeyAudit::RETIRED, $byKey['SCOUT_DRIVER']['status']);
+        $this->assertSame(EnvironmentKeyAudit::RETIRED, $byKey['STRIPE_SECRET']['status']);
         $this->assertSame(EnvironmentKeyAudit::PENDING, $byKey['AI_CHAT_ENABLED']['status']);
         $this->assertSame(EnvironmentKeyAudit::UNKNOWN, $byKey['SOMETHING_ODD']['status']);
         $this->assertSame(EnvironmentKeyAudit::NO_COUNTERPART, $byKey['PLUGIN_SECURITY_SCAN_LLM_API_KEY']['status']);

@@ -69,6 +69,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Request timing
+    |--------------------------------------------------------------------------
+    |
+    | Logs how long web requests to the listed paths take, to find slow pages without a profiler.
+    | Off unless REQUEST_TIMING_ENABLED is set; REQUEST_TIMING_PATHS is a comma-separated list of
+    | path patterns.
+    |
+    */
+
+    'request_timing' => [
+        'enabled' => (bool) env('REQUEST_TIMING_ENABLED', false),
+        'channel' => env('REQUEST_TIMING_CHANNEL', env('LOG_CHANNEL', 'stack')),
+        'paths' => array_values(array_filter(array_map(
+            static fn (string $path): string => trim($path),
+            explode(',', (string) env('REQUEST_TIMING_PATHS', ''))
+        ))),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |
