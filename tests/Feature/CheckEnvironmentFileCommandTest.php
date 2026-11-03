@@ -30,7 +30,7 @@ class CheckEnvironmentFileCommandTest extends TestCase
 
     public function test_it_sorts_keys_by_what_the_application_does_with_them(): void
     {
-        $audit = new EnvironmentKeyAudit([config_path()]);
+        $audit = new EnvironmentKeyAudit([config_path(), base_path('vendor/laravel/framework/config')]);
         $byKey = collect($audit->audit([
             'APP_KEY',
             'DB_MAX_STATEMENT_TIME',
@@ -41,11 +41,15 @@ class CheckEnvironmentFileCommandTest extends TestCase
             'AI_CHAT_ENABLED',
             'PLUGIN_SECURITY_SCAN_LLM_API_KEY',
             'SOMETHING_ODD',
+            'BCRYPT_ROUNDS',
+            'DO_NOT_REDEPLOY',
         ]))->keyBy('key');
 
         $this->assertSame(EnvironmentKeyAudit::READ, $byKey['APP_KEY']['status']);
         $this->assertSame(EnvironmentKeyAudit::READ, $byKey['DB_MAX_STATEMENT_TIME']['status']);
         $this->assertSame(EnvironmentKeyAudit::READ, $byKey['TRUSTED_PROXIES']['status']);
+        $this->assertSame(EnvironmentKeyAudit::READ, $byKey['BCRYPT_ROUNDS']['status']);
+        $this->assertSame(EnvironmentKeyAudit::READ, $byKey['DO_NOT_REDEPLOY']['status']);
         $this->assertSame(EnvironmentKeyAudit::RETIRED, $byKey['SCOUT_DRIVER']['status']);
         $this->assertSame(EnvironmentKeyAudit::PENDING, $byKey['AI_CHAT_ENABLED']['status']);
         $this->assertSame(EnvironmentKeyAudit::UNKNOWN, $byKey['SOMETHING_ODD']['status']);

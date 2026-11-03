@@ -35,7 +35,7 @@ class CheckEnvironmentFileCommand extends Command
             }
         }
 
-        $directories = array_merge([config_path()], glob(base_path('vendor/filagora/*/config'), GLOB_ONLYDIR) ?: []);
+        $directories = array_merge([config_path(), base_path('vendor/laravel/framework/config')], glob(base_path('vendor/filagora/*/config'), GLOB_ONLYDIR) ?: []);
         $audit = new EnvironmentKeyAudit($directories);
         $rows = $audit->audit(array_values(array_unique($keys)));
         $byStatus = [];

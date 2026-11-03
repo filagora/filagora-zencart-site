@@ -71,6 +71,13 @@ class EnvironmentKeyAudit
     private const PENDING_PREFIXES = ['AI_', 'OPENAI_', 'ANTHROPIC_', 'VOYAGE_', 'DIGITALOCEAN_', 'SITE_CODE_', 'ZENCART_CODE_', 'ZENCART_DOCS_', 'VBULLETIN_'];
 
     /**
+     * Keys read somewhere other than a config file: by the deploy script, or at asset build time.
+     *
+     * @var list<string>
+     */
+    private const READ_ELSEWHERE = ['DO_NOT_REDEPLOY', 'VITE_APP_NAME'];
+
+    /**
      * @param  list<string>  $configDirectories  directories of config files to scan for env() calls
      */
     public function __construct(private readonly array $configDirectories) {}
@@ -118,7 +125,7 @@ class EnvironmentKeyAudit
      */
     private function classify(string $key, array $read): array
     {
-        if (isset($read[$key])) {
+        if (isset($read[$key]) || in_array($key, self::READ_ELSEWHERE, true)) {
             return ['status' => self::READ, 'suggestion' => null];
         }
 
