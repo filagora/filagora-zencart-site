@@ -1,17 +1,20 @@
 <?php
 
+use App\Http\Middleware\AddMonitoringContext;
 use App\Http\Middleware\ApplySearchIconToggleOverride;
 use App\Http\Middleware\EnsureFrontendEmailIsVerified;
 use App\Http\Middleware\EnsurePluginSubmissionsAreOpen;
 use App\Http\Middleware\FrontendMaintenanceMode;
 use App\Http\Middleware\RecordUserLastSeen;
 use App\Http\Middleware\RepairLegacyPathEncoding;
+use App\Http\Middleware\RequestTimingMiddleware;
 use App\Support\TrustedHosts;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\ValidatePathEncoding;
 use Illuminate\Http\Request;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,6 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(AddMonitoringContext::class);
+
         // Opt-in: only enforced when APP_TRUSTED_HOSTS lists hostnames. See TrustedHosts.
         $middleware->trustHosts(at: fn (): array => TrustedHosts::patterns(), subdomains: false);
 
@@ -29,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web(append: [
+            RequestTimingMiddleware::class,
             RecordUserLastSeen::class,
             ApplySearchIconToggleOverride::class,
         ]);
@@ -55,6 +61,19 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Fuzzers replay Livewire update payloads against the Filament login component with mangled
+        // snapshots. Livewire rejects them, but each rejection surfaces as one of these two
+        // exceptions; neither is actionable and a burst of them drowns real reports.
+        $exceptions->dontReport([CannotUpdateLockedPropertyException::class]);
+        $exceptions->dontReportWhen(
+            static fn (Throwable $e): bool => $e instanceof TypeError
+                && str_contains($e->getMessage(), 'Filament\\Notifications\\Collection::fromLivewire()'),
+        );
+        $exceptions->reportable(static function (Throwable $e) {
+            if (app()->bound('honeybadger')) {
+                app('honeybadger')->notify($e, app('request'));
+            }
+        });
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

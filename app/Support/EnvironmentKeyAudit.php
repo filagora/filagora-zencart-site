@@ -57,11 +57,12 @@ class EnvironmentKeyAudit
     ];
 
     /**
-     * The search engines and developer tools lara-forum had that the new stack does not.
+     * The search engines, developer tools and the Stripe billing lara-forum had that the new stack does not
+     * (the site takes payments through PayPal only).
      *
      * @var list<string>
      */
-    private const RETIRED_PREFIXES = ['SCOUT_', 'ALGOLIA_', 'TYPESENSE_', 'BOOST_', 'API_DEBUG_'];
+    private const RETIRED_PREFIXES = ['SCOUT_', 'ALGOLIA_', 'TYPESENSE_', 'BOOST_', 'API_DEBUG_', 'STRIPE_'];
 
     /**
      * Work still to come over from lara-forum (the AI features) or deliberately left there.
