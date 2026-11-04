@@ -18,7 +18,7 @@ class StructuredDataPublisher
             'url' => route('home'),
             'logo' => [
                 '@type' => 'ImageObject',
-                'url' => asset('assets/images/logo/zen-cart-logo.png'),
+                'url' => asset('assets/images/logo/ZCLogo150x150Trans.webp'),
             ],
         ];
     }

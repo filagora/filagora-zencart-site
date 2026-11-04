@@ -209,7 +209,7 @@ class ThreadSubscriptionTest extends TestCase
         $this->assertMatchesRegularExpression('/name="subscribe"\s+value="1"\s+checked/', $html);
     }
 
-    public function test_forum_thread_list_hides_subscription_action_but_thread_page_can_return_back_after_subscribe(): void
+    public function test_forum_thread_list_offers_subscribe_and_it_returns_back_to_the_list(): void
     {
         $user = User::factory()->create();
         $thread = $this->createPublicThread($user);
@@ -219,7 +219,8 @@ class ThreadSubscriptionTest extends TestCase
         $this->actingAs($user)
             ->get($forumPage)
             ->assertOk()
-            ->assertDontSee('>Subscribe<', false);
+            ->assertSee('data-thread-subscription-toggle', false)
+            ->assertSee('>Subscribe<', false);
 
         $this->actingAs($user)
             ->get(route('threads.show', $thread))
@@ -238,17 +239,24 @@ class ThreadSubscriptionTest extends TestCase
         ]);
     }
 
-    public function test_forum_thread_list_hides_subscribed_indicator_but_thread_page_shows_unsubscribe(): void
+    public function test_forum_thread_list_offers_unsubscribe_for_a_subscribed_thread_and_the_unsubscribe_returns_to_the_list(): void
     {
         $user = User::factory()->create();
         $thread = $this->createPublicThread($user);
+        $other = Thread::query()->create(['forum_id' => $thread->forum_id, 'author_id' => $user->id, 'title' => 'Another thread', 'slug' => 'another-thread']);
         $user->subscribedThreads()->syncWithoutDetaching([$thread->id]);
+        $forumPath = parse_url(route('forums.show', $thread->forum), PHP_URL_PATH);
+
+        $html = $this->actingAs($user)->get(route('forums.show', $thread->forum))->assertOk()->getContent();
+        $this->assertStringContainsString('>Unsubscribe<', $this->extractThreadRow($html, $thread->id));
+        $this->assertStringContainsString('>Subscribe<', $this->extractThreadRow($html, $other->id));
 
         $this->actingAs($user)
-            ->get(route('forums.show', $thread->forum))
-            ->assertOk()
-            ->assertDontSee('data-thread-subscription-indicator', false)
-            ->assertDontSee('Subscribed to this thread. Click to unsubscribe.', false);
+            ->post(route('threads.unsubscribe', $thread), ['return_to' => $forumPath])
+            ->assertRedirect($forumPath);
+        $this->assertFalse($user->subscribedThreads()->whereKey($thread->id)->exists());
+
+        $user->subscribedThreads()->syncWithoutDetaching([$thread->id]);
 
         $this->actingAs($user)
             ->get(route('threads.show', $thread))

@@ -5,13 +5,11 @@
 
     <div class="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-4 px-5 py-4 md:px-8 xl:px-10">
         <a href="/" class="flex shrink-0 items-center gap-3 sm:gap-4">
-            {{-- Below Tailwind's sm breakpoint (640px) the wide logo is cramped next to the
-                 header icons, so phones get a taller stacked version of it whose tagline is
-                 big enough to read. The source carries its own width/height so the browser
-                 reserves the right box before it loads. --}}
+            {{-- Square mark below sm (640px), the wide wordmark logo from sm up. Each file keeps its own
+                 width/height so the browser reserves the right box before it loads. --}}
             <picture>
-                <source media="(max-width: 639px)" srcset="{{ asset('assets/images/logo/ZCLogoStacked240t.png') }}" width="206" height="240">
-                <img src="{{ asset('assets/images/logo/zen-cart-logo.png') }}" alt="Zen Cart Logo" width="254" height="68" fetchpriority="high" class="h-[80px] w-auto sm:h-[64px] xl:h-[70px]">
+                <source media="(min-width: 640px)" srcset="{{ asset('assets/images/logo/ZCLogo2026.webp') }}" width="275" height="100">
+                <img src="{{ asset('assets/images/logo/ZCLogo150x150Trans.webp') }}" alt="Zen Cart Logo" title="{{ __('site.logo_title') }}" width="150" height="150" fetchpriority="high" class="h-[56px] w-[56px] shrink-0 sm:h-[64px] sm:w-auto xl:h-[70px]">
             </picture>
         </a>
         {{--  Spamtrap Honeypot link (created with/sends-to projecthoneypot.com). aria-hidden
@@ -123,9 +121,9 @@
                 <form method="get" action="{{ route('search.index') }}" class="mb-2 md:hidden">
                     <label for="mobile-global-search" class="sr-only">Search site</label>
                     <div class="flex items-center gap-2 rounded-xl border border-[var(--color-site-line)] bg-white px-3 py-2">
-                        <input id="mobile-global-search" type="search" name="q" value="{{ is_scalar(request('q')) ? request('q') : '' }}" placeholder="Search..." class="w-full bg-transparent text-sm text-[color:var(--color-site-ink)] outline-none placeholder:text-[color:var(--color-site-muted)]">
+                        <input id="mobile-global-search" type="search" name="q" value="{{ is_scalar(request('q')) ? request('q') : '' }}" placeholder="Search..." class="w-full min-w-0 bg-transparent text-base text-[color:var(--color-site-ink)] outline-none placeholder:text-[color:var(--color-site-muted)]">
                         <label for="mobile-global-search-type" class="sr-only">Search type</label>
-                        <select id="mobile-global-search-type" name="type" class="shrink-0 border-l border-[var(--color-site-line)] bg-transparent pl-2 text-sm text-[color:var(--color-site-muted)] outline-none">
+                        <select id="mobile-global-search-type" name="type" class="shrink-0 border-l border-[var(--color-site-line)] bg-transparent pl-2 text-base text-[color:var(--color-site-muted)] outline-none">
                             <option value="">All</option>
                             @foreach(\App\SearchResultType::cases() as $type)
                                 <option value="{{ $type->value }}" @selected(request('type') === $type->value)>{{ $type->label() }}</option>
@@ -387,9 +385,9 @@
             <form method="get" action="{{ route('search.index') }}" class="flex w-full max-w-[540px] items-center gap-3">
                 <label for="desktop-global-search" class="sr-only">Search site</label>
                 <div class="flex flex-1 items-center gap-2 rounded-full border border-[var(--color-site-line)] bg-white px-4 py-1.5 shadow-sm">
-                    <input id="desktop-global-search" type="search" name="q" value="{{ is_scalar(request('q')) ? request('q') : '' }}" placeholder="Search docs, plugins, and discussions..." class="w-full bg-transparent text-sm text-[color:var(--color-site-ink)] outline-none placeholder:text-[color:var(--color-site-muted)]">
+                    <input id="desktop-global-search" type="search" name="q" value="{{ is_scalar(request('q')) ? request('q') : '' }}" placeholder="Search docs, plugins, and discussions..." class="w-full min-w-0 bg-transparent text-base md:text-sm text-[color:var(--color-site-ink)] outline-none placeholder:text-[color:var(--color-site-muted)]">
                     <label for="desktop-global-search-type" class="sr-only">Search type</label>
-                    <select id="desktop-global-search-type" name="type" class="shrink-0 border-l border-[var(--color-site-line)] bg-transparent pl-2 text-sm text-[color:var(--color-site-muted)] outline-none">
+                    <select id="desktop-global-search-type" name="type" class="shrink-0 border-l border-[var(--color-site-line)] bg-transparent pl-2 text-base md:text-sm text-[color:var(--color-site-muted)] outline-none">
                         <option value="">All</option>
                         @foreach(\App\SearchResultType::cases() as $type)
                             <option value="{{ $type->value }}" @selected(request('type') === $type->value)>{{ $type->label() }}</option>
@@ -451,7 +449,7 @@
         <button type="button" class="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full text-lg leading-none text-[#5c6570] transition hover:bg-[#f4f1ea] hover:text-[#0f2133] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8f3f1f]" data-auth-modal-close data-auth-modal-close-btn aria-label="Close authentication modal">×</button>
 
         <div class="mb-5 flex justify-center">
-            <img src="{{ asset('assets/images/logo/zen-cart-logo.png') }}" alt="Zen Cart" width="254" height="68" class="h-10 w-auto">
+            <img src="{{ asset('assets/images/logo/ZCLogo2026.webp') }}" alt="Zen Cart" title="{{ __('site.logo_title') }}" width="275" height="100" class="h-14 w-auto">
         </div>
 
         {{--
