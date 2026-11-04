@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\BanUserAction;
+use App\Http\Controllers\Concerns\ChecksInternalPaths;
 use App\Http\Requests\ModeratePostRequest;
 use App\Http\Requests\ModeratePostsBulkRequest;
 use App\Http\Requests\ModerateThreadRequest;
@@ -35,6 +36,8 @@ use Illuminate\Http\Request;
  */
 class ForumModerationController extends Controller
 {
+    use ChecksInternalPaths;
+
     public function __construct(
         private readonly ForumAccess $access,
         private readonly ThreadModeration $threads,
@@ -396,21 +399,5 @@ class ForumModerationController extends Controller
         $returnTo = $this->internalPath((string) $request->input('return_to', ''));
 
         return $returnTo !== '' ? $returnTo : $fallback;
-    }
-
-    /**
-     * Same-origin paths only: see ThreadPostingController::internalPath().
-     */
-    private function internalPath(string $path): string
-    {
-        $trimmed = trim($path);
-
-        if ($trimmed === ''
-            || preg_match('/[\x00-\x1F\x7F]/', $trimmed) === 1
-            || preg_match('#^/[^/\\\\]#', $trimmed) !== 1) {
-            return '';
-        }
-
-        return $trimmed;
     }
 }

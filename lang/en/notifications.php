@@ -240,6 +240,17 @@ return [
             'body_fallback' => 'Open the thread for details.',
         ],
     ],
+    'forum_thread_created' => [
+        'subject' => 'New thread in :forum: :thread',
+        'title' => 'New Thread',
+        'intro' => ':author started a new thread in :forum.',
+        'thread_label' => 'Thread:',
+        'fallback_excerpt' => 'A new thread was posted.',
+        'action' => 'View Thread',
+        'manage_subscriptions' => 'Manage Subscriptions',
+        'subscription_reason' => 'You are receiving this because you subscribed to :forum.',
+        'unsubscribe' => 'Unsubscribe from new thread emails: :url',
+    ],
     'bug_report' => [
         'subject' => 'Bug report update: :thread',
         'email' => [

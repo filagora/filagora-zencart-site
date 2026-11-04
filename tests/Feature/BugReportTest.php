@@ -450,6 +450,18 @@ class BugReportTest extends TestCase
         $this->actingAs($moderator)->get("/dashboard/bug-reports/{$bugReport->id}/edit")->assertOk();
     }
 
+    public function test_a_change_notifies_each_subscriber_once(): void
+    {
+        Notification::fake();
+        $thread = $this->createPublicThread();
+        $subscriber = User::factory()->create();
+        ThreadSubscription::query()->create(['thread_id' => $thread->id, 'user_id' => $subscriber->id]);
+
+        $this->actingAs($this->createModerator())->post(route('threads.bug-reports.store', $thread));
+
+        Notification::assertSentToTimes($subscriber, BugReportUpdatedNotification::class, 1);
+    }
+
     private function createPublicThread(): Thread
     {
         $group = ForumGroup::query()->create([

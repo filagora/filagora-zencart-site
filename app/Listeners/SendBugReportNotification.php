@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Notification;
  */
 class SendBugReportNotification
 {
-    public function handle(BugReportChanged $event): void
+    public function send(BugReportChanged $event): void
     {
         $subscribers = $event->bugReport->thread->subscribedUsers()
             ->when($event->actorId !== null, fn ($query) => $query->where('users.id', '!=', $event->actorId))

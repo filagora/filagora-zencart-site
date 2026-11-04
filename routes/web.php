@@ -92,6 +92,8 @@ Route::withoutMiddleware([
 
 Route::middleware('frontend.verified')->group(function (): void {
     Route::get('/forums/{forum}/threads/new', [ThreadPostingController::class, 'newThreadForm'])->name('threads.create.form');
+    Route::post('/forums/{forum}/subscribe', [ForumController::class, 'subscribeToForum'])->name('forums.subscribe');
+    Route::post('/forums/{forum}/unsubscribe', [ForumController::class, 'unsubscribeFromForum'])->name('forums.unsubscribe');
     Route::post('/forums/{forum}/threads', [ThreadPostingController::class, 'storeThread'])->name('threads.create');
     Route::post('/threads/{thread}/reply', [ThreadPostingController::class, 'reply'])->name('threads.reply');
     Route::get('/posts/{post}/edit', [ThreadPostingController::class, 'editPostForm'])->name('posts.edit');

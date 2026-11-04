@@ -7,6 +7,7 @@ use App\Filament\Auth\Responses\RegistrationResponse as AppRegistrationResponse;
 use App\Forum\BugReportsFeature;
 use App\Forum\ReportedPostUrl;
 use App\Listeners\SendBugReportNotification;
+use App\Listeners\SendForumThreadNotifications;
 use App\Listeners\SendPluginMail;
 use App\Listeners\SendPrivacyMail;
 use App\Listeners\SendThreadSubscriptionMail;
@@ -18,6 +19,7 @@ use App\Models\NewsletterBlock;
 use App\Models\NewsletterSubscriber;
 use App\Models\User;
 use App\Notifications\BellListeners;
+use App\Notifications\ForumThreadCreatedNotification;
 use App\Observers\BumpPluginsIndexCacheObserver;
 use App\Observers\EntitlementRequestObserver;
 use App\Observers\FlushForumsIndexCacheObserver;
@@ -54,6 +56,7 @@ use Filagora\ForumBugReports\Events\BugReportChanged;
 use Filagora\Forums\Contracts\PostUrlResolver;
 use Filagora\Forums\Contracts\StaffPreview;
 use Filagora\Forums\Events\ForumStatsChanged;
+use Filagora\Forums\Events\ForumSubscribersToNotify;
 use Filagora\Forums\Events\PostModerated;
 use Filagora\Forums\Events\PostReported;
 use Filagora\Forums\Events\SubscribersToNotify;
@@ -65,6 +68,9 @@ use Filagora\Forums\Models\Post;
 use Filagora\Forums\Models\Thread;
 use Filagora\Forums\Support\Models;
 use Filagora\Messages\Events\MessageReceived;
+use Filagora\Notifications\Category;
+use Filagora\Notifications\Enums\NotificationChannel;
+use Filagora\Notifications\NotificationCategories;
 use Filagora\Plugins\Events\PluginModerated;
 use Filagora\Plugins\Events\PluginReported;
 use Filagora\Plugins\Events\PluginReportReviewed;
@@ -175,12 +181,28 @@ class AppServiceProvider extends ServiceProvider
 
         $this->registerRateLimiters();
         $this->registerForumRelations();
+        $this->registerNotificationCategories();
         $this->registerForumCacheFlush();
 
         View::composer(['forum.*', 'thread.*', 'post.*'], ForumPagesComposer::class);
         View::composer('forum.partials.moderation_queue', ModerationQueueComposer::class);
         View::composer('*', ChromeComposer::class);
         View::composer('partials.site_header', HeaderComposer::class);
+    }
+
+    /**
+     * The site's own notification categories, after the packages' and the profile's.
+     */
+    private function registerNotificationCategories(): void
+    {
+        $this->app->booted(function (): void {
+            $this->app->make(NotificationCategories::class)->register(new Category(
+                ForumThreadCreatedNotification::CATEGORY,
+                'New threads in forums you subscribe to',
+                [NotificationChannel::EMAIL, NotificationChannel::PUSH, NotificationChannel::IN_APP],
+                unsubscribable: true,
+            ));
+        });
     }
 
     /**
@@ -226,7 +248,7 @@ class AppServiceProvider extends ServiceProvider
 
         // The site's own privacy request mail, in place of the compliance package's.
         if (BugReportsFeature::installed()) {
-            Event::listen(BugReportChanged::class, SendBugReportNotification::class);
+            Event::listen(BugReportChanged::class, [SendBugReportNotification::class, 'send']);
         }
 
         Event::listen(PrivacyRequestSubmitted::class, [SendPrivacyMail::class, 'submitted']);
@@ -245,6 +267,7 @@ class AppServiceProvider extends ServiceProvider
 
         // The site's own thread-update and digest mail, in place of the forums package's.
         Event::listen(SubscribersToNotify::class, [SendThreadSubscriptionMail::class, 'updated']);
+        Event::listen(ForumSubscribersToNotify::class, [SendForumThreadNotifications::class, 'send']);
         Event::listen(ThreadDigestReady::class, [SendThreadSubscriptionMail::class, 'digest']);
 
         Mail::extend('mailtrap', fn (array $config): MailtrapApiTransport => new MailtrapApiTransport(

@@ -765,9 +765,30 @@ Profile
         </div>
 
         <div class="{{ $activeTab === 'subscriptions' ? 'block' : 'hidden' }} {{ $panelBaseClass }}">
-            @if($threadSubscriptions->isEmpty() && $pluginSubscriptions->isEmpty())
-                <p class="{{ $metaClass }}">You are not subscribed to any threads or plugins yet.</p>
+            @if($forumSubscriptions->isEmpty() && $threadSubscriptions->isEmpty() && $pluginSubscriptions->isEmpty())
+                <p class="{{ $metaClass }}">You are not subscribed to any forums, threads or plugins yet.</p>
             @else
+                @if($forumSubscriptions->isNotEmpty())
+                <div class="mb-6 grid gap-2.5">
+                    <h2 class="text-lg font-semibold text-[#0f2133]">Forum Subscriptions</h2>
+                    @foreach($forumSubscriptions as $forum)
+                        <article class="flex flex-col items-start justify-between gap-3 border border-[#d8dce2] bg-white p-3 md:flex-row">
+                            <div>
+                                <h3 class="m-0 text-base">
+                                    <a href="{{ route('forums.show', $forum) }}">{{ \App\Support\LegacyTextDecoder::decode($forum->name) }}</a>
+                                </h3>
+                                <p class="mt-1 text-sm text-[#5c6570]">You are notified when a new thread is started here.</p>
+                            </div>
+                            <form method="post" action="{{ route('forums.unsubscribe', $forum) }}" class="md:self-center">
+                                @csrf
+                                <input type="hidden" name="redirect_to" value="profile">
+                                <button type="submit" class="{{ $dangerButtonClass }}">Unsubscribe</button>
+                            </form>
+                        </article>
+                    @endforeach
+                </div>
+                @endif
+
                 @if($threadSubscriptions->isNotEmpty())
                 <div class="grid gap-2.5">
                     <h2 class="text-lg font-semibold text-[#0f2133]">Thread Subscriptions</h2>

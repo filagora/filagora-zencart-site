@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Forum\BugReportsFeature;
 use App\Forum\ForumIndex;
 use App\Forum\ThreadListings;
+use App\Http\Controllers\Concerns\ChecksInternalPaths;
 use App\Models\User;
 use App\Support\CrawlerUserAgent;
 use App\Support\ForumStructuredDataFactory;
@@ -16,6 +17,7 @@ use Filagora\Forums\Enums\PostReportStatus;
 use Filagora\Forums\Models\Post;
 use Filagora\Forums\Services\ApprovalRules;
 use Filagora\Forums\Services\ForumAccess;
+use Filagora\Forums\Services\ForumSubscriptions;
 use Filagora\Forums\Services\ReadTracking;
 use Filagora\Forums\Support\Models;
 use Filagora\Plugins\Support\Models as PluginModels;
@@ -35,6 +37,8 @@ use Illuminate\View\View;
  */
 class ForumController extends Controller
 {
+    use ChecksInternalPaths;
+
     // Public: ThreadUpdatedNotification reuses this to work out which page a notified post lands
     // on, so its email link can deep-link straight to it.
     public const THREAD_POSTS_PER_PAGE = 20;
@@ -48,11 +52,18 @@ class ForumController extends Controller
         private readonly ThreadListings $listings,
         private readonly ForumIndex $forumIndex,
         private readonly BugReportsFeature $bugReports,
+        private readonly ForumSubscriptions $forumSubscriptions,
     ) {}
 
     public function index(Request $request): View
     {
-        return view('forum.index', $this->forumIndex->for($this->viewer($request)));
+        $user = $this->viewer($request);
+        $index = $this->forumIndex->for($user);
+
+        return view('forum.index', [
+            ...$index,
+            'subscribedForumIds' => $this->forumSubscriptions->followedAmong($user, array_keys($index['forumMeta'])),
+        ]);
     }
 
     public function today(Request $request): View
@@ -133,6 +144,7 @@ class ForumController extends Controller
             'showModerationActions' => $this->access->actsAsStaff($user),
             'canHideResolvedBugThreads' => $this->bugReports->hideResolvedAvailableFor($user),
             'hideResolvedBugThreads' => $hideResolvedBugs,
+            'isForumSubscribed' => $this->forumSubscriptions->isSubscribed($user, $forum),
             'threadRequiresApproval' => $this->approvals->threadRequiresApproval($forum, $viewerForApproval),
             'replyRequiresApproval' => $this->approvals->replyRequiresApproval($forum, $viewerForApproval),
         ]);
@@ -251,6 +263,40 @@ class ForumController extends Controller
             'pollResultsVisible' => $actsAsStaff,
             'richComposerDefault' => ($user?->prefers_rich_editor ?? true) ? 'rich' : 'source',
         ]);
+    }
+
+    public function subscribeToForum(Request $request, Forum $forum): RedirectResponse
+    {
+        $user = $this->viewer($request);
+
+        abort_unless($this->access->canViewForum($forum, $user), 403);
+
+        $this->forumSubscriptions->subscribe($user, $forum);
+
+        return $this->afterForumSubscription($request, $forum, __('forum.flash.forum_subscribed'));
+    }
+
+    public function unsubscribeFromForum(Request $request, Forum $forum): RedirectResponse
+    {
+        $this->forumSubscriptions->unsubscribe($this->viewer($request), $forum);
+
+        if ($request->input('redirect_to') === 'profile') {
+            return redirect()
+                ->route('profile.show', ['tab' => 'subscriptions'])
+                ->with('profile_status', __('profile.flash.subscription_removed'));
+        }
+
+        return $this->afterForumSubscription($request, $forum, __('forum.flash.forum_unsubscribed'));
+    }
+
+    private function afterForumSubscription(Request $request, Forum $forum, string $message): RedirectResponse
+    {
+        $returnTo = $this->internalPath($request->input('return_to'));
+
+        return redirect()
+            ->to($returnTo !== '' ? $returnTo : route('forums.show', $forum))
+            ->with('thread_status', $message)
+            ->with('thread_status_link', route('profile.show', ['tab' => 'subscriptions']));
     }
 
     private function viewer(Request $request): ?User
