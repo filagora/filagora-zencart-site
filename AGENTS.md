@@ -10,7 +10,7 @@ It replaces the old support site on the same production database. It starts as t
 
 ## Rules
 
-- **Production's database is the truth.** Packages and the profile bring their own migrations and `filagora:adopt` accepts the live tables. Host migrations touching a table production already has must do nothing there (add a column only if missing). Never rename or reshape a production table to tidy it.
+- **Production's database is the truth, and the site has no migrations.** Every table belongs to a package or to the profile (`filagora-zencart`, `database/migrations/site`), and `filagora:adopt` compares them all with the live tables. A new table or column goes there, with its snapshot; `database/migrations` here stays empty. Never rename or reshape a production table to tidy it.
 - **No deployment here.** Deploy scripts, the deploy workflow, server configuration and cutover runbooks live in the separate `filagora-zencart-deploy` repository, which deploys a built release of this one. This repository builds and tags releases; it never deploys them.
 - **Nothing in a deploy may change the dashboard's behaviour.** Behaviour comes from a release plus the host's `.env`; keep application code, config and migrations here and nothing application-shaped in the deploy repository.
 - **The generic demo must stay free of this site.** Do not copy anything site-specific back into `filagora-demo` or the packages; Zen Cart specifics belong in the profile (`filagora-zencart`) behind a package contract, or here.
