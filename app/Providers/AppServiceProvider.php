@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Filament\Auth\Responses\LoginResponse as AppLoginResponse;
 use App\Filament\Auth\Responses\RegistrationResponse as AppRegistrationResponse;
+use App\Forum\ReportedPostUrl;
 use App\Listeners\SendPluginMail;
 use App\Listeners\SendPrivacyMail;
 use App\Listeners\SendThreadSubscriptionMail;
@@ -50,6 +51,7 @@ use Filagora\Core\Settings\SettingsRegistry;
 use Filagora\Core\Settings\SettingType;
 use Filagora\Entitlements\Models\EntitlementRequest;
 use Filagora\Entitlements\Services\AuthorizationService;
+use Filagora\Forums\Contracts\PostUrlResolver;
 use Filagora\Forums\Contracts\StaffPreview;
 use Filagora\Forums\Events\ForumStatsChanged;
 use Filagora\Forums\Events\PostModerated;
@@ -101,6 +103,9 @@ class AppServiceProvider extends ServiceProvider
 
         // The forum package's "view as a member" switch follows the staff member's session toggle.
         $this->app->bind(StaffPreview::class, ForumStaffPreview::class);
+
+        // The dashboard's Read action on a post report opens the post, on its page, in a new tab.
+        $this->app->bind(PostUrlResolver::class, ReportedPostUrl::class);
 
         // Rendered post and notice HTML is reused instead of re-parsed on every view.
         $this->app->singleton(FormattedContentRenderer::class, fn ($app): FormattedContentRenderer => new FormattedContentRenderer(

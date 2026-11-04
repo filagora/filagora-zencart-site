@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "882f7661d0dd024d811690c8b96d3298",
+    "content-hash": "591ae8f7a0b11781aa8683ae0006ff2e",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1711,16 +1711,16 @@
         },
         {
             "name": "filagora/filagora-forums",
-            "version": "v0.6.2",
+            "version": "v0.6.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-forums.git",
-                "reference": "debfca2d76bb4be9e889d4d6fc53db0da2dc332a"
+                "reference": "a2f0d3889fd011952da51cc8ce3063443b38de18"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-forums/zipball/debfca2d76bb4be9e889d4d6fc53db0da2dc332a",
-                "reference": "debfca2d76bb4be9e889d4d6fc53db0da2dc332a",
+                "url": "https://api.github.com/repos/filagora/filagora-forums/zipball/a2f0d3889fd011952da51cc8ce3063443b38de18",
+                "reference": "a2f0d3889fd011952da51cc8ce3063443b38de18",
                 "shasum": ""
             },
             "require": {
@@ -1769,9 +1769,9 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-forums/issues",
-                "source": "https://github.com/filagora/filagora-forums/tree/v0.6.2"
+                "source": "https://github.com/filagora/filagora-forums/tree/v0.6.3"
             },
-            "time": "2026-10-30T12:25:56+00:00"
+            "time": "2026-11-04T13:45:19+00:00"
         },
         {
             "name": "filagora/filagora-logs",
