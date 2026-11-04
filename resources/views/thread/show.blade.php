@@ -116,12 +116,14 @@
                             ])
 
                             <p class="{{ $menuHeadingClass }}">More</p>
-                            <form method="post" action="{{ route('threads.bug-reports.store', $thread) }}" data-thread-moderation-form>
-                                @csrf
-                                <input type="hidden" name="action" value="report_bug">
-                                <input type="hidden" name="description" value="" data-thread-moderation-reason>
-                                <button type="submit" class="{{ $menuItemClass }}">Report as Bug&hellip;</button>
-                            </form>
+                            @if($bugReportsEnabled)
+                                <form method="post" action="{{ route('threads.bug-reports.store', $thread) }}" data-thread-moderation-form>
+                                    @csrf
+                                    <input type="hidden" name="action" value="report_bug">
+                                    <input type="hidden" name="description" value="" data-thread-moderation-reason>
+                                    <button type="submit" class="{{ $menuItemClass }}">Report as Bug&hellip;</button>
+                                </form>
+                            @endif
                             @unless($thread->poll)
                                 <a href="{{ route('threads.poll.create', $thread) }}" class="{{ $menuItemClass }}">Add Poll</a>
                             @endunless
@@ -273,11 +275,11 @@
                 @foreach($bugReports as $bugReport)
                     @php
                         $bugReportStatusClass = match($bugReport->status) {
-                            \App\BugReportStatus::REPORTED => 'inline-flex items-center rounded-pill border border-[#933c1f] bg-[#f7e8df] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.03em] text-[#933c1f]',
-                            \App\BugReportStatus::CONFIRMED => 'inline-flex items-center rounded-pill border border-[#8f7a1f] bg-[#fbf6df] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.03em] text-[#8f7a1f]',
-                            \App\BugReportStatus::COMPLETED => 'inline-flex items-center rounded-pill border border-[#1f8f4a] bg-[#dffbe8] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.03em] text-[#1f8f4a]',
-                            \App\BugReportStatus::FEATURE_REQUEST => 'inline-flex items-center rounded-pill border border-[#1f4a8f] bg-[#dfe8fb] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.03em] text-[#1f4a8f]',
-                            \App\BugReportStatus::WONT_FIX => 'inline-flex items-center rounded-pill border border-[#5c6570] bg-[#eceef0] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.03em] text-[#5c6570]',
+                            \Filagora\ForumBugReports\Enums\BugReportStatus::REPORTED => 'inline-flex items-center rounded-pill border border-[#933c1f] bg-[#f7e8df] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.03em] text-[#933c1f]',
+                            \Filagora\ForumBugReports\Enums\BugReportStatus::CONFIRMED => 'inline-flex items-center rounded-pill border border-[#8f7a1f] bg-[#fbf6df] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.03em] text-[#8f7a1f]',
+                            \Filagora\ForumBugReports\Enums\BugReportStatus::COMPLETED => 'inline-flex items-center rounded-pill border border-[#1f8f4a] bg-[#dffbe8] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.03em] text-[#1f8f4a]',
+                            \Filagora\ForumBugReports\Enums\BugReportStatus::FEATURE_REQUEST => 'inline-flex items-center rounded-pill border border-[#1f4a8f] bg-[#dfe8fb] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.03em] text-[#1f4a8f]',
+                            \Filagora\ForumBugReports\Enums\BugReportStatus::WONT_FIX => 'inline-flex items-center rounded-pill border border-[#5c6570] bg-[#eceef0] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.03em] text-[#5c6570]',
                         };
                         $bugReportedByName = $bugReport->reportedBy?->username ?? $bugReport->reportedBy?->name ?? 'Unknown';
                         $bugAssignedToName = $bugReport->assignedTo?->username ?? $bugReport->assignedTo?->name;
@@ -306,7 +308,7 @@
                                     <div>
                                         <label for="bug-report-status-{{ $bugReport->id }}" class="block text-xs font-semibold text-[#5c6570]">Status</label>
                                         <select id="bug-report-status-{{ $bugReport->id }}" name="status" class="rounded-control border border-[#d8dce2] bg-white px-2 py-1.5 text-sm text-[#0f2133]">
-                                            @foreach(\App\BugReportStatus::cases() as $statusOption)
+                                            @foreach(\Filagora\ForumBugReports\Enums\BugReportStatus::cases() as $statusOption)
                                                 <option value="{{ $statusOption->value }}" @selected($bugReport->status === $statusOption)>{{ $statusOption->label() }}</option>
                                             @endforeach
                                         </select>

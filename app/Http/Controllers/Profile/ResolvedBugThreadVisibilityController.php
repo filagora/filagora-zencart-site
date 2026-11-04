@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Profile;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Support\ResolvedBugThreadVisibility;
+use Filagora\ForumBugReports\Services\ResolvedBugThreadVisibility;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 

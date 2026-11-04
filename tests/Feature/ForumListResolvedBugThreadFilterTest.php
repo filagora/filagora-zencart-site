@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\BugReportStatus;
-use App\Models\BugReport;
 use App\Models\User;
-use App\Support\ResolvedBugThreadVisibility;
+use Filagora\ForumBugReports\Enums\BugReportStatus;
+use Filagora\ForumBugReports\Models\BugReport;
+use Filagora\ForumBugReports\Services\ResolvedBugThreadVisibility;
 use Filagora\Forums\Enums\ContentModerationStatus;
 use Filagora\Forums\Enums\ForumPostingPolicy;
 use Filagora\Forums\Enums\ForumVisibility;

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "381db671f9280482f0560031ce88e39c",
+    "content-hash": "206f64434a3747424fc6e0e9aac419e0",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1710,6 +1710,78 @@
             "time": "2026-10-14T21:35:42+00:00"
         },
         {
+            "name": "filagora/filagora-forum-bugreports",
+            "version": "v0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/filagora/filagora-forum-bugreports.git",
+                "reference": "d244d71eeb00e0b2c578dd7beb46cafba0dc694c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/filagora/filagora-forum-bugreports/zipball/d244d71eeb00e0b2c578dd7beb46cafba0dc694c",
+                "reference": "d244d71eeb00e0b2c578dd7beb46cafba0dc694c",
+                "shasum": ""
+            },
+            "require": {
+                "filagora/filagora-core": "^0.2.2",
+                "filagora/filagora-forums": "^0.6",
+                "filament/filament": "^5.0",
+                "php": "^8.4"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.0",
+                "orchestra/testbench": "^11.0",
+                "pestphp/pest": "^4.0",
+                "pestphp/pest-plugin-laravel": "^4.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Filagora\\ForumBugReports\\ForumBugReportsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Filagora\\ForumBugReports\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Filagora\\ForumBugReports\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/pest"
+                ],
+                "lint": [
+                    "vendor/bin/pint"
+                ],
+                "analyse": [
+                    "vendor/bin/phpstan analyse --memory-limit=1G"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Bug reports on forum threads, an optional add-on for filagora-forums.",
+            "keywords": [
+                "filament",
+                "filament-plugin",
+                "forum",
+                "laravel"
+            ],
+            "support": {
+                "source": "https://github.com/filagora/filagora-forum-bugreports/tree/v0.1.0",
+                "issues": "https://github.com/filagora/filagora-forum-bugreports/issues"
+            },
+            "time": "2026-11-04T19:38:26+00:00"
+        },
+        {
             "name": "filagora/filagora-forums",
             "version": "v0.6.3",
             "source": {
@@ -2270,16 +2342,16 @@
         },
         {
             "name": "filagora/filagora-zencart",
-            "version": "v0.7.0",
+            "version": "v0.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-zencart.git",
-                "reference": "87895fdbc67f5eb631adde19ed568093112b22f8"
+                "reference": "fcdeaade52c3914259578a4f9128762919653b1b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/87895fdbc67f5eb631adde19ed568093112b22f8",
-                "reference": "87895fdbc67f5eb631adde19ed568093112b22f8",
+                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/fcdeaade52c3914259578a4f9128762919653b1b",
+                "reference": "fcdeaade52c3914259578a4f9128762919653b1b",
                 "shasum": ""
             },
             "require": {
@@ -2342,10 +2414,10 @@
                 "zen-cart"
             ],
             "support": {
-                "source": "https://github.com/filagora/filagora-zencart/tree/v0.7.0",
+                "source": "https://github.com/filagora/filagora-zencart/tree/v0.8.0",
                 "issues": "https://github.com/filagora/filagora-zencart/issues"
             },
-            "time": "2026-11-04T18:24:44+00:00"
+            "time": "2026-11-04T19:38:29+00:00"
         },
         {
             "name": "filament/actions",

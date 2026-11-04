@@ -242,13 +242,6 @@ return [
     ],
     'bug_report' => [
         'subject' => 'Bug report update: :thread',
-        'changes' => [
-            'reported' => 'This thread was reported as a bug (:status).',
-            'status' => 'Status changed from :from to :to.',
-            'assigned' => 'Assigned to :name.',
-            'unassigned' => 'Unassigned.',
-            'note' => 'Note: :note',
-        ],
         'email' => [
             'title' => 'Bug Report Update',
             'intro' => 'A bug report on a thread you subscribed to has changed.',
