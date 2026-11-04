@@ -5,6 +5,7 @@ use App\Http\Middleware\ApplySearchIconToggleOverride;
 use App\Http\Middleware\EnsureFrontendEmailIsVerified;
 use App\Http\Middleware\EnsurePluginSubmissionsAreOpen;
 use App\Http\Middleware\FrontendMaintenanceMode;
+use App\Http\Middleware\NoindexPrivateAndThinPages;
 use App\Http\Middleware\RecordUserLastSeen;
 use App\Http\Middleware\RepairLegacyPathEncoding;
 use App\Http\Middleware\RequestTimingMiddleware;
@@ -28,6 +29,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Opt-in: only enforced when APP_TRUSTED_HOSTS lists hostnames. See TrustedHosts.
         $middleware->trustHosts(at: fn (): array => TrustedHosts::patterns(), subdomains: false);
+
+        // Global rather than in the web group: Filament panels don't run `web`, and the dashboard is
+        // the main thing this needs to cover.
+        $middleware->append(NoindexPrivateAndThinPages::class);
 
         $middleware->web(prepend: [
             FrontendMaintenanceMode::class,

@@ -49,7 +49,7 @@
     method="get"
     action="{{ route('forums.search') }}"
     role="search"
-    class="relative grid w-full min-w-0 gap-2"
+    class="relative grid w-full min-w-0 grid-cols-1 gap-2"
     data-forum-search-bar
     data-forum-options-url="{{ route('forums.search.forum-options') }}"
 >
@@ -92,7 +92,10 @@
                 data-placeholder-forum="{{ __('forum.search.placeholder_forum', ['forum' => '__FORUM__']) }}"
                 data-placeholder-all="{{ __('forum.search.placeholder_all') }}"
             >
-            <button type="submit" class="rounded-r-control border-0 bg-[#0f4c81] px-3 text-sm font-semibold text-white transition hover:bg-[#0b3d67] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f4c81]">{{ __('forum.search.submit') }}</button>
+            <button type="submit" class="rounded-r-control border-0 bg-[#0f4c81] px-3 text-sm font-semibold text-white transition hover:bg-[#0b3d67] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f4c81]">
+                <span class="sr-only">{{ __('forum.search.submit') }}</span>
+                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg>
+            </button>
         </div>
     </div>
 

@@ -28,6 +28,21 @@ class BugReportTest extends TestCase
 {
     use RefreshDatabase, SeedsSitePages;
 
+    public function test_thread_page_shows_bug_reports_in_a_collapsible_section_that_starts_collapsed(): void
+    {
+        $thread = $this->createPublicThread();
+        $moderator = $this->createModerator();
+
+        $this->actingAs($moderator)->post(route('threads.bug-reports.store', $thread), [
+            'description' => 'Checkout fails with a fatal error.',
+        ]);
+
+        $this->get(route('threads.show', $thread))
+            ->assertOk()
+            ->assertSee('<details id="bug-reports" class="mb-4 border border-[#d8dce2] bg-white p-3" data-bug-reports-section>', false)
+            ->assertSeeInOrder(['<summary', 'Bug Reports', '(1)', '</summary>'], false);
+    }
+
     public function test_staff_can_report_a_thread_as_a_bug(): void
     {
         $thread = $this->createPublicThread();

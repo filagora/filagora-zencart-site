@@ -249,6 +249,35 @@ class PostReportTest extends TestCase
         Notification::assertNothingSentTo($reporter);
     }
 
+    public function test_staff_see_who_reported_a_post_and_why_but_members_do_not(): void
+    {
+        [$thread, $post] = $this->createPublicThreadWithPost();
+        $reporter = User::factory()->create(['username' => 'sharp_eyed_reporter']);
+        $moderator = User::factory()->create();
+        $this->grantCanonicalOperatorEntitlements($moderator, 'forum_moderator');
+
+        PostReport::query()->create([
+            'post_id' => $post->id,
+            'thread_id' => $thread->id,
+            'reporter_id' => $reporter->id,
+            'reason' => 'Posting affiliate links',
+            'status' => PostReportStatus::OPEN->value,
+        ]);
+
+        $this->actingAs($moderator)
+            ->get(route('threads.show', $thread))
+            ->assertOk()
+            ->assertSee('data-post-report-details', false)
+            ->assertSee('sharp_eyed_reporter')
+            ->assertSee('Posting affiliate links');
+
+        $this->actingAs($reporter)
+            ->get(route('threads.show', $thread))
+            ->assertOk()
+            ->assertDontSee('data-post-report-details', false)
+            ->assertDontSee('Posting affiliate links');
+    }
+
     /**
      * @return array{0: Thread, 1: Post}
      */

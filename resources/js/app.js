@@ -11,6 +11,7 @@ const pageModules = [
     ['[data-rich-editor]', () => import('./modules/markdown-editor-rich')],
     ['.forum-rendered-content, .cms-rich-content', () => import('./modules/code-highlight')],
     ['#report-post-modal', () => import('./modules/thread-show')],
+    ['[data-bug-reports-section]', () => import('./modules/bug-reports-section')],
     ['[data-relocate-dialog]', () => import('./modules/moderation-relocate')],
     ['[data-thread-delete-dialog]', () => import('./modules/thread-delete-dialog')],
     ['[data-report-resolve-form]', () => import('./modules/report-resolve')],

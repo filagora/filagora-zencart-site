@@ -264,9 +264,12 @@
     @endif
 
     @if($bugReports?->isNotEmpty() ?? false)
-        <section id="bug-reports" class="mb-4 border border-[#d8dce2] bg-white p-3">
-            <h2>Bug Reports</h2>
-            <ul class="grid gap-3">
+        <details id="bug-reports" class="mb-4 border border-[#d8dce2] bg-white p-3" data-bug-reports-section>
+            <summary class="cursor-pointer">
+                <strong>Bug Reports</strong>
+                <span class="text-xs text-[#5c6570]">({{ $bugReports->count() }})</span>
+            </summary>
+            <ul class="mt-3 grid gap-3">
                 @foreach($bugReports as $bugReport)
                     @php
                         $bugReportStatusClass = match($bugReport->status) {
@@ -328,7 +331,7 @@
                     </li>
                 @endforeach
             </ul>
-        </section>
+        </details>
     @endif
 
     @if($thread->poll)
@@ -677,6 +680,17 @@
                                 <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
                                 <span><strong class="font-semibold">This post has been reported</strong> and is awaiting staff review.</span>
                             </div>
+                            @if(($canModerateThread ?? false) && ($openReportsByPost[$post->id] ?? collect())->isNotEmpty())
+                                <ul class="mb-3 grid gap-1 border border-[#e7d3b8] bg-white px-3 py-2 text-sm text-[#304458]" data-post-report-details>
+                                    @foreach($openReportsByPost[$post->id] as $postReport)
+                                        <li>
+                                            <strong class="font-semibold">{{ $postReport->reporter?->username ?: ($postReport->reporter?->name ?: 'Unknown') }}</strong>
+                                            <span class="text-xs text-[#5c6570]">&middot; {{ \App\Support\LocalTime::format($postReport->created_at) }}</span>
+                                            <span class="block">{{ trim((string) $postReport->reason) !== '' ? trim((string) $postReport->reason) : 'No reason given.' }}</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
                         @endif
                         @if($post->is_deleted)
                             <div class="{{ $threadErrorClass }} mb-0">
