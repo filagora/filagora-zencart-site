@@ -122,6 +122,7 @@ class SitemapGenerator
         ForumModels::class('forum')::query()
             ->where('is_active', true)
             ->where('visibility', ForumVisibility::PUBLIC->value)
+            ->where('noindex', false)
             ->orderBy('id')
             ->chunkById(250, function ($forums): void {
                 foreach ($forums as $forum) {

@@ -32,6 +32,8 @@ return [
         'post_updated' => 'Post updated.',
         'thread_subscribed' => 'Thread subscribed.',
         'thread_unsubscribed' => 'Thread unsubscribed.',
+        'forum_subscribed' => 'You will be notified of new threads in this forum.',
+        'forum_unsubscribed' => 'You will no longer be notified of new threads in this forum.',
         'thread_locked' => 'Thread locked.',
         'thread_unlocked' => 'Thread unlocked.',
         'thread_pinned' => 'Thread pinned.',

@@ -65,6 +65,14 @@ class NoindexPrivateAndThinPagesTest extends TestCase
         $this->get(route('threads.show', $thread))->assertHeaderMissing('X-Robots-Tag');
     }
 
+    public function test_a_forum_flagged_noindex_marks_its_page_and_threads_noindex(): void
+    {
+        $thread = $this->createPublicThread(noindex: true);
+
+        $this->get(route('forums.show', $thread->forum))->assertHeader('X-Robots-Tag', 'noindex, nofollow');
+        $this->get(route('threads.show', $thread))->assertHeader('X-Robots-Tag', 'noindex, nofollow');
+    }
+
     private function createPublicThread(bool $noindex): Thread
     {
         $group = ForumGroup::query()->create(['name' => 'General', 'slug' => 'general-noindex', 'is_active' => true]);

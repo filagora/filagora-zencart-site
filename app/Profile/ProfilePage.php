@@ -16,6 +16,7 @@ use Filagora\Compliance\Services\PolicyAcceptance;
 use Filagora\Entitlements\Models\EntitlementDefinition;
 use Filagora\Entitlements\Models\EntitlementRequest;
 use Filagora\Entitlements\Services\EntitlementResolver;
+use Filagora\Forums\Services\ForumSubscriptions;
 use Filagora\Memberships\Models\MembershipPlan;
 use Filagora\Memberships\Models\UserMembership;
 use Filagora\Memberships\Services\Memberships;
@@ -63,6 +64,7 @@ class ProfilePage
             'twoFactorSetup' => $this->twoFactorSetup($user),
             'newRecoveryCodes' => session('new_recovery_codes'),
             'recoveryCodesRemainingCount' => $user->recoveryCodesRemainingCount(),
+            'forumSubscriptions' => app(ForumSubscriptions::class)->forumsFollowedBy($user),
             'threadSubscriptions' => $user->subscribedThreads()
                 ->with(['forum:id,name,slug', 'lastPostAuthor:id,username,name,email'])
                 ->orderByRaw('COALESCE(threads.last_post_at, threads.created_at) desc')

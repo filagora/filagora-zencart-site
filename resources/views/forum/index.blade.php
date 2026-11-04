@@ -7,11 +7,15 @@
     @php
         $decodeLegacyText = static fn (?string $value): string => \App\Support\LegacyTextDecoder::decode($value);
         $renderLegacyDescription = static fn (?string $value): string => \App\Support\LegacyTextDecoder::renderDescription($value);
+        $canSubscribeToForums = auth()->check() && auth()->user()?->hasVerifiedEmail();
     @endphp
 
     <div class="mx-auto max-w-[1320px] px-6 py-8 md:px-10">
     @include('partials.site_guest_intro')
     @include('forum.partials.unverified_banner')
+    @if(session('thread_status'))
+        <div class="mb-4 rounded-surface border border-[#b9d6bd] bg-[#f1fbf2] px-3 py-2 text-sm text-[#1f5130]" role="status" aria-live="polite">{{ session('thread_status') }}@if(session('thread_status_link')) <a href="{{ session('thread_status_link') }}" class="font-semibold underline">Manage subscriptions</a>@endif</div>
+    @endif
     @include('forum.partials.header_nav')
 
     <header class="mb-5">
@@ -46,7 +50,7 @@
                         $meta = $forumMeta[(int) $forum->id] ?? ['threadCount' => 0, 'postCount' => 0, 'lastPost' => null];
                         $lastPost = $meta['lastPost'] ?? null;
                     @endphp
-                    <article class="grid gap-3 px-4 py-3 lg:grid-cols-[1.5fr_auto_1fr] lg:items-start">
+                    <article class="grid gap-3 px-4 py-3 lg:grid-cols-[1.5fr_auto_1fr_auto] lg:items-start">
                         <div class="min-w-0">
                             <h3 class="ui-card-title">
                                 <a class="hover:text-[#8f3f1f]" href="{{ route('forums.show', $forum) }}">{{ $decodeLegacyText($forum->name) }}</a>
@@ -76,6 +80,16 @@
                                 </p>
                             @else
                                 <p>No posts yet</p>
+                            @endif
+                        </div>
+                        <div class="lg:justify-self-end">
+                            @if($canSubscribeToForums)
+                                @php $isSubscribed = in_array((int) $forum->id, $subscribedForumIds ?? [], true); @endphp
+                                <form method="post" action="{{ route($isSubscribed ? 'forums.unsubscribe' : 'forums.subscribe', $forum) }}">
+                                    @csrf
+                                    <input type="hidden" name="return_to" value="{{ request()->getRequestUri() }}">
+                                    <button type="submit" class="inline-flex items-center rounded-control border px-3 py-1.5 text-xs font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8f3f1f] {{ $isSubscribed ? 'border-[#d8dce2] bg-white text-[#5c6570] hover:border-[#b9a68d] hover:text-[#8f3f1f]' : 'border-[#b9a68d] bg-white text-[#8f3f1f] hover:bg-[#f7e8df]' }}">{{ $isSubscribed ? 'Unsubscribe' : 'Subscribe' }}</button>
+                                </form>
                             @endif
                         </div>
                     </article>

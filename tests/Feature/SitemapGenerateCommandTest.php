@@ -50,6 +50,25 @@ class SitemapGenerateCommandTest extends TestCase
         $this->assertSame(substr_count($xml, '<loc>'.route('home').'</loc>'), 1);
     }
 
+    public function test_forums_flagged_noindex_are_left_out(): void
+    {
+        Storage::fake('public');
+
+        $group = ForumGroup::query()->create(['name' => 'General', 'slug' => 'general', 'is_active' => true, 'sort_order' => 1]);
+        $forums = [];
+
+        foreach (['indexed-forum' => false, 'hidden-forum' => true] as $slug => $noindex) {
+            $forums[$slug] = Forum::query()->create(['forum_group_id' => $group->id, 'name' => $slug, 'slug' => $slug, 'is_active' => true, 'visibility' => ForumVisibility::PUBLIC, 'noindex' => $noindex]);
+        }
+
+        $this->artisan('sitemap:generate')->assertExitCode(0);
+
+        $xml = Storage::disk('public')->get('sitemap.xml');
+
+        $this->assertStringContainsString('<loc>'.route('forums.show', $forums['indexed-forum']).'</loc>', $xml);
+        $this->assertStringNotContainsString(route('forums.show', $forums['hidden-forum']), $xml);
+    }
+
     public function test_it_is_scheduled_daily(): void
     {
         $event = collect(app(Schedule::class)->events())->first(

@@ -43,6 +43,13 @@
                 @endif
             </div>
             <div class="inline-flex flex-wrap items-center gap-2">
+                @if($canManageSubscriptions)
+                    <form method="post" action="{{ route(($isForumSubscribed ?? false) ? 'forums.unsubscribe' : 'forums.subscribe', $forum) }}">
+                        @csrf
+                        <input type="hidden" name="return_to" value="{{ request()->getRequestUri() }}">
+                        <button type="submit" class="{{ $threadActionButtonClass }}">{{ ($isForumSubscribed ?? false) ? 'Unsubscribe' : 'Subscribe' }}</button>
+                    </form>
+                @endif
                 @if($canReplyFromForumPage)
                     <a href="{{ route('threads.create.form', $forum) }}" class="{{ $threadPrimaryActionClass }}">Start New Thread</a>
                 @elseif(auth()->check() && !auth()->user()?->hasVerifiedEmail())
@@ -96,7 +103,7 @@
     @endif
 
     @if(session('thread_status'))
-        <div class="{{ $threadStatusClass }}" role="status" aria-live="polite">{{ session('thread_status') }}</div>
+        <div class="{{ $threadStatusClass }}" role="status" aria-live="polite">{{ session('thread_status') }}@if(session('thread_status_link')) <a href="{{ session('thread_status_link') }}" class="font-semibold underline">Manage subscriptions</a>@endif</div>
     @endif
     @if($errors->has('reason'))
         <div class="{{ $threadErrorClass }}" role="alert" aria-live="assertive">{{ $errors->first('reason') }}</div>
