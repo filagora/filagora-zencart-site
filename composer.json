@@ -12,6 +12,7 @@
         "filagora/filagora-compliance": "^0.1",
         "filagora/filagora-core": "^0.2.2",
         "filagora/filagora-entitlements": "^0.2",
+        "filagora/filagora-forum-bugreports": "dev-master",
         "filagora/filagora-forums": "^0.6.3",
         "filagora/filagora-logs": "^0.2",
         "filagora/filagora-memberships": "^0.1.1",
@@ -109,6 +110,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/filagora/filagora-zencart"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/filagora/filagora-forum-bugreports"
         }
     ]
 }

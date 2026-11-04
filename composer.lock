@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "381db671f9280482f0560031ce88e39c",
+    "content-hash": "38c4d10ad4f6cd516e899bb0abb8bf47",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1708,6 +1708,79 @@
                 "source": "https://github.com/filagora/filagora-entitlements/tree/v0.2.2"
             },
             "time": "2026-10-14T21:35:42+00:00"
+        },
+        {
+            "name": "filagora/filagora-forum-bugreports",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/filagora/filagora-forum-bugreports.git",
+                "reference": "3a89023107c248765cd413a2a8d24e30a68adfe5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/filagora/filagora-forum-bugreports/zipball/3a89023107c248765cd413a2a8d24e30a68adfe5",
+                "reference": "3a89023107c248765cd413a2a8d24e30a68adfe5",
+                "shasum": ""
+            },
+            "require": {
+                "filagora/filagora-core": "^0.2.2",
+                "filagora/filagora-forums": "^0.6",
+                "filament/filament": "^5.0",
+                "php": "^8.4"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.0",
+                "orchestra/testbench": "^11.0",
+                "pestphp/pest": "^4.0",
+                "pestphp/pest-plugin-laravel": "^4.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Filagora\\ForumBugReports\\ForumBugReportsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Filagora\\ForumBugReports\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Filagora\\ForumBugReports\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/pest"
+                ],
+                "lint": [
+                    "vendor/bin/pint"
+                ],
+                "analyse": [
+                    "vendor/bin/phpstan analyse --memory-limit=1G"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Bug reports on forum threads, an optional add-on for filagora-forums.",
+            "keywords": [
+                "filament",
+                "filament-plugin",
+                "forum",
+                "laravel"
+            ],
+            "support": {
+                "source": "https://github.com/filagora/filagora-forum-bugreports/tree/master",
+                "issues": "https://github.com/filagora/filagora-forum-bugreports/issues"
+            },
+            "time": "2026-11-04T18:57:43+00:00"
         },
         {
             "name": "filagora/filagora-forums",
@@ -14681,7 +14754,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "filagora/filagora-forum-bugreports": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

@@ -28,7 +28,6 @@ return [
         'moderation_queue' => 'Moderation Queue',
         'post_reports' => 'Post Reports',
         'plugin_reports' => 'Plugin Reports',
-        'bug_reports' => 'Bug Reports',
         'entitlement_requests' => 'Entitlement Requests',
         'privacy_requests' => 'Privacy Requests',
         // Plugins

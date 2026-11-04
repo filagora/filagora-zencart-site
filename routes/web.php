@@ -1,5 +1,6 @@
 <?php
 
+use App\Forum\BugReportsFeature;
 use App\Http\Controllers\ApiDocsController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\BugReportController;
@@ -163,9 +164,12 @@ Route::middleware('frontend.verified')->group(function (): void {
     Route::post('/profile/entitlement-requests', [AccountRequestController::class, 'storeEntitlementRequest'])->name('profile.entitlement-requests.store');
     Route::post('/profile/privacy-requests', [AccountRequestController::class, 'storePrivacyRequest'])->middleware('throttle:privacy-request-submit')->name('profile.privacy-requests.store');
     Route::get('/profile/privacy-requests/{privacyRequest}/export', [AccountRequestController::class, 'downloadPrivacyExport'])->middleware('signed')->name('profile.privacy-requests.export.download');
-    Route::post('/profile/hide-resolved-bug-threads', ResolvedBugThreadVisibilityController::class)->name('profile.hide-resolved-bug-threads.update');
-    Route::post('/threads/{thread}/bug-reports', [BugReportController::class, 'store'])->name('threads.bug-reports.store');
-    Route::post('/bug-reports/{bugReport}', [BugReportController::class, 'update'])->name('bug-reports.update');
+    if (BugReportsFeature::installed()) {
+        Route::post('/profile/hide-resolved-bug-threads', ResolvedBugThreadVisibilityController::class)->name('profile.hide-resolved-bug-threads.update');
+        Route::post('/threads/{thread}/bug-reports', [BugReportController::class, 'store'])->name('threads.bug-reports.store');
+        Route::post('/bug-reports/{bugReport}', [BugReportController::class, 'update'])->name('bug-reports.update');
+    }
+
     Route::post('/staff/impersonation/stop', [StaffUserImpersonationController::class, 'stop'])->name('staff.impersonation.stop');
     Route::get('/staff/impersonation/{user}', static function (): never {
         abort(405);

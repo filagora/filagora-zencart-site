@@ -2,10 +2,9 @@
 
 namespace App\Forum;
 
-use App\BugReportStatus;
-use App\Models\BugReport;
 use App\Models\User;
 use Carbon\CarbonInterface;
+use Filagora\ForumBugReports\Services\BugReports;
 use Filagora\Forums\Enums\ContentModerationStatus;
 use Filagora\Forums\Models\Thread;
 use Filagora\Forums\Models\ThreadRead;
@@ -119,10 +118,7 @@ class ThreadListings
         }
 
         if ($hideResolvedBugs) {
-            // A thread stays unless every bug report on it is closed out: none at all, or one still open.
-            $query->where(fn (Builder $threads) => $threads
-                ->whereDoesntHave('bugReports')
-                ->orWhereHas('bugReports', fn (Builder $reports) => $reports->whereNotIn('status', BugReportStatus::terminalValues())));
+            app(BugReports::class)->hideResolved($query);
         }
 
         return $query;
@@ -193,12 +189,7 @@ class ThreadListings
             }
         }
 
-        $latestBugReportStatusByThreadId = BugReport::query()
-            ->whereIn('thread_id', $threadIds)
-            ->orderByDesc('created_at')
-            ->get(['thread_id', 'status'])
-            ->groupBy(fn (BugReport $bugReport): int => (int) $bugReport->thread_id)
-            ->map(fn ($reports) => $reports->first()->status);
+        $latestBugReportStatusByThreadId = app(BugReportsFeature::class)->latestStatusByThread($threadIds);
 
         $attachmentsByThreadId = Models::class('post_attachment')::query()
             ->select([

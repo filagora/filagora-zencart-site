@@ -6,6 +6,7 @@ use App\Filament\Pages\Auth\EmailVerificationPrompt;
 use App\Filament\Pages\Auth\Login as UsernameLogin;
 use App\Filament\Pages\Auth\Register as FrontendRegister;
 use App\Filament\Widgets\EntitlementRequestQueueStats;
+use App\Forum\BugReportsFeature;
 use App\Http\Middleware\EnsureBannedDashboardUserIsLoggedOut;
 use App\Http\Middleware\EnsureDashboardAccess;
 use App\Http\Middleware\ThrottleAuthEndpoints;
@@ -17,6 +18,7 @@ use Filagora\Core\FilagoraCorePlugin;
 use Filagora\Core\Navigation\NavigationGroupRegistry;
 use Filagora\Entitlements\FilagoraEntitlementsPlugin;
 use Filagora\Entitlements\Services\AuthorizationService;
+use Filagora\ForumBugReports\FilagoraForumBugReportsPlugin;
 use Filagora\Forums\FilagoraForumsPlugin;
 use Filagora\Forums\Filament\Widgets\ModerationQueueStats;
 use Filagora\Logs\FilagoraLogsPlugin;
@@ -78,6 +80,7 @@ class AdminPanelProvider extends PanelProvider
                 FilagoraMessagesPlugin::make(),
                 FilagoraMembershipsPlugin::make(),
                 NotificationsPlugin::make(),
+                ...(BugReportsFeature::installed() ? [FilagoraForumBugReportsPlugin::make()] : []),
                 FilagoraPluginsPlugin::make(),
                 FilagoraPluginsSecurityPlugin::make(),
             ])

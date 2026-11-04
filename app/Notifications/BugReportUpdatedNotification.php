@@ -2,9 +2,9 @@
 
 namespace App\Notifications;
 
-use App\Models\BugReport;
 use App\Models\User;
 use App\Notifications\Channels\CoalescingDatabaseChannel;
+use Filagora\ForumBugReports\Models\BugReport;
 use Filagora\Notifications\Enums\NotificationChannel;
 use Filagora\Notifications\Services\Preferences;
 use Filagora\Notifications\Services\Unsubscribe;

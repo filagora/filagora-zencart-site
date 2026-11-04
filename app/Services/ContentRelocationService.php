@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Forum\BugReportsFeature;
 use App\Models\User;
 use App\Support\RelocationResult;
 use Carbon\CarbonInterface;
@@ -119,7 +120,7 @@ class ContentRelocationService
     {
         return ! Post::query()->where('thread_id', $thread->id)->exists()
             && $thread->poll()->doesntExist()
-            && $thread->bugReports()->doesntExist();
+            && (! BugReportsFeature::installed() || $thread->bugReports()->doesntExist());
     }
 
     /**

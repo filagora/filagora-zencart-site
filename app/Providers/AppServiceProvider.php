@@ -4,25 +4,24 @@ namespace App\Providers;
 
 use App\Filament\Auth\Responses\LoginResponse as AppLoginResponse;
 use App\Filament\Auth\Responses\RegistrationResponse as AppRegistrationResponse;
+use App\Forum\BugReportsFeature;
 use App\Forum\ReportedPostUrl;
+use App\Listeners\SendBugReportNotification;
 use App\Listeners\SendPluginMail;
 use App\Listeners\SendPrivacyMail;
 use App\Listeners\SendThreadSubscriptionMail;
 use App\Mail\Transport\MailtrapApiTransport;
 use App\Markdown\BlankLineGapExtension;
 use App\Markdown\ZenCartHtmlTransformer;
-use App\Models\BugReport;
 use App\Models\Newsletter;
 use App\Models\NewsletterBlock;
 use App\Models\NewsletterSubscriber;
 use App\Models\User;
 use App\Notifications\BellListeners;
-use App\Observers\BugReportObserver;
 use App\Observers\BumpPluginsIndexCacheObserver;
 use App\Observers\EntitlementRequestObserver;
 use App\Observers\FlushForumsIndexCacheObserver;
 use App\Observers\SyncUserPostCountObserver;
-use App\Policies\BugReportPolicy;
 use App\Policies\ForumPostPolicy;
 use App\Policies\ForumThreadPolicy;
 use App\Policies\NewsletterBlockPolicy;
@@ -51,6 +50,7 @@ use Filagora\Core\Settings\SettingsRegistry;
 use Filagora\Core\Settings\SettingType;
 use Filagora\Entitlements\Models\EntitlementRequest;
 use Filagora\Entitlements\Services\AuthorizationService;
+use Filagora\ForumBugReports\Events\BugReportChanged;
 use Filagora\Forums\Contracts\PostUrlResolver;
 use Filagora\Forums\Contracts\StaffPreview;
 use Filagora\Forums\Events\ForumStatsChanged;
@@ -155,11 +155,9 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive('cmsMarkdownInline', fn (string $expression): string => "<?php echo \\App\\Support\\CmsMarkdown::inline({$expression}); ?>");
 
         Gate::policy(Post::class, ForumPostPolicy::class);
-        Gate::policy(BugReport::class, BugReportPolicy::class);
         Gate::policy(Newsletter::class, NewsletterPolicy::class);
         Gate::policy(NewsletterBlock::class, NewsletterBlockPolicy::class);
         Gate::policy(NewsletterSubscriber::class, NewsletterSubscriberPolicy::class);
-        BugReport::observe(BugReportObserver::class);
 
         // Staff acting as another member: needs the "act as" entitlement, never as themselves, and
         // never as an operator they could not themselves make.
@@ -187,7 +185,7 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Relations the public forum pages use that the forums package does not define: a post's
-     * attachments and reactions, a thread's poll and bug reports. Registered on the package's base
+     * attachments and reactions, a thread's poll. Registered on the package's base
      * models, which the site's own subclasses inherit.
      */
     private function registerForumRelations(): void
@@ -198,7 +196,6 @@ class AppServiceProvider extends ServiceProvider
         PluginReleaseModel::resolveRelationUsing('zcVersions', fn ($release) => $release->belongsToMany(ZcVersion::class, (new ZcVersion)->releasesTable(), 'plugin_release_id', 'plugin_zc_version_id')->withTimestamps());
         PluginModel::resolveRelationUsing('forumThread', fn ($plugin) => $plugin->belongsTo(Models::class('thread'), 'forum_thread_id'));
         Thread::resolveRelationUsing('poll', fn ($thread) => $thread->hasOne(Models::class('poll'), 'thread_id'));
-        Thread::resolveRelationUsing('bugReports', fn ($thread) => $thread->hasMany(BugReport::class, 'thread_id'));
     }
 
     /**
@@ -228,6 +225,10 @@ class AppServiceProvider extends ServiceProvider
         EntitlementRequest::observe(EntitlementRequestObserver::class);
 
         // The site's own privacy request mail, in place of the compliance package's.
+        if (BugReportsFeature::installed()) {
+            Event::listen(BugReportChanged::class, SendBugReportNotification::class);
+        }
+
         Event::listen(PrivacyRequestSubmitted::class, [SendPrivacyMail::class, 'submitted']);
         Event::listen(PrivacyRequestStatusChanged::class, [SendPrivacyMail::class, 'statusChanged']);
         Event::listen(PrivacyReplySent::class, [SendPrivacyMail::class, 'replied']);

@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\BugReportStatus;
-use App\Filament\Resources\BugReports\BugReportResource;
-use App\Models\BugReport;
 use App\Models\User;
-use App\Policies\BugReportPolicy;
+use Filagora\ForumBugReports\Enums\BugReportStatus;
+use Filagora\ForumBugReports\Filament\Resources\BugReports\BugReportResource;
+use Filagora\ForumBugReports\Models\BugReport;
+use Filagora\ForumBugReports\Policies\BugReportPolicy;
 use Filagora\Forums\Models\ForumGroup;
 use Filagora\ZenCart\Models\Forum;
 use Filagora\ZenCart\Models\Thread;

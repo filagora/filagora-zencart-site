@@ -210,20 +210,6 @@ return [
                 'reporter' => 'Reporter',
             ],
         ],
-        'bug_reports' => [
-            'model_label' => 'Bug Report',
-            'plural_model_label' => 'Bug Reports',
-            'badge_tooltip' => '{1} :count open bug report needs attention.|[2,*] :count open bug reports need attention.',
-            'table' => [
-                'thread' => 'Thread',
-                'reported_by' => 'Reported By',
-                'assigned_to' => 'Assigned To',
-            ],
-            'form' => [
-                'thread_id' => 'Thread ID',
-                'reported_by' => 'Reported By',
-            ],
-        ],
         'plugin_reports' => [
             'model_label' => 'Plugin Report',
             'plural_model_label' => 'Plugin Reports',

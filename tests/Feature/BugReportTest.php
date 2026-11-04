@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\BugReportStatus;
-use App\Models\BugReport;
 use App\Models\User;
 use App\Notifications\BugReportUpdatedNotification;
 use Carbon\Carbon;
 use Filagora\Entitlements\Models\UserEntitlementGrant;
+use Filagora\ForumBugReports\Enums\BugReportStatus;
+use Filagora\ForumBugReports\Models\BugReport;
 use Filagora\Forums\Enums\ContentModerationStatus;
 use Filagora\Forums\Enums\ForumPostingPolicy;
 use Filagora\Forums\Enums\ForumVisibility;

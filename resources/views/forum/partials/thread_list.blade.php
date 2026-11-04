@@ -44,15 +44,15 @@
                 : route('threads.show', $thread);
             $returnTo = request()->getRequestUri();
             $latestBugReportStatus = $thread->latest_bug_report_status ?? null;
-            $bugReportIconClass = match($latestBugReportStatus) {
-                \App\BugReportStatus::REPORTED => 'border-[#933c1f] text-[#933c1f]',
-                \App\BugReportStatus::CONFIRMED => 'border-[#8f7a1f] text-[#8f7a1f]',
-                \App\BugReportStatus::COMPLETED => 'border-[#1f8f4a] text-[#1f8f4a]',
-                \App\BugReportStatus::FEATURE_REQUEST => 'border-[#1f4a8f] text-[#1f4a8f]',
-                \App\BugReportStatus::WONT_FIX => 'border-[#5c6570] text-[#5c6570]',
+            $bugReportIconClass = match($latestBugReportStatus?->value) {
+                'reported' => 'border-[#933c1f] text-[#933c1f]',
+                'confirmed' => 'border-[#8f7a1f] text-[#8f7a1f]',
+                'completed' => 'border-[#1f8f4a] text-[#1f8f4a]',
+                'feature_request' => 'border-[#1f4a8f] text-[#1f4a8f]',
+                'wont_fix' => 'border-[#5c6570] text-[#5c6570]',
                 default => '',
             };
-            $bugReportIconTitle = $latestBugReportStatus instanceof \App\BugReportStatus
+            $bugReportIconTitle = $latestBugReportStatus !== null
                 ? 'Bug status: '.$latestBugReportStatus->label()
                 : null;
             $isSubscribed = in_array($thread->id, $subscribedThreadIds ?? [], true);
