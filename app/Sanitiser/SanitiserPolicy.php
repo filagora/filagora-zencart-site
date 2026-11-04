@@ -29,7 +29,7 @@ final class SanitiserPolicy
         'cms_pages', 'cms_page_drafts', 'cms_page_draft_variants', 'cms_page_tag', 'cms_page_versions',
         'cms_preview_shares', 'cms_tags', 'contacts', 'cookie_consent_cookies', 'cookie_consent_groups',
         'cookie_policy_versions', 'default_entitlement_grants', 'doc_pages', 'entitlement_definitions',
-        'forums', 'forum_groups', 'forum_reads', 'ignored_users', 'membership_plans',
+        'forums', 'forum_groups', 'forum_reads', 'forum_subscriptions', 'ignored_users', 'membership_plans',
         'membership_plan_prices', 'migrations', 'model_has_permissions', 'model_has_roles',
         'newsletters', 'newsletter_blocks', 'permissions', 'plugins', 'plugin_moderator_notes',
         'plugin_releases', 'plugin_release_scan_finding_reviews', 'plugin_release_security_scans',

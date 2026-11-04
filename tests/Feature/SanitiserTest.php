@@ -17,6 +17,11 @@ class SanitiserTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_forum_subscriptions_are_kept_as_a_member_to_forum_link_only(): void
+    {
+        $this->assertSame('keep', SanitiserPolicy::treatmentFor('forum_subscriptions'));
+    }
+
     public function test_the_ai_code_index_tables_are_purged(): void
     {
         $this->assertSame('purge', SanitiserPolicy::treatmentFor('code_chunks'));
