@@ -57,7 +57,16 @@
                         <span class="{{ $threadPinBadgeClass }}">Rejected</span>
                     @endif
                 </div>
-                <p class="mt-1 text-xs text-[#5c6570]">Views: {{ number_format((int) $thread->view_count) }}</p>
+                @php
+                    $threadStarter = $thread->author;
+                    $threadStarterLink = $threadStarter
+                        ? '<a class="font-semibold hover:underline focus-visible:underline" href="' . e(route('members.show', ['user' => $threadStarter->id])) . '">' . e($threadStarter->username ?? $threadStarter->name ?? 'Unknown') . '</a>'
+                        : e(__('forum.thread.unknown_author'));
+                @endphp
+                <p class="mt-1 text-xs text-[#5c6570]">
+                    {!! __('forum.thread.started_by', ['author' => $threadStarterLink, 'date' => e(\App\Support\LocalTime::format($thread->created_at))]) !!}
+                    &middot; Views: {{ number_format((int) $thread->view_count) }}
+                </p>
             </div>
             <div class="inline-flex flex-wrap items-center gap-2">
                 @if($canReply)
@@ -461,7 +470,7 @@
                     : route('threads.show', ['thread' => $thread, 'page' => $posts->currentPage()])
                 ) . '#post-' . $post->id;
             @endphp
-            <article class="overflow-hidden border border-[#d8dce2] bg-white" id="post-{{ $post->id }}">
+            <article class="scroll-mt-[100px] overflow-hidden border border-[#d8dce2] bg-white md:scroll-mt-[180px]" id="post-{{ $post->id }}">
                 @php $postNumber = ($posts->firstItem() ?? 1) + $index; @endphp
                 <div class="flex items-start justify-between gap-3 border-b border-[#d8dce2] px-3.5 py-2.5 text-xs text-[#5c6570]">
                     <div>

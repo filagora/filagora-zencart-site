@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'thread' => [
+        'started_by' => 'Started by :author on :date',
+        'unknown_author' => 'Unknown',
+    ],
+
     'activity' => [
         'today' => [
             'title' => 'Last 24 Hours',

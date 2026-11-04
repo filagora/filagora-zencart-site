@@ -4,6 +4,7 @@
     $showForumBadge = $showForumBadge ?? true;
     $showModerationActions = $showModerationActions ?? false;
     $showSubscribedIndicator = $showSubscribedIndicator ?? false;
+    $canManageSubscriptions = auth()->check() && auth()->user()?->hasVerifiedEmail();
 @endphp
 
 <section class="overflow-hidden border border-[#d8dce2] bg-white">
@@ -173,6 +174,14 @@
                             <div class="mt-1 inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] leading-4 text-[#69717d]">
                                 @if($showForumBadge && $thread->forum)
                                     <a class="hover:underline" href="{{ route('forums.show', $thread->forum) }}">{{ $decodeLegacyText($thread->forum->name) }}</a>
+                                @endif
+
+                                @if($canManageSubscriptions)
+                                    <form method="post" action="{{ route($isSubscribed ? 'threads.unsubscribe' : 'threads.subscribe', $thread) }}">
+                                        @csrf
+                                        <input type="hidden" name="return_to" value="{{ $returnTo }}">
+                                        <button type="submit" class="hover:underline" data-thread-subscription-toggle>{{ $isSubscribed ? 'Unsubscribe' : 'Subscribe' }}</button>
+                                    </form>
                                 @endif
 
                                 @if($showModerationActions)

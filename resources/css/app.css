@@ -847,3 +847,18 @@ summary,
         transform: translate3d(2%, -6%, 0) scale(1.03);
     }
 }
+
+/*
+ * iOS Safari zooms the whole page in when a text field smaller than 16px is
+ * focused, which pushes the layout off the right edge and leaves the page
+ * zoomed. Keep every text-entry field at 16px below md. Deliberately outside
+ * any @layer so it beats the text-sm / text-xs utilities already on the fields;
+ * md and up keep the sizes the markup sets.
+ */
+@media (max-width: 767.98px) {
+    input:not([type='checkbox'], [type='radio'], [type='range'], [type='color'], [type='file'], [type='submit'], [type='button'], [type='reset'], [type='image'], [type='hidden']),
+    select,
+    textarea {
+        font-size: 16px;
+    }
+}

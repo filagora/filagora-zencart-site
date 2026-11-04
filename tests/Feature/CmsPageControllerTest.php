@@ -87,7 +87,7 @@ class CmsPageControllerTest extends TestCase
         $this->assertSame($page->fresh()->updated_at->toIso8601String(), $data['dateModified']);
         $this->assertSame('Organization', $data['publisher']['@type']);
         $this->assertSame(route('home'), $data['publisher']['url']);
-        $this->assertSame(asset('assets/images/logo/zen-cart-logo.png'), $data['publisher']['logo']['url']);
+        $this->assertSame(asset('assets/images/logo/ZCLogo150x150Trans.webp'), $data['publisher']['logo']['url']);
         $this->assertArrayNotHasKey('author', $data);
     }
 
