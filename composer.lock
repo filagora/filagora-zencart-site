@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "206f64434a3747424fc6e0e9aac419e0",
+    "content-hash": "354f35a8ed99b262650aeb134146815f",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1749,22 +1749,7 @@
                     "Filagora\\ForumBugReports\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Filagora\\ForumBugReports\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/pest"
-                ],
-                "lint": [
-                    "vendor/bin/pint"
-                ],
-                "analyse": [
-                    "vendor/bin/phpstan analyse --memory-limit=1G"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -1776,8 +1761,8 @@
                 "laravel"
             ],
             "support": {
-                "source": "https://github.com/filagora/filagora-forum-bugreports/tree/v0.1.0",
-                "issues": "https://github.com/filagora/filagora-forum-bugreports/issues"
+                "issues": "https://github.com/filagora/filagora-forum-bugreports/issues",
+                "source": "https://github.com/filagora/filagora-forum-bugreports/tree/v0.1.0"
             },
             "time": "2026-11-04T19:38:26+00:00"
         },

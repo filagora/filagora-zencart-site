@@ -110,10 +110,6 @@
         {
             "type": "vcs",
             "url": "https://github.com/filagora/filagora-zencart"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/filagora/filagora-forum-bugreports"
         }
     ]
 }
