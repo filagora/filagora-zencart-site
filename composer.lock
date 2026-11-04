@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "38c4d10ad4f6cd516e899bb0abb8bf47",
+    "content-hash": "206f64434a3747424fc6e0e9aac419e0",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1711,16 +1711,16 @@
         },
         {
             "name": "filagora/filagora-forum-bugreports",
-            "version": "dev-master",
+            "version": "v0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-forum-bugreports.git",
-                "reference": "3a89023107c248765cd413a2a8d24e30a68adfe5"
+                "reference": "d244d71eeb00e0b2c578dd7beb46cafba0dc694c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-forum-bugreports/zipball/3a89023107c248765cd413a2a8d24e30a68adfe5",
-                "reference": "3a89023107c248765cd413a2a8d24e30a68adfe5",
+                "url": "https://api.github.com/repos/filagora/filagora-forum-bugreports/zipball/d244d71eeb00e0b2c578dd7beb46cafba0dc694c",
+                "reference": "d244d71eeb00e0b2c578dd7beb46cafba0dc694c",
                 "shasum": ""
             },
             "require": {
@@ -1736,7 +1736,6 @@
                 "pestphp/pest": "^4.0",
                 "pestphp/pest-plugin-laravel": "^4.0"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -1777,10 +1776,10 @@
                 "laravel"
             ],
             "support": {
-                "source": "https://github.com/filagora/filagora-forum-bugreports/tree/master",
+                "source": "https://github.com/filagora/filagora-forum-bugreports/tree/v0.1.0",
                 "issues": "https://github.com/filagora/filagora-forum-bugreports/issues"
             },
-            "time": "2026-11-04T18:57:43+00:00"
+            "time": "2026-11-04T19:38:26+00:00"
         },
         {
             "name": "filagora/filagora-forums",
@@ -2343,16 +2342,16 @@
         },
         {
             "name": "filagora/filagora-zencart",
-            "version": "v0.7.0",
+            "version": "v0.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-zencart.git",
-                "reference": "87895fdbc67f5eb631adde19ed568093112b22f8"
+                "reference": "fcdeaade52c3914259578a4f9128762919653b1b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/87895fdbc67f5eb631adde19ed568093112b22f8",
-                "reference": "87895fdbc67f5eb631adde19ed568093112b22f8",
+                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/fcdeaade52c3914259578a4f9128762919653b1b",
+                "reference": "fcdeaade52c3914259578a4f9128762919653b1b",
                 "shasum": ""
             },
             "require": {
@@ -2415,10 +2414,10 @@
                 "zen-cart"
             ],
             "support": {
-                "source": "https://github.com/filagora/filagora-zencart/tree/v0.7.0",
+                "source": "https://github.com/filagora/filagora-zencart/tree/v0.8.0",
                 "issues": "https://github.com/filagora/filagora-zencart/issues"
             },
-            "time": "2026-11-04T18:24:44+00:00"
+            "time": "2026-11-04T19:38:29+00:00"
         },
         {
             "name": "filament/actions",
@@ -14754,9 +14753,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "filagora/filagora-forum-bugreports": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
