@@ -1,11 +1,11 @@
 <x-mail::message>
-# {{ __('notifications.thread.email.digest.title', ['prefix' => $subjectPrefix]) }}
+# {{ \App\Support\MailText::plain(__('notifications.thread.email.digest.title', ['prefix' => $subjectPrefix])) }}
 
 {{ __('notifications.thread.email.digest.intro') }}
 
 @if(count($items) > 0)
 @foreach($items as $item)
-- [{{ $item['title'] }}]({{ $item['url'] }})
+- [{{ \App\Support\MailText::plain($item['title']) }}]({{ $item['url'] }})
 @endforeach
 @else
 {{ __('notifications.thread.email.digest.empty') }}
@@ -19,7 +19,7 @@
 {{ __('notifications.thread.email.digest.action') }}
 </x-mail::button>
 
-{{ __('notifications.thread.email.digest.unsubscribe', ['url' => $unsubscribeUrl]) }}
+{{ \App\Support\MailText::plain(__('notifications.thread.email.digest.unsubscribe', ['url' => $unsubscribeUrl])) }}
 
 {{ __('notifications.mail.thanks') }}<br>
 {{ config('app.name') }}

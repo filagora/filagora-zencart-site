@@ -1,10 +1,10 @@
 <x-mail::message>
 # {{ __('notifications.plugin.email.release_submitted.title') }}
 
-{{ $autoPublished ? __('notifications.plugin.email.release_submitted.intro_auto_published') : __('notifications.plugin.email.release_submitted.intro') }}
+{{ \App\Support\MailText::plain($autoPublished ? __('notifications.plugin.email.release_submitted.intro_auto_published') : __('notifications.plugin.email.release_submitted.intro')) }}
 
-**{{ __('notifications.plugin.email.release_submitted.plugin_label') }}** {{ $pluginName }}  
-**{{ __('notifications.plugin.email.release_submitted.release_label') }}** v{{ $releaseVersion }}  
+**{{ __('notifications.plugin.email.release_submitted.plugin_label') }}** {{ \App\Support\MailText::plain($pluginName) }}  
+**{{ __('notifications.plugin.email.release_submitted.release_label') }}** v{{ \App\Support\MailText::plain($releaseVersion) }}  
 **{{ __('notifications.plugin.email.scan.label') }}** {{ __('notifications.plugin.email.scan.queued') }}
 
 <x-mail::button :url="$actionUrl">

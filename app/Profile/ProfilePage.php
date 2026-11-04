@@ -16,6 +16,7 @@ use Filagora\Compliance\Services\PolicyAcceptance;
 use Filagora\Entitlements\Models\EntitlementDefinition;
 use Filagora\Entitlements\Models\EntitlementRequest;
 use Filagora\Entitlements\Services\EntitlementResolver;
+use Filagora\Forums\Services\ForumAccess;
 use Filagora\Forums\Services\ForumSubscriptions;
 use Filagora\Memberships\Models\MembershipPlan;
 use Filagora\Memberships\Models\UserMembership;
@@ -43,6 +44,7 @@ class ProfilePage
         private readonly EntitlementResolver $entitlementResolver,
         private readonly Memberships $memberships,
         private readonly NewsletterSubscriberService $newsletter,
+        private readonly ForumAccess $forumAccess,
     ) {}
 
     /**
@@ -64,7 +66,10 @@ class ProfilePage
             'twoFactorSetup' => $this->twoFactorSetup($user),
             'newRecoveryCodes' => session('new_recovery_codes'),
             'recoveryCodesRemainingCount' => $user->recoveryCodesRemainingCount(),
-            'forumSubscriptions' => app(ForumSubscriptions::class)->forumsFollowedBy($user),
+            // A forum they can no longer see is not listed: they hear nothing from it until access returns.
+            'forumSubscriptions' => app(ForumSubscriptions::class)->forumsFollowedBy($user)
+                ->filter(fn ($forum): bool => $this->forumAccess->canViewForum($forum, $user))
+                ->values(),
             'threadSubscriptions' => $user->subscribedThreads()
                 ->with(['forum:id,name,slug', 'lastPostAuthor:id,username,name,email'])
                 ->orderByRaw('COALESCE(threads.last_post_at, threads.created_at) desc')

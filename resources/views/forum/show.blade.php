@@ -43,7 +43,7 @@
                 @endif
             </div>
             <div class="inline-flex flex-wrap items-center gap-2">
-                @if($canManageSubscriptions)
+                @if($canManageSubscriptions && ($canToggleForumSubscription ?? false))
                     <form method="post" action="{{ route(($isForumSubscribed ?? false) ? 'forums.unsubscribe' : 'forums.subscribe', $forum) }}">
                         @csrf
                         <input type="hidden" name="return_to" value="{{ request()->getRequestUri() }}">
