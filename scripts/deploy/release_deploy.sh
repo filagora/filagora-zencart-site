@@ -181,12 +181,15 @@ assert_default_group_acl() {
   local acl_output
   acl_output="$(getfacl -cp "${path}")"
 
-  if ! printf '%s\n' "${acl_output}" | grep -Eq "^default:group(:${group_name})?:rwx$"; then
+  # Here-strings, not "printf | grep -q": grep -q exits at its first match, the
+  # still-writing printf takes SIGPIPE, and under pipefail that turns a
+  # successful match into a failed pipeline (a false "ACL is missing").
+  if ! grep -Eq "^default:group(:${group_name})?:rwx$" <<<"${acl_output}"; then
     echo "Default ACL is missing rwx access for group ${group_name} on ${path}" >&2
     exit 1
   fi
 
-  if printf '%s\n' "${acl_output}" | grep -Eq '^default:mask::' && ! printf '%s\n' "${acl_output}" | grep -Eq '^default:mask::rwx$'; then
+  if grep -Eq '^default:mask::' <<<"${acl_output}" && ! grep -Eq '^default:mask::rwx$' <<<"${acl_output}"; then
     echo "Default ACL mask does not preserve group rwx access on ${path}" >&2
     exit 1
   fi
