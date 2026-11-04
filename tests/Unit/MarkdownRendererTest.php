@@ -18,6 +18,30 @@ class MarkdownRendererTest extends TestCase
         $this->assertStringContainsString('🙂 🙁 😉 😄 😛 😮', $html);
     }
 
+    public function test_third_party_links_are_ugc_nofollow_but_our_own_properties_are_not(): void
+    {
+        $html = $this->renderer()->render(
+            '[a](https://example.com/x) [b](https://notzen-cart.com/x) [c](https://docs.zen-cart.com/x) '
+            .'[d](https://github.com/zencart/zencart/issues/1) [e](https://github.com/someoneelse/repo)'
+            ."\n\n[video]https://example.com/v[/video] [video]https://www.zen-cart.com/v[/video]",
+        );
+
+        $this->assertStringContainsString('href="https://example.com/x" target="_blank" rel="noopener noreferrer ugc nofollow"', $html);
+        $this->assertStringContainsString('href="https://notzen-cart.com/x" target="_blank" rel="noopener noreferrer ugc nofollow"', $html);
+        $this->assertStringContainsString('href="https://github.com/someoneelse/repo" target="_blank" rel="noopener noreferrer ugc nofollow"', $html);
+        $this->assertStringContainsString('href="https://example.com/v" target="_blank" rel="noopener noreferrer ugc nofollow"', $html);
+        $this->assertStringContainsString('href="https://docs.zen-cart.com/x" target="_blank" rel="noopener noreferrer" class', $html);
+        $this->assertStringContainsString('href="https://github.com/zencart/zencart/issues/1" target="_blank" rel="noopener noreferrer" class', $html);
+        $this->assertStringContainsString('href="https://www.zen-cart.com/v" target="_blank" rel="noopener noreferrer">', $html);
+    }
+
+    public function test_a_link_title_survives_the_final_form(): void
+    {
+        $html = $this->renderer()->render('[a](https://example.com/x "The title")');
+
+        $this->assertStringContainsString('<a href="https://example.com/x" title="The title" target="_blank" rel="noopener noreferrer ugc nofollow" class="external-link">a</a>', $html);
+    }
+
     public function test_it_renders_markdown_and_application_extensions(): void
     {
         $renderer = $this->renderer(attachmentExists: fn (int $id): bool => $id === 123);
@@ -37,7 +61,7 @@ class MarkdownRendererTest extends TestCase
 MARKDOWN);
 
         $this->assertStringContainsString('<strong>Bold</strong>', $html);
-        $this->assertStringContainsString('<a rel="nofollow noopener noreferrer" target="_blank" class="external-link" href="https://example.com">a link</a>', $html);
+        $this->assertStringContainsString('<a href="https://example.com" target="_blank" rel="noopener noreferrer ugc nofollow" class="external-link">a link</a>', $html);
         $this->assertStringContainsString('<span class="block text-center"><span style="color:red;">Centered</span></span>', $html);
         $this->assertStringContainsString('<u>Underlined</u>', $html);
         $this->assertStringContainsString('<sup>2</sup>', $html);
@@ -123,7 +147,7 @@ MARKDOWN);
         $html = $this->renderer()->render('[Zen Cart forums](https://www.zen-cart.com/threads/207282)');
 
         $this->assertStringContainsString(
-            '<a rel="nofollow noopener noreferrer" target="_blank" class="external-link" href="https://www.zen-cart.com/threads/207282">Zen Cart forums</a>',
+            '<a href="https://www.zen-cart.com/threads/207282" target="_blank" rel="noopener noreferrer" class="external-link">Zen Cart forums</a>',
             $html,
         );
     }
@@ -147,7 +171,7 @@ MARKDOWN);
         $html = $renderer->render('[docs](https://example.com/docs)');
 
         $this->assertStringContainsString(
-            '<a rel="nofollow noopener noreferrer" target="_blank" class="external-link" href="https://example.com/docs">docs</a>',
+            '<a href="https://example.com/docs" target="_blank" rel="noopener noreferrer ugc nofollow" class="external-link">docs</a>',
             $html,
         );
     }
@@ -165,7 +189,7 @@ MARKDOWN);
         $html = $this->renderer()->render('This corrects a bug; see GitHub issue #13 for details.');
 
         $this->assertStringContainsString(
-            '<a rel="nofollow noopener noreferrer" target="_blank" class="external-link" href="https://github.com/zencart/zencart/issues/13">GitHub issue #13</a>',
+            '<a href="https://github.com/zencart/zencart/issues/13" target="_blank" rel="noopener noreferrer" class="external-link">GitHub issue #13</a>',
             $html,
         );
     }
@@ -183,7 +207,7 @@ MARKDOWN);
         $html = $this->renderer()->render('[See GitHub issue #13 here](https://example.com/notes)');
 
         $this->assertStringContainsString(
-            '<a rel="nofollow noopener noreferrer" target="_blank" class="external-link" href="https://example.com/notes">See GitHub issue #13 here</a>',
+            '<a href="https://example.com/notes" target="_blank" rel="noopener noreferrer ugc nofollow" class="external-link">See GitHub issue #13 here</a>',
             $html,
         );
         $this->assertStringNotContainsString('issues/13', $html);

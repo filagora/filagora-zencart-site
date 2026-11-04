@@ -16,8 +16,9 @@ use Illuminate\Support\Facades\DB;
  * escaped before this runs) and every step keeps it safe: colours, sizes and fonts are checked
  * against short allow-lists, and only http(s) URLs are linked.
  *
- * Links to other sites are marked by the markdown renderer itself; the GitHub issue anchors made
- * here are marked the same way (new tab, no follow, the external-link class).
+ * Links to other sites are marked by the markdown renderer itself, and the GitHub issue anchors
+ * made here the same way; a last pass sets their final form. Member-posted links to anywhere but our
+ * own properties are `ugc nofollow`, so spamming the forum earns no backlink equity.
  */
 final class ZenCartHtmlTransformer implements HtmlTransformer
 {
@@ -27,6 +28,13 @@ final class ZenCartHtmlTransformer implements HtmlTransformer
      * always resolves against the core repo rather than a plugin's own.
      */
     private const GITHUB_ISSUE_TRACKER_URL = 'https://github.com/zencart/zencart/issues/';
+
+    /**
+     * zen-cart.com and its subdomains, and the zencart GitHub organisation: properties we vouch for.
+     */
+    private const OWN_HOST_SUFFIX = 'zen-cart.com';
+
+    private const OWN_GITHUB_PATH_PREFIX = '/zencart/';
 
     /** @var array<string,string> */
     private const FONT_FAMILIES = [
@@ -92,7 +100,49 @@ final class ZenCartHtmlTransformer implements HtmlTransformer
         $html = $this->replaceSpoilers($html);
         $html = $this->replaceVideos($html);
 
-        return $this->replaceAttachments($html);
+        return $this->markExternalLinks($this->replaceAttachments($html));
+    }
+
+    /**
+     * Puts the external links the markdown renderer and this class made into their final form: new
+     * tab, the external-link class, and `ugc nofollow` unless the link is to one of our own properties.
+     */
+    private function markExternalLinks(string $html): string
+    {
+        return preg_replace_callback(
+            '/<a\b([^>]*\bclass="external-link"[^>]*)>/i',
+            function (array $matches): string {
+                $attributes = (string) preg_replace('/\s(?:rel|target|class)="[^"]*"/i', '', (string) $matches[1]);
+                $href = preg_match('/\bhref="([^"]*)"/i', $attributes, $link) === 1 ? $link[1] : '';
+
+                return '<a'.$attributes.' target="_blank" rel="'.$this->relFor($href).'" class="external-link">';
+            },
+            $html,
+        ) ?? $html;
+    }
+
+    private function relFor(string $href): string
+    {
+        return $this->isOwnProperty($href) ? 'noopener noreferrer' : 'noopener noreferrer ugc nofollow';
+    }
+
+    private function isOwnProperty(string $href): bool
+    {
+        $decoded = html_entity_decode($href, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $host = parse_url($decoded, PHP_URL_HOST);
+
+        if (! is_string($host) || $host === '') {
+            return false;
+        }
+
+        $host = strtolower($host);
+
+        if ($host === self::OWN_HOST_SUFFIX || str_ends_with($host, '.'.self::OWN_HOST_SUFFIX)) {
+            return true;
+        }
+
+        return in_array($host, ['github.com', 'www.github.com'], true)
+            && str_starts_with(strtolower((string) parse_url($decoded, PHP_URL_PATH)), self::OWN_GITHUB_PATH_PREFIX);
     }
 
     /** @param Closure(string): string $renderer */
@@ -147,7 +197,7 @@ final class ZenCartHtmlTransformer implements HtmlTransformer
 
             $safeUrl = htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-            return '<a href="'.$safeUrl.'" target="_blank" rel="noopener noreferrer">'.$safeUrl.'</a>';
+            return '<a href="'.$safeUrl.'" target="_blank" rel="'.$this->relFor($url).'">'.$safeUrl.'</a>';
         });
     }
 

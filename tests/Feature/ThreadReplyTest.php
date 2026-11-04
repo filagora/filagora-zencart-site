@@ -601,7 +601,7 @@ class ThreadReplyTest extends TestCase
         // browsers decode entities in attribute values before matching CSS
         // selectors — so assert on the unescaped portion instead.
         $response->assertSee('text-[color:var(--color-site-brand-dark)]', false);
-        $response->assertSee('rel="nofollow noopener noreferrer" target="_blank" class="external-link" href="https://example.com"', false);
+        $response->assertSee('href="https://example.com" target="_blank" rel="noopener noreferrer ugc nofollow" class="external-link"', false);
     }
 
     public function test_thread_show_keeps_same_site_links_in_the_current_tab(): void
