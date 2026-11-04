@@ -29,7 +29,7 @@ Open <https://filagora-zencart-site.ddev.site/> for the site and <https://filago
 
 ## Rules that matter
 
-- **Host migrations that touch a table production already has must be written to do nothing there** (add a column only if it is missing). Production's tables are the truth; see `database/migrations/*_add_site_columns_to_users_table.php`.
+- **The site has no migrations.** Every table belongs to a package or to the profile, so `filagora:adopt` can compare it with production's. A new table or column goes in `filagora-zencart` (`database/migrations/site`) with its snapshot.
 - **No secrets, no real data, no deploy scripts in this repository.** CI installs everything from public repositories.
 - **Keep the same `APP_KEY`, session driver and cookie settings as the old site** in every environment that shares its data, so signed links, encrypted two-factor secrets and sessions keep working.
 
