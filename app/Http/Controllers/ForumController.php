@@ -196,7 +196,7 @@ class ForumController extends Controller
 
         $this->hydrateAuthorMetrics($thread, $posts->getCollection());
 
-        [$reactedPostIds, $reportedPostIds, $openReportPostIds] = $this->postMarkers($user, $posts->getCollection()->pluck('id')->map(fn ($id): int => (int) $id)->all(), $canModerateThread);
+        [$reactedPostIds, $reportedPostIds, $openReportPostIds, $openReportsByPost] = $this->postMarkers($user, $posts->getCollection()->pluck('id')->map(fn ($id): int => (int) $id)->all(), $canModerateThread);
 
         $moderationLogs = $canModerateThread
             ? Models::class('thread_moderation_log')::query()
@@ -246,6 +246,7 @@ class ForumController extends Controller
             'reactedPostIds' => $reactedPostIds,
             'reportedPostIds' => $reportedPostIds,
             'openReportPostIds' => $openReportPostIds,
+            'openReportsByPost' => $openReportsByPost,
             'replyRequiresApproval' => $this->approvals->replyRequiresApproval($thread->forum, $this->approvalViewer($user)),
             'bugReports' => $bugReports,
             // Assigning a bug to staff arrives with the bug-report slice (S8).
@@ -323,15 +324,15 @@ class ForumController extends Controller
 
     /**
      * The viewer's reactions and reports on the posts of this page: which they liked, which they
-     * have an open report on, and (for moderators) which have any open report.
+     * have an open report on, and (for moderators) which have any open report, and those reports.
      *
      * @param  list<int>  $postIds
-     * @return array{0: list<int>, 1: list<int>, 2: list<int>}
+     * @return array{0: list<int>, 1: list<int>, 2: list<int>, 3: Collection<int|string, mixed>}
      */
     private function postMarkers(?User $user, array $postIds, bool $canModerateThread): array
     {
         if (! $user instanceof User || $postIds === []) {
-            return [[], [], []];
+            return [[], [], [], collect()];
         }
 
         $ids = fn ($query): array => $query->pluck('post_id')->map(fn ($id): int => (int) $id)->all();
@@ -348,15 +349,18 @@ class ForumController extends Controller
             ->where('status', PostReportStatus::OPEN->value)
             ->whereIn('post_id', $postIds));
 
-        // Which posts have an open report, whoever filed it: only moderators see that strip.
-        $open = $canModerateThread
-            ? $ids(Models::class('post_report')::query()
+        // The open reports on these posts, whoever filed them: only moderators see that strip.
+        $openReports = $canModerateThread
+            ? Models::class('post_report')::query()
                 ->where('status', PostReportStatus::OPEN->value)
                 ->whereIn('post_id', $postIds)
-                ->distinct())
-            : [];
+                ->with('reporter')
+                ->oldest('id')
+                ->get()
+                ->groupBy('post_id')
+            : collect();
 
-        return [$reacted, $reported, $open];
+        return [$reacted, $reported, $openReports->keys()->map(fn ($id): int => (int) $id)->all(), $openReports];
     }
 
     /**
