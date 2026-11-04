@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ChecksInternalPaths;
 use App\Http\Requests\StorePostReportRequest;
 use App\Http\Requests\TogglePostReactionRequest;
 use App\Models\User;
@@ -21,6 +22,8 @@ use Illuminate\Http\RedirectResponse;
  */
 class PostInteractionController extends Controller
 {
+    use ChecksInternalPaths;
+
     public function __construct(
         private readonly ForumAccess $access,
         private readonly PostReports $reports,
@@ -105,21 +108,5 @@ class PostInteractionController extends Controller
         return redirect()
             ->to(($returnTo !== '' ? $returnTo : route('threads.show', $post->thread)).'#post-'.$post->id)
             ->with('thread_status', $message);
-    }
-
-    /**
-     * Same-origin paths only: see ThreadPostingController::internalPath().
-     */
-    private function internalPath(string $path): string
-    {
-        $trimmed = trim($path);
-
-        if ($trimmed === ''
-            || preg_match('/[\x00-\x1F\x7F]/', $trimmed) === 1
-            || preg_match('#^/[^/\\\\]#', $trimmed) !== 1) {
-            return '';
-        }
-
-        return $trimmed;
     }
 }

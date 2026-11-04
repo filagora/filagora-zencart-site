@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Forum\BugReportsFeature;
 use App\Forum\ForumIndex;
 use App\Forum\ThreadListings;
+use App\Http\Controllers\Concerns\ChecksInternalPaths;
 use App\Models\User;
 use App\Support\CrawlerUserAgent;
 use App\Support\ForumStructuredDataFactory;
@@ -36,6 +37,8 @@ use Illuminate\View\View;
  */
 class ForumController extends Controller
 {
+    use ChecksInternalPaths;
+
     // Public: ThreadUpdatedNotification reuses this to work out which page a notified post lands
     // on, so its email link can deep-link straight to it.
     public const THREAD_POSTS_PER_PAGE = 20;
@@ -277,7 +280,7 @@ class ForumController extends Controller
     {
         $this->forumSubscriptions->unsubscribe($this->viewer($request), $forum);
 
-        if ((string) $request->input('redirect_to') === 'profile') {
+        if ($request->input('redirect_to') === 'profile') {
             return redirect()
                 ->route('profile.show', ['tab' => 'subscriptions'])
                 ->with('profile_status', __('profile.flash.subscription_removed'));
@@ -288,11 +291,10 @@ class ForumController extends Controller
 
     private function afterForumSubscription(Request $request, Forum $forum, string $message): RedirectResponse
     {
-        $returnTo = (string) $request->input('return_to', '');
-        $isInternal = preg_match('#^/[^/\\\\]#', $returnTo) === 1 && preg_match('/[\x00-\x1F\x7F]/', $returnTo) !== 1;
+        $returnTo = $this->internalPath($request->input('return_to'));
 
         return redirect()
-            ->to($isInternal ? $returnTo : route('forums.show', $forum))
+            ->to($returnTo !== '' ? $returnTo : route('forums.show', $forum))
             ->with('thread_status', $message)
             ->with('thread_status_link', route('profile.show', ['tab' => 'subscriptions']));
     }

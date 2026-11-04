@@ -74,7 +74,7 @@ class SendForumThreadNotifications
 
         if ($subscriptions->isNotEmpty()) {
             Notification::route('WebPush', $subscriptions)->notify(new WebPushAlert(
-                (string) $thread->title,
+                $notification->title(),
                 Str::limit($notification->summary(), 140),
                 route('threads.show', $thread),
                 'forum-'.$thread->forum_id,

@@ -352,6 +352,38 @@ class ForumSubscriptionTest extends TestCase
         $this->assertStringContainsString('Opening post', $row['body']);
     }
 
+    public function test_a_deleted_opening_post_is_not_quoted(): void
+    {
+        $thread = $this->thread($this->forum(), User::factory()->create());
+        Post::query()->where('thread_id', $thread->id)->update(['is_deleted' => true]);
+
+        $row = (new ForumThreadCreatedNotification($thread))->toArray(User::factory()->create());
+
+        $this->assertStringNotContainsString('Opening post', $row['body']);
+        $this->assertStringContainsString(__('notifications.forum_thread_created.fallback_excerpt'), $row['body']);
+    }
+
+    public function test_imported_entities_are_decoded_for_readers(): void
+    {
+        $forum = $this->forum(['name' => 'News &amp; Announcements']);
+        $thread = $this->thread($forum, User::factory()->create());
+        $thread->update(['title' => 'Tom &amp; Jerry']);
+
+        $notification = new ForumThreadCreatedNotification($thread);
+
+        $this->assertSame('New thread in News & Announcements: Tom & Jerry', $notification->toMail(User::factory()->create())->subject);
+        $this->assertSame('Tom & Jerry', $notification->toArray(User::factory()->create())['title']);
+    }
+
+    public function test_a_malformed_return_address_falls_back_to_the_forum(): void
+    {
+        $forum = $this->forum();
+
+        $this->actingAs(User::factory()->create())
+            ->post(route('forums.subscribe', $forum), ['return_to' => ['/forums']])
+            ->assertRedirect(route('forums.show', $forum));
+    }
+
     public function test_deleting_a_forum_cascades_its_subscriptions(): void
     {
         $forum = $this->forum();

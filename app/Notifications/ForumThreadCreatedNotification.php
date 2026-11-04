@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\User;
 use App\Notifications\Channels\CoalescingDatabaseChannel;
+use App\Support\LegacyTextDecoder;
 use Filagora\Forums\Models\Thread;
 use Filagora\Forums\Support\Models;
 use Filagora\Notifications\Enums\NotificationChannel;
@@ -63,7 +64,7 @@ class ForumThreadCreatedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => (string) $this->thread->title,
+            'title' => $this->title(),
             'body' => Str::limit($this->summary(), 160),
             'url' => route('threads.show', $this->thread),
             'category' => self::CATEGORY,
@@ -74,16 +75,16 @@ class ForumThreadCreatedNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $forumName = (string) ($this->thread->forum?->name ?? '');
+        $forumName = LegacyTextDecoder::decode($this->thread->forum?->name);
         $excerpt = $this->excerpt();
         $managePreferencesUrl = route('profile.show', ['tab' => 'settings']);
         $unsubscribe = app(Unsubscribe::class);
 
         $message = (new MailMessage)
-            ->subject(__('notifications.forum_thread_created.subject', ['forum' => $forumName, 'thread' => $this->thread->title]))
+            ->subject(__('notifications.forum_thread_created.subject', ['forum' => $forumName, 'thread' => $this->title()]))
             ->markdown('emails.notifications.forum-thread-created', [
                 'forumName' => $forumName,
-                'threadTitle' => $this->thread->title,
+                'threadTitle' => $this->title(),
                 'authorName' => $this->authorName(),
                 'excerpt' => $excerpt !== '' ? $excerpt : __('notifications.forum_thread_created.fallback_excerpt'),
                 'threadUrl' => route('threads.show', $this->thread),
@@ -104,7 +105,17 @@ class ForumThreadCreatedNotification extends Notification implements ShouldQueue
      */
     public function summary(): string
     {
-        return $this->authorName().': '.$this->excerpt();
+        $excerpt = $this->excerpt();
+
+        return $this->authorName().': '.($excerpt !== '' ? $excerpt : __('notifications.forum_thread_created.fallback_excerpt'));
+    }
+
+    /**
+     * The thread's title as readers see it: imported ones can hold old forum entities.
+     */
+    public function title(): string
+    {
+        return LegacyTextDecoder::decode($this->thread->title);
     }
 
     private function authorName(): string
@@ -116,7 +127,12 @@ class ForumThreadCreatedNotification extends Notification implements ShouldQueue
 
     private function excerpt(): string
     {
-        $first = Models::class('post')::query()->where('thread_id', $this->thread->getKey())->oldest('id')->first();
+        $first = Models::class('post')::query()
+            ->where('thread_id', $this->thread->getKey())
+            ->approved()
+            ->where('is_deleted', false)
+            ->oldest('id')
+            ->first();
 
         return $first === null ? '' : Str::limit(trim(preg_replace('/\s+/u', ' ', strip_tags((string) $first->body)) ?? ''), 180);
     }

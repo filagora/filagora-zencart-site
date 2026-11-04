@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Support\RelocationResult;
 use Carbon\CarbonInterface;
 use Filagora\Forums\Enums\ContentModerationStatus;
+use Filagora\Forums\Events\ThreadPromoted;
 use Filagora\Forums\Jobs\AnnounceThreadToForumSubscribers;
 use Filagora\Forums\Models\Forum;
 use Filagora\Forums\Models\Post;
@@ -65,7 +66,11 @@ class ContentRelocationService
         });
 
         $this->rememberRecentForum($moderator, (int) $destination->id);
-        $this->announceToForumSubscribers($thread);
+
+        // Not `ThreadModerated`: this move already wrote its own log, and that event tells the author.
+        if ($thread->moderation_status === ContentModerationStatus::APPROVED) {
+            AnnounceThreadToForumSubscribers::dispatch($thread->getKey())->afterCommit();
+        }
 
         return new RelocationResult(
             destinationUrl: route('threads.show', $thread).'#thread-top',
@@ -112,16 +117,6 @@ class ContentRelocationService
             summary: __('forum.relocate.moved_post', ['thread' => $destination->title]),
             navigateAway: isset($op['restore_thread']),
         );
-    }
-
-    /**
-     * A thread has just appeared in a forum, which the people following that forum hear about.
-     */
-    private function announceToForumSubscribers(Thread $thread): void
-    {
-        if ($thread->moderation_status === ContentModerationStatus::APPROVED) {
-            AnnounceThreadToForumSubscribers::dispatch($thread->getKey())->afterCommit();
-        }
     }
 
     /**
@@ -244,7 +239,7 @@ class ContentRelocationService
         });
 
         $this->rememberRecentForum($moderator, (int) $destination->id);
-        $this->announceToForumSubscribers($newThread);
+        ThreadPromoted::dispatch($newThread, $moderator);
 
         return new RelocationResult(
             destinationUrl: route('threads.show', $newThread->id).'#post-'.$post->id,
@@ -369,7 +364,7 @@ class ContentRelocationService
         });
 
         $this->rememberRecentForum($moderator, (int) $destination->id);
-        $this->announceToForumSubscribers($newThread);
+        ThreadPromoted::dispatch($newThread, $moderator);
 
         return new RelocationResult(
             destinationUrl: route('threads.show', $newThread->id),

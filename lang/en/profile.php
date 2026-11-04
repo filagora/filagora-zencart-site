@@ -30,7 +30,6 @@ return [
     'email_preferences' => [
         'forum_thread_updates_instant' => 'instant thread update emails',
         'forum_thread_updates_digest' => 'thread digest emails',
-        'forum_new_threads' => 'new thread emails for forums you subscribe to',
         'plugins_release_updates' => 'plugin update emails',
         'default' => 'email notifications',
         'updated_title' => 'Email Preference Updated',
@@ -52,9 +51,8 @@ return [
         'categories' => [
             'messages.received' => 'New private messages',
             'forum.mention' => 'When someone @mentions me',
-            'forum.thread_updates_instant' => 'Replies in threads I subscribe to',
-            'forum.new_threads' => 'New threads in forums I subscribe to',
-            'plugins.release_updates' => 'New releases of plugins I subscribe to',
+            'forum.thread_updates_instant' => 'Replies in threads I follow',
+            'plugins.release_updates' => 'New releases of plugins I follow',
             'moderation.own_content' => 'Moderator decisions on my posts or plugins',
         ],
     ],

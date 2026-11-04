@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ChecksInternalPaths;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\User;
 use App\Support\PollValidationRules;
@@ -28,6 +29,8 @@ use Illuminate\View\View;
  */
 class ThreadPostingController extends Controller
 {
+    use ChecksInternalPaths;
+
     private const ATTACHMENT_RULES = ['file', 'max:10240', 'mimes:jpg,jpeg,png,gif,webp,pdf,txt,zip,log'];
 
     public function __construct(
@@ -310,24 +313,5 @@ class ThreadPostingController extends Controller
         return redirect()
             ->to($returnTo !== '' ? $returnTo : route('threads.show', $thread))
             ->with('thread_status', $message);
-    }
-
-    /**
-     * Same-origin paths only: a single leading "/" not followed by "/" or "\\" (both of which
-     * browsers resolve as a protocol-relative absolute URL, an open redirect), and no control
-     * characters, since browsers strip TAB, CR and LF before parsing a Location and "/<TAB>/evil.com"
-     * would then become "//evil.com".
-     */
-    private function internalPath(string $path): string
-    {
-        $trimmed = trim($path);
-
-        if ($trimmed === ''
-            || preg_match('/[\x00-\x1F\x7F]/', $trimmed) === 1
-            || preg_match('#^/[^/\\\\]#', $trimmed) !== 1) {
-            return '';
-        }
-
-        return $trimmed;
     }
 }
