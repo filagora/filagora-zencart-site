@@ -11,7 +11,7 @@ final readonly class FormattedContentRenderer
      * Cache key namespace. Bump the version when MarkdownRenderer's output
      * changes, so old HTML is not served from a warm cache after a deploy.
      */
-    private const CACHE_PREFIX = 'formatted-content:v4:';
+    private const CACHE_PREFIX = 'formatted-content:v5:';
 
     /**
      * @param  CacheRepository|null  $cache  Omit to render without caching.
