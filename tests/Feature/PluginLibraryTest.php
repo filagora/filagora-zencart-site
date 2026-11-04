@@ -12,6 +12,7 @@ use Filagora\ZenCart\Models\PluginRelease;
 use Filagora\ZenCart\Models\ZcVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\SeedsSitePages;
 use Tests\TestCase;
 
@@ -957,6 +958,24 @@ class PluginLibraryTest extends TestCase
 
         $response->assertOk();
         $response->assertDontSee('Final Rejected Plugin');
+    }
+
+    #[DataProvider('encapsulatedStatuses')]
+    public function test_new_release_form_preselects_the_previous_releases_encapsulated_status(string $encapsulated): void
+    {
+        [$plugin, $owner] = $this->createPluginWithRelease([], ['encapsulated' => $encapsulated]);
+
+        $html = $this->actingAs($owner)->get(route('plugins.release.new', $plugin))->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('/<option value="'.$encapsulated.'"\s+selected/', $html);
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function encapsulatedStatuses(): array
+    {
+        return ['yes' => ['yes'], 'no' => ['no'], 'unknown' => ['unknown']];
     }
 
     public function test_guest_is_redirected_to_login_modal_for_plugin_submission_pages(): void

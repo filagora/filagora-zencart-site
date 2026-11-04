@@ -117,9 +117,9 @@ Add Release - {{ $plugin->name }}
                             aria-describedby="plugin-release-required-help{{ $errors->has('encapsulated') ? ' plugin-release-encapsulated-error' : '' }}"
                             @if($errors->has('encapsulated')) aria-invalid="true" @endif
                         >
-                            <option value="unknown" @selected(old('encapsulated', 'unknown') === 'unknown')>Unknown</option>
-                            <option value="yes" @selected(old('encapsulated') === 'yes')>Yes</option>
-                            <option value="no" @selected(old('encapsulated') === 'no')>No</option>
+                            <option value="unknown" @selected(old('encapsulated', $previousReleaseEncapsulated ?? 'unknown') === 'unknown')>Unknown</option>
+                            <option value="yes" @selected(old('encapsulated', $previousReleaseEncapsulated ?? 'unknown') === 'yes')>Yes</option>
+                            <option value="no" @selected(old('encapsulated', $previousReleaseEncapsulated ?? 'unknown') === 'no')>No</option>
                         </select>
                         <p class="mt-1 text-xs text-[#5c6570]">If “Yes”, this plugin’s numeric ID (shown on the plugin page) is written into <code>manifest.php</code> (<code>pluginId</code>) automatically when the release is published.</p>
                         @if($errors->has('encapsulated'))

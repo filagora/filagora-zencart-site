@@ -206,6 +206,7 @@ class PluginSubmissionController extends Controller
             'plugin' => $plugin,
             'submissionsBypassModeration' => $this->releases->statusFor($user) === PluginStatus::ACTIVE,
             'zcVersions' => $this->zcVersions(),
+            'previousReleaseEncapsulated' => $previous?->encapsulated?->value ?? 'unknown',
             'previousReleaseZcVersionIds' => $previous?->zcVersions()->pluck('plugin_zc_versions.id')->all() ?? [],
             'pendingReleases' => $this->releases->pendingFor($plugin),
         ]);
