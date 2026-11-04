@@ -63,6 +63,12 @@ class ForumController extends Controller
         return view('forum.index', [
             ...$index,
             'subscribedForumIds' => $this->forumSubscriptions->followedAmong($user, array_keys($index['forumMeta'])),
+            'ownThreadsOnlyForumIds' => collect($index['groupRows'])
+                ->flatMap(fn (array $row): array => $row['forums'])
+                ->filter(fn ($forum): bool => $this->access->seesOnlyOwnThreads($forum, $user))
+                ->map(fn ($forum): int => (int) $forum->id)
+                ->values()
+                ->all(),
         ]);
     }
 
@@ -119,6 +125,7 @@ class ForumController extends Controller
         $ownThreadsOnly = $this->access->seesOnlyOwnThreads($forum, $user);
 
         $hideResolvedBugs = $this->bugReports->hideResolvedFor($request, $user);
+        $isForumSubscribed = $this->forumSubscriptions->isSubscribed($user, $forum);
 
         $threads = $this->listings->inForum($forum->id, $user, $ownThreadsOnly, $hideResolvedBugs)
             ->paginate(30)
@@ -144,7 +151,9 @@ class ForumController extends Controller
             'showModerationActions' => $this->access->actsAsStaff($user),
             'canHideResolvedBugThreads' => $this->bugReports->hideResolvedAvailableFor($user),
             'hideResolvedBugThreads' => $hideResolvedBugs,
-            'isForumSubscribed' => $this->forumSubscriptions->isSubscribed($user, $forum),
+            'isForumSubscribed' => $isForumSubscribed,
+            // In a forum where they only see their own threads they would never hear of a new one.
+            'canToggleForumSubscription' => $isForumSubscribed || ! $ownThreadsOnly,
             'threadRequiresApproval' => $this->approvals->threadRequiresApproval($forum, $viewerForApproval),
             'replyRequiresApproval' => $this->approvals->replyRequiresApproval($forum, $viewerForApproval),
         ]);
@@ -270,6 +279,7 @@ class ForumController extends Controller
         $user = $this->viewer($request);
 
         abort_unless($this->access->canViewForum($forum, $user), 403);
+        abort_if($this->access->seesOnlyOwnThreads($forum, $user), 403);
 
         $this->forumSubscriptions->subscribe($user, $forum);
 

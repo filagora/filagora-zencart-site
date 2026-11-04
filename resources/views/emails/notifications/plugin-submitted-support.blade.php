@@ -1,11 +1,11 @@
 <x-mail::message>
-# {{ $autoPublished ? __('notifications.plugin.email.submitted_support.title_auto_published') : __('notifications.plugin.email.submitted_support.title') }}
+# {{ \App\Support\MailText::plain($autoPublished ? __('notifications.plugin.email.submitted_support.title_auto_published') : __('notifications.plugin.email.submitted_support.title')) }}
 
-{{ $autoPublished ? __('notifications.plugin.email.submitted_support.intro_auto_published') : __('notifications.plugin.email.submitted_support.intro') }}
+{{ \App\Support\MailText::plain($autoPublished ? __('notifications.plugin.email.submitted_support.intro_auto_published') : __('notifications.plugin.email.submitted_support.intro')) }}
 
-**{{ __('notifications.plugin.email.submitted_support.plugin_label') }}** {{ $pluginName }}  
-**{{ __('notifications.plugin.email.submitted_support.initial_release_label') }}** v{{ $releaseVersion }}  
-**{{ __('notifications.plugin.email.submitted_support.submitted_by_label') }}** {{ $submittedBy }}  
+**{{ __('notifications.plugin.email.submitted_support.plugin_label') }}** {{ \App\Support\MailText::plain($pluginName) }}  
+**{{ __('notifications.plugin.email.submitted_support.initial_release_label') }}** v{{ \App\Support\MailText::plain($releaseVersion) }}  
+**{{ __('notifications.plugin.email.submitted_support.submitted_by_label') }}** {{ \App\Support\MailText::plain($submittedBy) }}  
 **{{ __('notifications.plugin.email.scan.label') }}** {{ __('notifications.plugin.email.scan.queued_support') }}
 
 <x-mail::button :url="$actionUrl">

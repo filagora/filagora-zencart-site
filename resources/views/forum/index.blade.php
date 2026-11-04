@@ -83,8 +83,8 @@
                             @endif
                         </div>
                         <div class="lg:justify-self-end">
-                            @if($canSubscribeToForums)
-                                @php $isSubscribed = in_array((int) $forum->id, $subscribedForumIds ?? [], true); @endphp
+                            @php $isSubscribed = in_array((int) $forum->id, $subscribedForumIds ?? [], true); @endphp
+                            @if($canSubscribeToForums && ($isSubscribed || ! in_array((int) $forum->id, $ownThreadsOnlyForumIds ?? [], true)))
                                 <form method="post" action="{{ route($isSubscribed ? 'forums.unsubscribe' : 'forums.subscribe', $forum) }}">
                                     @csrf
                                     <input type="hidden" name="return_to" value="{{ request()->getRequestUri() }}">

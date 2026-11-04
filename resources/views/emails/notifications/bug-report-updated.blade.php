@@ -3,11 +3,11 @@
 
 {{ __('notifications.bug_report.email.intro') }}
 
-**{{ __('notifications.bug_report.email.thread_label') }}** {{ $threadTitle }}
-**{{ __('notifications.bug_report.email.status_label') }}** {{ $status }}
+**{{ __('notifications.bug_report.email.thread_label') }}** {{ \App\Support\MailText::plain($threadTitle) }}
+**{{ __('notifications.bug_report.email.status_label') }}** {{ \App\Support\MailText::plain($status) }}
 
 @foreach($changes as $change)
-- {{ $change }}
+- {{ \App\Support\MailText::plain($change) }}
 @endforeach
 
 <x-mail::button :url="$bugReportUrl">
@@ -19,8 +19,8 @@
 </x-mail::button>
 
 {{ __('notifications.thread.email.updated.subscription_reason') }}
-{{ __('notifications.thread.email.updated.manage_preferences', ['url' => $managePreferencesUrl]) }}
-{{ __('notifications.thread.email.updated.unsubscribe', ['url' => $unsubscribeUrl]) }}
+{{ \App\Support\MailText::plain(__('notifications.thread.email.updated.manage_preferences', ['url' => $managePreferencesUrl])) }}
+{{ \App\Support\MailText::plain(__('notifications.thread.email.updated.unsubscribe', ['url' => $unsubscribeUrl])) }}
 
 {{ __('notifications.mail.thanks') }}<br>
 {{ config('app.name') }}

@@ -1,11 +1,11 @@
 <x-mail::message>
 # {{ __('notifications.thread.email.updated.title') }}
 
-{{ __('notifications.thread.email.updated.intro', ['author' => $authorName]) }}
+{{ \App\Support\MailText::plain(__('notifications.thread.email.updated.intro', ['author' => $authorName])) }}
 
-**{{ __('notifications.thread.email.updated.thread_label') }}** {{ $threadTitle }}
+**{{ __('notifications.thread.email.updated.thread_label') }}** {{ \App\Support\MailText::plain($threadTitle) }}
 
-{{ $excerpt }}
+{{ \App\Support\MailText::plain($excerpt) }}
 
 <x-mail::button :url="$threadUrl">
 {{ __('notifications.thread.email.updated.action') }}
@@ -16,8 +16,8 @@
 </x-mail::button>
 
 {{ __('notifications.thread.email.updated.subscription_reason') }}
-{{ __('notifications.thread.email.updated.manage_preferences', ['url' => $managePreferencesUrl]) }}
-{{ __('notifications.thread.email.updated.unsubscribe', ['url' => $unsubscribeUrl]) }}
+{{ \App\Support\MailText::plain(__('notifications.thread.email.updated.manage_preferences', ['url' => $managePreferencesUrl])) }}
+{{ \App\Support\MailText::plain(__('notifications.thread.email.updated.unsubscribe', ['url' => $unsubscribeUrl])) }}
 
 {{ __('notifications.mail.thanks') }}<br>
 {{ config('app.name') }}

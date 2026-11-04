@@ -340,6 +340,19 @@ class ForumSubscriptionTest extends TestCase
         $this->assertStringContainsString($thread->title, (string) $mail->render());
     }
 
+    public function test_markdown_in_a_post_cannot_add_links_or_images_to_the_mail(): void
+    {
+        $thread = $this->thread($this->forum(), User::factory()->create());
+        Post::query()->where('thread_id', $thread->id)->update(['body' => '[Verify your account](https://evil.test) ![](https://evil.test/pixel.gif)']);
+        $thread->update(['title' => '[Click](https://evil.test)']);
+
+        $html = (string) (new ForumThreadCreatedNotification($thread))->toMail(User::factory()->create())->render();
+
+        $this->assertStringNotContainsString('href="https://evil.test', $html);
+        $this->assertStringNotContainsString('<img src="https://evil.test', $html);
+        $this->assertStringContainsString('Verify your account', $html);
+    }
+
     public function test_the_bell_row_folds_threads_of_one_forum_together(): void
     {
         $thread = $this->thread($this->forum(), User::factory()->create());
@@ -382,6 +395,41 @@ class ForumSubscriptionTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->post(route('forums.subscribe', $forum), ['return_to' => ['/forums']])
             ->assertRedirect(route('forums.show', $forum));
+    }
+
+    public function test_a_member_who_sees_only_their_own_threads_cannot_subscribe(): void
+    {
+        $forum = $this->forum(['visibility' => ForumVisibility::PAID_OR_AUTHOR]);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get(route('forums.index'))->assertOk()->assertDontSee(route('forums.subscribe', $forum));
+        $this->actingAs($user)->get(route('forums.show', $forum))->assertOk()->assertDontSee(route('forums.subscribe', $forum));
+        $this->actingAs($user)->post(route('forums.subscribe', $forum))->assertForbidden();
+        $this->assertDatabaseCount('forum_subscriptions', 0);
+    }
+
+    public function test_an_existing_subscriber_there_can_still_leave(): void
+    {
+        $forum = $this->forum(['visibility' => ForumVisibility::PAID_OR_AUTHOR]);
+        $user = User::factory()->create();
+        $this->subscribeTo($forum, $user);
+
+        $this->actingAs($user)->get(route('forums.index'))->assertOk()->assertSee(route('forums.unsubscribe', $forum));
+        $this->actingAs($user)->get(route('forums.show', $forum))->assertOk()->assertSee(route('forums.unsubscribe', $forum));
+    }
+
+    public function test_the_profile_leaves_out_forums_the_member_can_no_longer_see(): void
+    {
+        $visible = $this->forum();
+        $hidden = $this->forum(['visibility' => ForumVisibility::STAFF_ONLY]);
+        $user = User::factory()->create();
+        $this->subscribeTo($visible, $user);
+        $this->subscribeTo($hidden, $user);
+
+        $this->actingAs($user)->get(route('profile.show', ['tab' => 'subscriptions']))
+            ->assertOk()
+            ->assertSee($visible->name)
+            ->assertDontSee($hidden->name);
     }
 
     public function test_deleting_a_forum_cascades_its_subscriptions(): void
