@@ -9,6 +9,9 @@ additional_fqdns: []
 database:
     type: mariadb
     version: "11.4"
+hooks:
+    post-start:
+        - exec-host: ddev mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS testing; GRANT ALL ON testing.* TO 'db'@'%'; FLUSH PRIVILEGES;"
 use_dns_when_possible: true
 composer_version: "2"
 web_environment: []
@@ -290,7 +293,3 @@ corepack_enable: false
 # information on the commands that can be extended and the tasks you can define
 # for them. Example:
 #hooks:
-
-hooks:
-  post-start:
-    - exec-host: ddev mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS testing; GRANT ALL ON testing.* TO 'db'@'%'; FLUSH PRIVILEGES;"
