@@ -50,6 +50,12 @@ Search
             @endif
         </header>
 
+        @if(!empty($unavailableSubsystems))
+            <div class="mb-4 rounded-surface border border-[#cabca8] bg-[#fff8e8] p-4 text-sm text-[#5c6570]" role="status">
+                Results from {{ implode(' and ', $unavailableSubsystems) }} are temporarily unavailable while maintenance is in progress.
+            </div>
+        @endif
+
         @if($query !== '' && !($searchWasSkipped ?? false) && $totalResults === 0)
             <section class="mb-4 rounded-surface border border-[#cabca8] bg-[#ececed] p-4">
                 <div class="text-sm text-[#5c6570]">No results found.</div>
