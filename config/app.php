@@ -177,4 +177,22 @@ return [
         ))),
     ],
 
+    'subsystem_maintenance' => [
+        'allow_during_tests' => (bool) env('SUBSYSTEM_MAINTENANCE_ALLOW_DURING_TESTS', false),
+        'except' => array_values(array_filter(array_map(
+            static fn (string $path): string => trim($path),
+            explode(',', (string) env('SUBSYSTEM_MAINTENANCE_EXCEPT', 'up,dashboard,dashboard/*'))
+        ))),
+        'forums' => [
+            'enabled' => (bool) env('FORUMS_MAINTENANCE_ENABLED', false),
+            'message' => env('FORUMS_MAINTENANCE_MESSAGE'),
+            'retry_after' => (int) env('FORUMS_MAINTENANCE_RETRY_AFTER', 3600),
+        ],
+        'plugins' => [
+            'enabled' => (bool) env('PLUGINS_MAINTENANCE_ENABLED', false),
+            'message' => env('PLUGINS_MAINTENANCE_MESSAGE'),
+            'retry_after' => (int) env('PLUGINS_MAINTENANCE_RETRY_AFTER', 3600),
+        ],
+    ],
+
 ];

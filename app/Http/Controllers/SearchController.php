@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Search\SearchResultType;
 use App\Search\SiteSearch;
+use App\Services\SubsystemAvailability;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -14,7 +15,10 @@ use Illuminate\View\View;
  */
 class SearchController extends Controller
 {
-    public function __construct(private readonly SiteSearch $search) {}
+    public function __construct(
+        private readonly SiteSearch $search,
+        private readonly SubsystemAvailability $subsystemAvailability,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -29,6 +33,19 @@ class SearchController extends Controller
         $sections = $query !== '' && ! $searchWasSkipped
             ? $this->search->sections($query, $viewer)
             : $this->search->emptySections();
+
+        $unavailableSubsystems = [];
+
+        if ($this->subsystemAvailability->isUnderMaintenance('forums')) {
+            $sections[SearchResultType::Forum->sectionIndex()]['items'] = [];
+            $sections[SearchResultType::Thread->sectionIndex()]['items'] = [];
+            $unavailableSubsystems[] = 'forums';
+        }
+
+        if ($this->subsystemAvailability->isUnderMaintenance('plugins')) {
+            $sections[SearchResultType::PluginRelease->sectionIndex()]['items'] = [];
+            $unavailableSubsystems[] = 'plugins';
+        }
 
         $sourceCounts = [];
 
@@ -55,6 +72,7 @@ class SearchController extends Controller
             'selectedType' => $selectedType,
             'totalResults' => array_sum(array_map(fn (array $section): int => count($section['items']), $visible)),
             'searchWasSkipped' => $searchWasSkipped,
+            'unavailableSubsystems' => $unavailableSubsystems,
             'minimumQueryLength' => SiteSearch::MINIMUM_QUERY_LENGTH,
         ]);
     }

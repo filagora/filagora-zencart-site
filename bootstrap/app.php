@@ -4,17 +4,20 @@ use App\Http\Middleware\AddMonitoringContext;
 use App\Http\Middleware\ApplySearchIconToggleOverride;
 use App\Http\Middleware\EnsureFrontendEmailIsVerified;
 use App\Http\Middleware\EnsurePluginSubmissionsAreOpen;
+use App\Http\Middleware\EnsureSubsystemIsAvailable;
 use App\Http\Middleware\FrontendMaintenanceMode;
 use App\Http\Middleware\NoindexPrivateAndThinPages;
 use App\Http\Middleware\RecordUserLastSeen;
 use App\Http\Middleware\RepairLegacyPathEncoding;
 use App\Http\Middleware\RequestTimingMiddleware;
+use App\Http\SubsystemRoutes;
 use App\Support\TrustedHosts;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\ValidatePathEncoding;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -23,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        then: static fn () => SubsystemRoutes::assign(app('router')),
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AddMonitoringContext::class);
@@ -64,6 +68,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'frontend.verified' => EnsureFrontendEmailIsVerified::class,
             'plugins.submissions.open' => EnsurePluginSubmissionsAreOpen::class,
         ]);
+
+        // Before route model binding, so a forum that is down answers 503 even for an unknown thread.
+        $middleware->prependToPriorityList(SubstituteBindings::class, EnsureSubsystemIsAvailable::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Fuzzers replay Livewire update payloads against the Filament login component with mangled
