@@ -1,6 +1,8 @@
 <?php
 
+use App\Ai\AiChatFeature;
 use App\Forum\BugReportsFeature;
+use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\ApiDocsController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\BugReportController;
@@ -170,6 +172,14 @@ Route::middleware('frontend.verified')->group(function (): void {
         Route::post('/profile/hide-resolved-bug-threads', ResolvedBugThreadVisibilityController::class)->name('profile.hide-resolved-bug-threads.update');
         Route::post('/threads/{thread}/bug-reports', [BugReportController::class, 'store'])->name('threads.bug-reports.store');
         Route::post('/bug-reports/{bugReport}', [BugReportController::class, 'update'])->name('bug-reports.update');
+    }
+
+    if (AiChatFeature::installed()) {
+        Route::get('/ai-chat', [AiChatController::class, 'index'])->name('ai-chat.index');
+        Route::get('/ai-chat/{conversation}', [AiChatController::class, 'show'])->name('ai-chat.show');
+        Route::post('/ai-chat', [AiChatController::class, 'store'])->middleware('throttle:ai-chat-message')->name('ai-chat.store');
+        Route::post('/ai-chat/{conversation}/messages', [AiChatController::class, 'sendMessage'])->middleware('throttle:ai-chat-message')->name('ai-chat.messages.store');
+        Route::post('/ai-chat/{conversation}/delete', [AiChatController::class, 'destroy'])->name('ai-chat.destroy');
     }
 
     Route::post('/staff/impersonation/stop', [StaffUserImpersonationController::class, 'stop'])->name('staff.impersonation.stop');

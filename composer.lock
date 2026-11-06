@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "78c75a17410693c12760fbaf2c4853cd",
+    "content-hash": "2d5ec62cf9796283762a854c5a5f9a22",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1467,6 +1467,66 @@
                 }
             ],
             "time": "2025-03-06T22:45:56+00:00"
+        },
+        {
+            "name": "filagora/filagora-ai",
+            "version": "v0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/filagora/filagora-ai.git",
+                "reference": "0dd3c1c389e1c8b44b483a9183725478edb2e277"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/filagora/filagora-ai/zipball/0dd3c1c389e1c8b44b483a9183725478edb2e277",
+                "reference": "0dd3c1c389e1c8b44b483a9183725478edb2e277",
+                "shasum": ""
+            },
+            "require": {
+                "filagora/filagora-core": "^0.2.2",
+                "filament/filament": "^5.0",
+                "php": "^8.4"
+            },
+            "require-dev": {
+                "filagora/filagora-entitlements": "^0.2.1",
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.0",
+                "orchestra/testbench": "^11.0",
+                "pestphp/pest": "^4.0",
+                "pestphp/pest-plugin-laravel": "^4.0"
+            },
+            "suggest": {
+                "filagora/filagora-entitlements": "Answers the access check from entitlement grants. Without it, bind Filagora\\Core\\Contracts\\AccessChecker."
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Filagora\\Ai\\AiServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Filagora\\Ai\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "AI chat, usage records and provider plumbing for Filagora applications.",
+            "keywords": [
+                "ai",
+                "filament",
+                "filament-plugin",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/filagora/filagora-ai/issues",
+                "source": "https://github.com/filagora/filagora-ai/tree/v0.1.0"
+            },
+            "time": "2026-11-06T13:48:00+00:00"
         },
         {
             "name": "filagora/filagora-cms",
