@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2d5ec62cf9796283762a854c5a5f9a22",
+    "content-hash": "b92bdad654b3391b8b0e3fee8ce7710f",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1470,16 +1470,16 @@
         },
         {
             "name": "filagora/filagora-ai",
-            "version": "v0.1.0",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-ai.git",
-                "reference": "0dd3c1c389e1c8b44b483a9183725478edb2e277"
+                "reference": "6a4ba9947847939fe70d9bdb2c03622865ffcf0c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-ai/zipball/0dd3c1c389e1c8b44b483a9183725478edb2e277",
-                "reference": "0dd3c1c389e1c8b44b483a9183725478edb2e277",
+                "url": "https://api.github.com/repos/filagora/filagora-ai/zipball/6a4ba9947847939fe70d9bdb2c03622865ffcf0c",
+                "reference": "6a4ba9947847939fe70d9bdb2c03622865ffcf0c",
                 "shasum": ""
             },
             "require": {
@@ -1489,6 +1489,7 @@
             },
             "require-dev": {
                 "filagora/filagora-entitlements": "^0.2.1",
+                "filagora/filagora-search": "^0.2.1",
                 "larastan/larastan": "^3.0",
                 "laravel/pint": "^1.0",
                 "orchestra/testbench": "^11.0",
@@ -1496,7 +1497,8 @@
                 "pestphp/pest-plugin-laravel": "^4.0"
             },
             "suggest": {
-                "filagora/filagora-entitlements": "Answers the access check from entitlement grants. Without it, bind Filagora\\Core\\Contracts\\AccessChecker."
+                "filagora/filagora-entitlements": "Answers the access check from entitlement grants. Without it, bind Filagora\\Core\\Contracts\\AccessChecker.",
+                "filagora/filagora-search": "Lets the AI features index their content for search by meaning, and fills those indexes with VectorBackfill."
             },
             "type": "library",
             "extra": {
@@ -1524,9 +1526,9 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-ai/issues",
-                "source": "https://github.com/filagora/filagora-ai/tree/v0.1.0"
+                "source": "https://github.com/filagora/filagora-ai/tree/v0.1.2"
             },
-            "time": "2026-11-06T13:48:00+00:00"
+            "time": "2026-11-06T16:47:02+00:00"
         },
         {
             "name": "filagora/filagora-cms",
@@ -2330,16 +2332,16 @@
         },
         {
             "name": "filagora/filagora-search",
-            "version": "v0.1.1",
+            "version": "v0.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-search.git",
-                "reference": "fe4eeeff4d237337a182982de0e6d7e836e77fa9"
+                "reference": "4a8eb49df9ce111bd074b6e81811901b2be24616"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-search/zipball/fe4eeeff4d237337a182982de0e6d7e836e77fa9",
-                "reference": "fe4eeeff4d237337a182982de0e6d7e836e77fa9",
+                "url": "https://api.github.com/repos/filagora/filagora-search/zipball/4a8eb49df9ce111bd074b6e81811901b2be24616",
+                "reference": "4a8eb49df9ce111bd074b6e81811901b2be24616",
                 "shasum": ""
             },
             "require": {
@@ -2381,22 +2383,22 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-search/issues",
-                "source": "https://github.com/filagora/filagora-search/tree/v0.1.1"
+                "source": "https://github.com/filagora/filagora-search/tree/v0.2.2"
             },
-            "time": "2026-10-28T01:20:45+00:00"
+            "time": "2026-11-06T17:33:25+00:00"
         },
         {
             "name": "filagora/filagora-zencart",
-            "version": "v0.8.0",
+            "version": "v0.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-zencart.git",
-                "reference": "fcdeaade52c3914259578a4f9128762919653b1b"
+                "reference": "ed01c9582ea64edcc5e4b95da83155e4438b4744"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/fcdeaade52c3914259578a4f9128762919653b1b",
-                "reference": "fcdeaade52c3914259578a4f9128762919653b1b",
+                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/ed01c9582ea64edcc5e4b95da83155e4438b4744",
+                "reference": "ed01c9582ea64edcc5e4b95da83155e4438b4744",
                 "shasum": ""
             },
             "require": {
@@ -2412,11 +2414,17 @@
                 "php": "^8.4"
             },
             "require-dev": {
+                "filagora/filagora-ai": "^0.1.2",
+                "filagora/filagora-search": "^0.2.2",
                 "larastan/larastan": "^3.0",
                 "laravel/pint": "^1.0",
                 "orchestra/testbench": "^11.0",
                 "pestphp/pest": "^4.0",
                 "pestphp/pest-plugin-laravel": "^4.0"
+            },
+            "suggest": {
+                "filagora/filagora-ai": "Adds the AI chat's Zen Cart corpora: the documentation import, its search index and its retrieval source.",
+                "filagora/filagora-search": "Indexes the documentation corpus for the search page and the AI chat."
             },
             "type": "library",
             "extra": {
@@ -2459,10 +2467,10 @@
                 "zen-cart"
             ],
             "support": {
-                "source": "https://github.com/filagora/filagora-zencart/tree/v0.8.0",
+                "source": "https://github.com/filagora/filagora-zencart/tree/v0.10.0",
                 "issues": "https://github.com/filagora/filagora-zencart/issues"
             },
-            "time": "2026-11-04T19:38:29+00:00"
+            "time": "2026-11-06T19:00:39+00:00"
         },
         {
             "name": "filament/actions",
