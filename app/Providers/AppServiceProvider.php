@@ -306,6 +306,7 @@ class AppServiceProvider extends ServiceProvider
             'notifications' => 120,
             'push-subscription' => 20,
             'moderation-action' => 60,
+            'ai-chat-message' => 6,
         ] as $name => $perMinute) {
             RateLimiter::for($name, fn (Request $request): Limit => Limit::perMinute($perMinute)->by(
                 $request->user()?->id !== null ? 'user:'.$request->user()->id : 'ip:'.$request->ip(),
