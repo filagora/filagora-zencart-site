@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Ai;
+namespace Tests\Feature\Ai;
 
 use App\Ai\DigitalOceanChatProvider;
 use App\Ai\DigitalOceanEmbeddingProvider;

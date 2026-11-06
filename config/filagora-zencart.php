@@ -13,4 +13,13 @@ return [
         'plugin_route' => null,
         'thread_route' => null,
     ],
+    // The Zen Cart documentation the AI chat reads (`docs:import`): a local checkout if
+    // ZENCART_DOCS_PATH is set, else a fresh clone. `base_url` is where the pages are published,
+    // for the links the chat cites. The profile has no default for it; this site's is its own.
+    'docs' => [
+        'path' => env('ZENCART_DOCS_PATH'),
+        'repo_url' => env('ZENCART_DOCS_REPO_URL') ?: 'https://github.com/zencart/documentation.git',
+        'ref' => env('ZENCART_DOCS_REF') ?: 'master',
+        'base_url' => env('LEGACY_DOCS_URL') ?: 'https://docs.zen-cart.com',
+    ],
 ];
