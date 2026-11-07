@@ -231,7 +231,7 @@ class ThreadReplyTest extends TestCase
         $response->assertOk();
         $response->assertSee('class="mb-4 border border-[#d8dce2] bg-white p-4"', false);
         $response->assertSee('class="mt-4 border border-[#d8dce2] bg-white p-4"', false);
-        $response->assertSee('class="scroll-mt-[100px] overflow-hidden border border-[#d8dce2] bg-white md:scroll-mt-[180px]"', false);
+        $response->assertSee('class="scroll-mt-[calc(var(--site-header-h,100px)+12px)] overflow-hidden border border-[#d8dce2] bg-white md:scroll-mt-[calc(var(--site-header-h,180px)+12px)]"', false);
     }
 
     public function test_new_thread_form_uses_markdown_editor_controls(): void

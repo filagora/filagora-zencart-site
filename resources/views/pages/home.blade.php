@@ -1,6 +1,6 @@
 @extends('layouts.main')
 
-@section('title', 'Zen Cart Support - Zen Cart™ - Putting the dream of your own business within reach of anyone!')
+@section('title', 'Zen Cart Support')
 @section('main_class', '')
 
 @section('content')
