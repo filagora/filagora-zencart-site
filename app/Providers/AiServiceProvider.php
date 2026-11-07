@@ -19,6 +19,7 @@ class AiServiceProvider extends ServiceProvider
     {
         config([
             'filagora-ai.chat.system_prompt' => config('ai.system_prompt'),
+            'filagora-ai-forums.assist.system_prompt' => config('ai.thread_assist_prompt'),
             'filagora-ai.embeddings.cost_per_million_tokens.digitalocean' => config('ai.digitalocean.embeddings.cost_per_million_tokens'),
         ]);
     }

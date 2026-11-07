@@ -9,6 +9,7 @@
         "bacon/bacon-qr-code": "^3.1",
         "croustibat/filament-jobs-monitor": "^5.1",
         "filagora/filagora-ai": "^0.1.2",
+        "filagora/filagora-ai-forums": "^0.1",
         "filagora/filagora-cms": "^0.3.3",
         "filagora/filagora-compliance": "^0.1",
         "filagora/filagora-core": "^0.2.2",

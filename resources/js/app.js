@@ -30,6 +30,7 @@ const pageModules = [
     ['[data-home-motion-root]', () => import('./modules/home-motion')],
     ['#deploySteps', () => import('./modules/home-deploy-steps')],
     ['[data-ai-chat-root]', () => import('./modules/ai-chat')],
+    ['[data-thread-assist-root]', () => import('./modules/thread-assist')],
 ];
 
 pageModules.forEach(([selector, importer]) => {
