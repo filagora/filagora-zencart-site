@@ -130,6 +130,25 @@
                 @endif
             </section>
 
+            @if($aiUsage ?? null)
+                <section class="{{ $cardClass }}" aria-labelledby="ai-usage-heading" data-ai-usage>
+                    <h3 id="ai-usage-heading" class="text-lg font-semibold text-[#0f2133]">AI assist</h3>
+                    <p class="mt-1 {{ $metaClass }}">Chat and thread answers, since {{ \App\Support\LocalTime::format($aiUsage->from, 'date') }}.</p>
+
+                    @if($aiUsage->hasAllowance())
+                        <div class="mt-4 flex items-baseline justify-between gap-3">
+                            <p class="text-2xl font-semibold text-[#0f2133]">{{ $aiUsage->percent }}%<span class="ml-1 text-sm font-normal text-[#5c6570]">used</span></p>
+                            <p class="{{ $metaClass }}">{{ number_format($aiUsage->answers) }} {{ \Illuminate\Support\Str::plural('answer', $aiUsage->answers) }}</p>
+                        </div>
+                        <div class="mt-2 h-2 w-full overflow-hidden rounded-pill bg-[#e8ebef]" role="progressbar" aria-label="AI assist used" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ min(100, $aiUsage->percent) }}">
+                            <div class="h-full rounded-pill bg-[#933c1f]" style="width: {{ min(100, $aiUsage->percent) }}%"></div>
+                        </div>
+                    @else
+                        <p class="mt-4 text-2xl font-semibold text-[#0f2133]">{{ number_format($aiUsage->answers) }}<span class="ml-1 text-sm font-normal text-[#5c6570]">{{ \Illuminate\Support\Str::plural('answer', $aiUsage->answers) }}</span></p>
+                    @endif
+                </section>
+            @endif
+
             <section class="{{ $cardClass }}">
                 <h3 class="text-lg font-semibold text-[#0f2133]">Resolved Entitlements</h3>
                 @if(($entitlements ?? []) === [])

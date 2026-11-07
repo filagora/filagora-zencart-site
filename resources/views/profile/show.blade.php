@@ -882,6 +882,7 @@ Profile
                     'plans' => $plans ?? collect(),
                     'memberships' => $memberships ?? collect(),
                     'entitlements' => $effectiveEntitlements ?? [],
+                    'aiUsage' => $aiUsage ?? null,
                 ])
             @endif
         </div>

@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Ai\AiChatFeature;
 use App\Filament\Pages\Auth\EmailVerificationPrompt;
 use App\Filament\Pages\Auth\Login as UsernameLogin;
 use App\Filament\Pages\Auth\Register as FrontendRegister;
@@ -11,6 +12,7 @@ use App\Http\Middleware\EnsureBannedDashboardUserIsLoggedOut;
 use App\Http\Middleware\EnsureDashboardAccess;
 use App\Http\Middleware\ThrottleAuthEndpoints;
 use Croustibat\FilamentJobsMonitor\FilamentJobsMonitorPlugin;
+use Filagora\Ai\FilagoraAiPlugin;
 use Filagora\Cms\FilagoraCmsPlugin;
 use Filagora\Compliance\FilagoraCompliancePlugin;
 use Filagora\Compliance\Filament\Widgets\PrivacyKpiOverview;
@@ -81,6 +83,7 @@ class AdminPanelProvider extends PanelProvider
                 FilagoraMembershipsPlugin::make(),
                 NotificationsPlugin::make(),
                 ...(BugReportsFeature::installed() ? [FilagoraForumBugReportsPlugin::make()] : []),
+                ...(AiChatFeature::installed() ? [FilagoraAiPlugin::make()] : []),
                 FilagoraPluginsPlugin::make(),
                 FilagoraPluginsSecurityPlugin::make(),
             ])
