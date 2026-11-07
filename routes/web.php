@@ -1,6 +1,7 @@
 <?php
 
 use App\Ai\AiChatFeature;
+use App\Ai\ThreadAssistFeature;
 use App\Forum\BugReportsFeature;
 use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\ApiDocsController;
@@ -45,6 +46,7 @@ use App\Http\Controllers\RelocationTargetsController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StaffUserImpersonationController;
+use App\Http\Controllers\ThreadAssistController;
 use App\Http\Controllers\ThreadPostingController;
 use App\Http\Controllers\UserAvatarController;
 use App\Http\Controllers\Webhooks\MailgunWebhookController;
@@ -172,6 +174,10 @@ Route::middleware('frontend.verified')->group(function (): void {
         Route::post('/profile/hide-resolved-bug-threads', ResolvedBugThreadVisibilityController::class)->name('profile.hide-resolved-bug-threads.update');
         Route::post('/threads/{thread}/bug-reports', [BugReportController::class, 'store'])->name('threads.bug-reports.store');
         Route::post('/bug-reports/{bugReport}', [BugReportController::class, 'update'])->name('bug-reports.update');
+    }
+
+    if (ThreadAssistFeature::installed()) {
+        Route::post('/threads/{thread}/ai-assist', [ThreadAssistController::class, 'stream'])->middleware('throttle:ai-thread-assist')->name('threads.ai-assist');
     }
 
     if (AiChatFeature::installed()) {

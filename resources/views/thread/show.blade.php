@@ -153,9 +153,34 @@
                 @elseif(!auth()->check())
                     <button type="button" class="{{ $threadActionButtonClass }}" data-auth-modal-url="/login">Subscribe</button>
                 @endif
+                @if($canUseThreadAssist ?? false)
+                    <button type="button" class="{{ $threadActionButtonClass }}" data-thread-assist-open>AI assist</button>
+                @endif
             </div>
         </div>
     </header>
+
+    @if($canUseThreadAssist ?? false)
+        <section class="mb-4 border border-[#d8dce2] bg-white p-4" data-thread-assist-root data-thread-assist-url="{{ route('threads.ai-assist', $thread) }}" aria-live="polite" hidden>
+            <div class="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                    <h2 class="m-0 text-base font-semibold text-[#0f2133]">AI assist</h2>
+                    <p class="mt-0.5 text-xs text-[#5c6570]">AI-generated and unverified. Only you can see this; nothing is posted to the thread. Check it before you rely on it or reply with it.</p>
+                </div>
+                <div class="inline-flex items-center gap-2">
+                    <button type="button" class="{{ $threadActionButtonClass }}" data-thread-assist-copy hidden>Copy answer</button>
+                    <button type="button" class="{{ $threadActionButtonClass }}" data-thread-assist-close>Close</button>
+                </div>
+            </div>
+            <p class="mt-3 border-l-2 border-[#d8b45a] bg-[#faf5e6] px-3 py-2 text-xs text-[#5c4a10]" data-thread-assist-note hidden></p>
+            <p class="mt-3 text-sm text-[#5c6570]" data-thread-assist-status>Reading the thread and searching the docs and code…</p>
+            <div class="forum-rendered-content mt-3 text-sm text-[#0f2133]" data-thread-assist-body></div>
+            <details class="mt-3 border-t border-[#d8dce2] pt-2 text-xs text-[#5c6570]" data-thread-assist-sources-wrap hidden>
+                <summary class="cursor-pointer">Material searched for this answer (<span data-thread-assist-sources-count>0</span>)</summary>
+                <ul class="mt-2 grid gap-1" data-thread-assist-sources></ul>
+            </details>
+        </section>
+    @endif
 
     <div class="mb-6">
         @include('forum.partials.search_bar', ['searchThread' => $thread, 'searchForum' => $thread->forum])

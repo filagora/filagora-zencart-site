@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Ai\ThreadAssistFeature;
 use App\Forum\BugReportsFeature;
 use App\Forum\ForumIndex;
 use App\Forum\ThreadListings;
@@ -53,6 +54,7 @@ class ForumController extends Controller
         private readonly ForumIndex $forumIndex,
         private readonly BugReportsFeature $bugReports,
         private readonly ForumSubscriptions $forumSubscriptions,
+        private readonly ThreadAssistFeature $threadAssist,
     ) {}
 
     public function index(Request $request): View
@@ -256,6 +258,7 @@ class ForumController extends Controller
             'postCount' => $posts->total(),
             'canReply' => $canReply,
             'canModerateThread' => $canModerateThread,
+            'canUseThreadAssist' => $this->threadAssist->availableFor($user, $thread),
             'moderationLogs' => $moderationLogs,
             'postModerationLogs' => $postModerationLogs,
             'isSubscribed' => $isSubscribed,

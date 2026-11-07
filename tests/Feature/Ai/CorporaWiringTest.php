@@ -14,11 +14,11 @@ class CorporaWiringTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_the_chat_looks_in_code_then_documentation_then_plugins(): void
+    public function test_the_chat_looks_in_code_then_documentation_then_threads_then_plugins(): void
     {
         $keys = array_map(fn ($source): string => $source->key(), app(RetrievalSources::class)->all());
 
-        $this->assertSame(['code', 'docs', 'plugins'], $keys);
+        $this->assertSame(['code', 'docs', 'threads', 'plugins'], $keys);
     }
 
     public function test_the_prompt_carries_the_rules_for_code_excerpts(): void

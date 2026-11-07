@@ -313,6 +313,14 @@ class AppServiceProvider extends ServiceProvider
             ));
         }
 
+        // Thread assist reads a whole thread and searches several indexes, many times the cost of a
+        // chat message. The numbers are a cost call; a stored answer is replayed free but still counts.
+        RateLimiter::for('ai-thread-assist', function (Request $request): array {
+            $key = $request->user()?->id !== null ? 'user:'.$request->user()->id : 'ip:'.$request->ip();
+
+            return [Limit::perMinute(3)->by($key), Limit::perHour(30)->by($key)];
+        });
+
         RateLimiter::for('newsletter-signup', fn (Request $request): Limit => Limit::perMinute(5)->by('newsletter-signup:'.($request->ip() ?: 'unknown')));
 
         RateLimiter::for('privacy-request-submit', function (Request $request): array {

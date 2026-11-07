@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9e76cf58b3ce76b733f423498d536a2d",
+    "content-hash": "a356dc7923e0344af8726a1f31431f27",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1529,6 +1529,68 @@
                 "source": "https://github.com/filagora/filagora-ai/tree/v0.1.2"
             },
             "time": "2026-11-06T16:47:02+00:00"
+        },
+        {
+            "name": "filagora/filagora-ai-forums",
+            "version": "v0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/filagora/filagora-ai-forums.git",
+                "reference": "0a7a4be269c727d2ddbdedb7629f2cb1b0f48e20"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/filagora/filagora-ai-forums/zipball/0a7a4be269c727d2ddbdedb7629f2cb1b0f48e20",
+                "reference": "0a7a4be269c727d2ddbdedb7629f2cb1b0f48e20",
+                "shasum": ""
+            },
+            "require": {
+                "filagora/filagora-ai": "^0.1.2",
+                "filagora/filagora-core": "^0.2.2",
+                "filagora/filagora-forums": "^0.6",
+                "filagora/filagora-search": "^0.2.2",
+                "php": "^8.4"
+            },
+            "require-dev": {
+                "filagora/filagora-entitlements": "^0.2.1",
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.0",
+                "orchestra/testbench": "^11.0",
+                "pestphp/pest": "^4.0",
+                "pestphp/pest-plugin-laravel": "^4.0"
+            },
+            "suggest": {
+                "filagora/filagora-entitlements": "Answers the access check from entitlement grants. Without it, bind Filagora\\Core\\Contracts\\AccessChecker."
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Filagora\\AiForums\\AiForumsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Filagora\\AiForums\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Thread vectors and AI thread assist for filagora-forums: the chat can find earlier threads, and staff can ask for a suggested answer to one.",
+            "keywords": [
+                "ai",
+                "filament",
+                "forum",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/filagora/filagora-ai-forums/issues",
+                "source": "https://github.com/filagora/filagora-ai-forums/tree/v0.1.0"
+            },
+            "time": "2026-11-07T09:21:23+00:00"
         },
         {
             "name": "filagora/filagora-cms",
