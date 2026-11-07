@@ -2,6 +2,7 @@
 
 namespace App\Profile;
 
+use App\Ai\AiChatFeature;
 use App\Api\ApiScopeCatalog;
 use App\Models\User;
 use App\Services\NewsletterSubscriberService;
@@ -9,6 +10,8 @@ use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use Filagora\Ai\Usage\UsageMeter;
+use Filagora\Ai\Usage\UsageMeterService;
 use Filagora\Compliance\Enums\PrivacyRequestStatus;
 use Filagora\Compliance\Enums\PrivacyRequestType;
 use Filagora\Compliance\Models\PrivacyRequest;
@@ -101,13 +104,15 @@ class ProfilePage
     }
 
     /**
-     * @return array{plans: Collection<int, MembershipPlan>, memberships: Collection<int, UserMembership>}
+     * @return array{plans: Collection<int, MembershipPlan>, memberships: Collection<int, UserMembership>, aiUsage: UsageMeter|null}
      */
     private function billingTab(User $user): array
     {
         return [
             'plans' => $this->memberships->availablePlans(),
             'memberships' => $user->userMemberships()->with('plan')->latest('id')->get(),
+            // Nothing about AI for someone with no access to it and no use of it.
+            'aiUsage' => AiChatFeature::installed() ? app(UsageMeterService::class)->forUser($user) : null,
         ];
     }
 
