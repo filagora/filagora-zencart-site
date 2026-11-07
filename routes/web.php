@@ -70,6 +70,7 @@ Route::get('/forums/search', [ForumSearchController::class, 'index'])->name('for
 Route::get('/forums/search/forums', [ForumSearchController::class, 'forumOptions'])->name('forums.search.forum-options');
 Route::get('/forums/{forum}', [ForumController::class, 'show'])->name('forums.show');
 Route::get('/threads/{thread}', [ForumController::class, 'showThread'])->name('threads.show');
+Route::get('/threads/{thread}/preview', [ForumController::class, 'threadPreview'])->name('threads.preview');
 Route::get('/threads/{thread}/search', [ForumSearchController::class, 'thread'])->name('threads.search');
 
 Route::get('/misc/{thread}', [PostAttachmentController::class, 'index'])->name('legacy.attachments.index');

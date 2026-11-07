@@ -9,8 +9,10 @@ use App\Forum\ThreadListings;
 use App\Http\Controllers\Concerns\ChecksInternalPaths;
 use App\Models\User;
 use App\Support\CrawlerUserAgent;
+use App\Support\FormattedContentRenderer;
 use App\Support\ForumStructuredDataFactory;
 use App\Support\LegacyTextDecoder;
+use App\Support\LocalTime;
 use App\Support\MetaDescription;
 use App\Support\ThreadOpeningText;
 use Filagora\Forums\Enums\ContentModerationStatus;
@@ -25,10 +27,12 @@ use Filagora\Plugins\Support\Models as PluginModels;
 use Filagora\ZenCart\Models\Forum;
 use Filagora\ZenCart\Models\Thread;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -159,6 +163,46 @@ class ForumController extends Controller
             'threadRequiresApproval' => $this->approvals->threadRequiresApproval($forum, $viewerForApproval),
             'replyRequiresApproval' => $this->approvals->replyRequiresApproval($forum, $viewerForApproval),
         ]);
+    }
+
+    /**
+     * Short excerpts of a thread's first and latest posts, for the hover preview on thread lists.
+     * It applies the same visibility rules as the thread page, so nothing is shown that the viewer
+     * could not open.
+     */
+    public function threadPreview(Request $request, Thread $thread): JsonResponse
+    {
+        $thread->load('forum.group');
+        $user = $this->viewer($request);
+
+        abort_unless($this->access->canViewForum($thread->forum, $user), 403);
+        abort_unless($this->access->canAccessThread($thread, $user), 403);
+
+        $visiblePosts = function () use ($thread, $user) {
+            $posts = Models::class('post')::query()
+                ->with('author:id,username,name,email')
+                ->where('thread_id', $thread->id)
+                ->where('is_deleted', false);
+
+            $this->access->scopeVisiblePosts($posts, $user);
+
+            return $posts;
+        };
+
+        $first = $visiblePosts()->orderBy('created_at')->orderBy('id')->first();
+        $latest = $visiblePosts()->orderByDesc('created_at')->orderByDesc('id')->first();
+        $renderer = app(FormattedContentRenderer::class);
+
+        $excerpt = fn (?Post $post): ?array => $post === null ? null : [
+            'author' => $post->author?->username ?? $post->author?->name ?? 'A user',
+            'date' => LocalTime::format($post->created_at),
+            'excerpt' => Str::limit($renderer->plainText((string) $post->body), 220),
+        ];
+
+        return response()->json([
+            'first' => $excerpt($first),
+            'latest' => $latest !== null && $latest->id !== $first?->id ? $excerpt($latest) : null,
+        ])->header('Cache-Control', 'private, max-age=60');
     }
 
     public function showThread(Request $request, Thread $thread): View

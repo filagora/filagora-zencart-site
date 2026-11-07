@@ -101,7 +101,7 @@
                                     <span class="text-[11px] font-semibold text-[#8f3f1f]">Rejected</span>
                                 @endif
 
-                                <a class="min-w-0 text-[15px] leading-tight text-[#1a5fd0] hover:underline {{ $isUnreadForUser ? 'font-bold' : 'font-normal' }}" href="{{ $firstPostUrl }}">
+                                <a class="min-w-0 text-[15px] leading-tight text-[#1a5fd0] hover:underline {{ $isUnreadForUser ? 'font-bold' : 'font-normal' }}" href="{{ $firstPostUrl }}" data-thread-preview-url="{{ route('threads.preview', $thread) }}">
                                     {{ $decodeLegacyText($thread->title) }}
                                 </a>
                             </div>

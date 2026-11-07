@@ -10,6 +10,7 @@ import './modules/push';
 const pageModules = [
     ['[data-rich-editor]', () => import('./modules/markdown-editor-rich')],
     ['.forum-rendered-content, .cms-rich-content', () => import('./modules/code-highlight')],
+    ['[data-thread-preview-url]', () => import('./modules/thread-preview')],
     ['#report-post-modal', () => import('./modules/thread-show')],
     ['[data-bug-reports-section]', () => import('./modules/bug-reports-section')],
     ['[data-relocate-dialog]', () => import('./modules/moderation-relocate')],

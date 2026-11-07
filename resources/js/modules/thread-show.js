@@ -232,3 +232,38 @@
             }
         });
     })();
+
+    // Keep a jumped-to post (#post-N from the bell, email, push) clear of the
+    // sticky site header. The header's height varies by breakpoint and menu
+    // state, so measure it rather than guess, and re-align once the page has
+    // finished loading because late layout shifts push the target back under.
+    (() => {
+        const header = document.querySelector('body > header, header.sticky');
+        const root = document.documentElement;
+
+        if (!(header instanceof HTMLElement)) {
+            return;
+        }
+
+        const syncHeaderHeight = () => {
+            root.style.setProperty('--site-header-h', `${Math.ceil(header.getBoundingClientRect().height)}px`);
+        };
+        syncHeaderHeight();
+
+        if (typeof ResizeObserver === 'function') {
+            new ResizeObserver(syncHeaderHeight).observe(header);
+        }
+
+        const realign = () => {
+            if (!/^#post-\d+$/.test(window.location.hash)) {
+                return;
+            }
+            document.querySelector(window.location.hash)?.scrollIntoView({ block: 'start' });
+        };
+
+        if (document.readyState === 'complete') {
+            realign();
+        } else {
+            window.addEventListener('load', realign, { once: true });
+        }
+    })();

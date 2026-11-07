@@ -3,7 +3,11 @@
         $headerItems = array_values($headerMenuItems ?? []);
     @endphp
 
-    <div class="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-4 px-5 py-4 md:px-8 xl:px-10">
+    {{-- Below sm the row must stay one line (max-sm:flex-nowrap, tighter gaps/padding so the logo plus
+         four icon buttons fit at 320px): the fixed menu panels sit at top-[88px] of this header
+         (backdrop-blur makes it their containing block), which only clears a single-row header.
+         A wrapped second row of buttons ends up underneath the open panel. --}}
+    <div class="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-2 px-4 py-4 max-sm:flex-nowrap sm:gap-4 sm:px-5 md:px-8 xl:px-10">
         <a href="/" class="flex shrink-0 items-center gap-3 sm:gap-4">
             {{-- Square mark below sm (640px), the wide wordmark logo from sm up. Each file keeps its own
                  width/height so the browser reserves the right box before it loads. --}}
@@ -107,7 +111,7 @@
              with no anchor of its own). At xl+ the nav sits between this and
              the logo, so ml-auto is cancelled there and justify-between on
              the row centers the nav in the space between them instead. --}}
-        <div class="ml-auto flex items-center gap-2.5 xl:ml-0">
+        <div class="ml-auto flex items-center gap-2 sm:gap-2.5 xl:ml-0">
         <div class="group relative order-last xl:hidden" data-mobile-nav>
             <button type="button" class="flex cursor-pointer list-none items-center justify-center rounded-full border border-[var(--color-site-line)] bg-[color:var(--color-site-panel)] p-3 text-[color:var(--color-site-ink)] transition hover:border-[color:var(--color-site-brand-text)] hover:text-[color:var(--color-site-brand-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-site-brand)]" aria-label="Toggle site navigation" aria-expanded="false" aria-controls="mobile-nav-panel" data-mobile-nav-trigger>
                 <span class="sr-only">Open navigation menu</span>
@@ -206,7 +210,7 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-2.5">
+        <div class="flex items-center gap-2 sm:gap-2.5">
             @if($searchIconToggleEnabled ?? false)
                 <button type="button" class="inline-flex cursor-pointer items-center justify-center rounded-full border border-[var(--color-site-line)] bg-[color:var(--color-site-panel)] p-3 text-[color:var(--color-site-ink)] transition hover:border-[color:var(--color-site-brand-text)] hover:text-[color:var(--color-site-brand-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-site-brand)]" aria-label="Toggle search" aria-expanded="false" aria-controls="desktop-search-panel" data-search-toggle-trigger>
                     <span class="sr-only">Toggle search</span>

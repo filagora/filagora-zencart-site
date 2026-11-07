@@ -500,7 +500,7 @@
                     : route('threads.show', ['thread' => $thread, 'page' => $posts->currentPage()])
                 ) . '#post-' . $post->id;
             @endphp
-            <article class="scroll-mt-[100px] overflow-hidden border border-[#d8dce2] bg-white md:scroll-mt-[180px]" id="post-{{ $post->id }}">
+            <article class="scroll-mt-[calc(var(--site-header-h,100px)+12px)] overflow-hidden border border-[#d8dce2] bg-white md:scroll-mt-[calc(var(--site-header-h,180px)+12px)]" id="post-{{ $post->id }}">
                 @php $postNumber = ($posts->firstItem() ?? 1) + $index; @endphp
                 <div class="flex items-start justify-between gap-3 border-b border-[#d8dce2] px-3.5 py-2.5 text-xs text-[#5c6570]">
                     <div>
