@@ -57,4 +57,29 @@ return [
         general knowledge only if you are confident.
         PROMPT,
 
+    // The staff "AI review" of a plugin release (filagora-plugins-security): advisory, run only when
+    // staff ask for it, never part of the standard scan. A hosted model that speaks the
+    // chat-completions format. The environment names are the old site's.
+    'plugin_review' => [
+        'enabled' => (bool) env('PLUGIN_SECURITY_SCAN_LLM_ENABLED', false),
+        'endpoint' => env('PLUGIN_SECURITY_SCAN_LLM_ENDPOINT') ?: 'https://inference.do-ai.run/v1/chat/completions',
+        'api_key' => env('PLUGIN_SECURITY_SCAN_LLM_API_KEY'),
+        'model' => env('PLUGIN_SECURITY_SCAN_LLM_MODEL'),
+        // Reasoning models spend tokens thinking before they answer, so this must be generous or the
+        // answer is cut off.
+        'max_tokens' => (int) env('PLUGIN_SECURITY_SCAN_LLM_MAX_TOKENS', 24000),
+        'max_files' => (int) env('PLUGIN_SECURITY_SCAN_LLM_MAX_FILES', 150),
+        'max_file_bytes' => (int) env('PLUGIN_SECURITY_SCAN_LLM_MAX_FILE_BYTES', 60000),
+        // Source bytes sent per request; files are batched under this.
+        'max_batch_bytes' => (int) env('PLUGIN_SECURITY_SCAN_LLM_MAX_BATCH_BYTES', 120000),
+        'max_batches' => (int) env('PLUGIN_SECURITY_SCAN_LLM_MAX_BATCHES', 6),
+        // Per request. A reasoning model returns nothing until it has finished thinking, and response
+        // time varies a lot (7 seconds to 3 minutes and more).
+        'timeout_seconds' => (int) env('PLUGIN_SECURITY_SCAN_LLM_TIMEOUT_SECONDS', 600),
+        // A connection error or timeout is retried this many extra times.
+        'retries' => (int) env('PLUGIN_SECURITY_SCAN_LLM_RETRIES', 1),
+        'retry_delay_ms' => (int) env('PLUGIN_SECURITY_SCAN_LLM_RETRY_DELAY_MS', 2000),
+        'subject' => 'Zen Cart plugins',
+    ],
+
 ];

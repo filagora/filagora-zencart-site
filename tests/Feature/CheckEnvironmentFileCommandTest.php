@@ -55,7 +55,7 @@ class CheckEnvironmentFileCommandTest extends TestCase
         $this->assertSame(EnvironmentKeyAudit::RETIRED, $byKey['STRIPE_SECRET']['status']);
         $this->assertSame(EnvironmentKeyAudit::PENDING, $byKey['AI_CHAT_ENABLED']['status']);
         $this->assertSame(EnvironmentKeyAudit::UNKNOWN, $byKey['SOMETHING_ODD']['status']);
-        $this->assertSame(EnvironmentKeyAudit::NO_COUNTERPART, $byKey['PLUGIN_SECURITY_SCAN_LLM_API_KEY']['status']);
+        $this->assertSame(EnvironmentKeyAudit::READ, $byKey['PLUGIN_SECURITY_SCAN_LLM_API_KEY']['status']);
     }
 
     public function test_it_suggests_the_name_a_package_reads_now(): void
