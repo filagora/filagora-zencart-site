@@ -22,4 +22,15 @@ return [
         'ref' => env('ZENCART_DOCS_REF') ?: 'master',
         'base_url' => env('LEGACY_DOCS_URL') ?: 'https://docs.zen-cart.com',
     ],
+    // The pages and pictures a new site is created with (the profile's `create_site_content` migration
+    // reads them from this directory) and the values for the placeholders in them. A page that exists is
+    // never touched, so none of this reaches the live site.
+    'content' => [
+        'path' => database_path('content'),
+        'placeholders' => [
+            'docs' => env('LEGACY_DOCS_URL') ?: 'https://docs.zen-cart.com',
+            'site' => env('APP_URL'),
+            'support_email' => env('FORUM_SUPPORT_EMAIL'),
+        ],
+    ],
 ];
