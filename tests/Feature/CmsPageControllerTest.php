@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Database\Seeders\SitePagesSeeder;
 use Filagora\Cms\Enums\CmsPageStatus;
 use Filagora\Cms\Models\CmsBlock;
 use Filagora\Cms\Models\CmsNavigation;
@@ -900,16 +901,14 @@ class CmsPageControllerTest extends TestCase
 
     public function test_services_route_renders_cms_page_using_services_template(): void
     {
-        $page = CmsPage::query()->updateOrCreate(
-            ['slug' => 'services'],
-            [
-                'custom_route' => '/services',
-                'title' => 'Services From CMS',
-                'status' => CmsPageStatus::PUBLISHED,
-                'published_at' => now()->subMinute(),
-                'seo_title' => 'Managed Services Title',
-            ]
-        );
+        $page = CmsPage::query()->where('custom_route', '/services')->firstOrFail();
+        $page->blocks()->delete();
+        $page->update([
+            'title' => 'Services From CMS',
+            'status' => CmsPageStatus::PUBLISHED,
+            'published_at' => now()->subMinute(),
+            'seo_title' => 'Managed Services Title',
+        ]);
 
         $page->blocks()->create([
             'type' => 'services_hero',
@@ -957,7 +956,7 @@ class CmsPageControllerTest extends TestCase
 
     public function test_services_route_requires_a_cms_page_and_does_not_fall_back_to_legacy_blade_view(): void
     {
-        CmsPage::query()->where('slug', 'services')->delete();
+        CmsPage::query()->where('custom_route', '/services')->delete();
 
         $this->get('/services')
             ->assertNotFound();
@@ -1062,6 +1061,8 @@ class CmsPageControllerTest extends TestCase
                 'seo_title' => 'Managed Donate Title',
             ]
         );
+        $page->blocks()->delete();
+        (new SitePagesSeeder)->seedDonateBlocks($page);
 
         $page->blocks()->create([
             'type' => 'donation_hero',
@@ -1119,7 +1120,7 @@ class CmsPageControllerTest extends TestCase
 
     public function test_donate_page_shows_no_preset_amount_buttons_when_the_cms_amounts_are_cleared(): void
     {
-        $page = CmsPage::query()->where('slug', 'donate')->firstOrFail();
+        $page = $this->donateFixture();
         $paypal = $page->blocks()->where('name', 'PayPal')->firstOrFail();
         $this->assertNotEmpty($paypal->data['amounts']);
 
@@ -1136,7 +1137,7 @@ class CmsPageControllerTest extends TestCase
 
     public function test_donate_page_renders_paypals_donate_sdk_button_when_a_button_id_is_set(): void
     {
-        $page = CmsPage::query()->where('slug', 'donate')->firstOrFail();
+        $page = $this->donateFixture();
         $paypal = $page->blocks()->where('name', 'PayPal')->firstOrFail();
 
         $paypal->update(['data' => array_merge($paypal->data, ['donate_button_id' => 'WW3377SE3CEJU'])]);
@@ -1159,7 +1160,7 @@ class CmsPageControllerTest extends TestCase
 
     public function test_donation_card_headings_are_cms_editable_and_keep_their_original_wording_by_default(): void
     {
-        $page = CmsPage::query()->where('slug', 'donate')->firstOrFail();
+        $page = $this->donateFixture();
         $paypal = $page->blocks()->where('name', 'PayPal')->firstOrFail();
         $zelle = $page->blocks()->where('name', 'Zelle')->firstOrFail();
         $withoutHeadings = fn (array $data): array => array_diff_key($data, ['amounts_heading' => 1, 'card_heading' => 1]);
@@ -1185,7 +1186,7 @@ class CmsPageControllerTest extends TestCase
 
     public function test_donation_button_caption_tag_label_and_payment_description_are_cms_editable(): void
     {
-        $page = CmsPage::query()->where('slug', 'donate')->firstOrFail();
+        $page = $this->donateFixture();
         $paypal = $page->blocks()->where('name', 'PayPal')->firstOrFail();
         $zelle = $page->blocks()->where('name', 'Zelle')->firstOrFail();
         $without = fn (array $data, array $keys): array => array_diff_key($data, array_flip($keys));
@@ -1634,5 +1635,18 @@ class CmsPageControllerTest extends TestCase
         $this->get('/docs/getting-started')
             ->assertOk()
             ->assertSee('Normalized Route');
+    }
+
+    /**
+     * The donate page with the fixture blocks the donate-template tests are written against, in place of
+     * the live page's content.
+     */
+    private function donateFixture(): CmsPage
+    {
+        $page = CmsPage::query()->where('slug', 'donate')->firstOrFail();
+        $page->blocks()->delete();
+        (new SitePagesSeeder)->seedDonateBlocks($page);
+
+        return $page;
     }
 }

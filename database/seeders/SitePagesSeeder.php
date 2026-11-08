@@ -8,8 +8,10 @@ use Illuminate\Database\Seeder;
 
 /**
  * The published CMS pages the site's routes and templates are built around, as bare shells: title,
- * slug and route, no blocks. Production already has these pages with their real content, so this is
- * for local, staging and test databases only and never runs there. A page that exists is left alone.
+ * slug and route, no blocks. The profile's `create_site_content` migration now creates the real pages
+ * (from database/content), so on any migrated database this finds them and does nothing; it remains for
+ * a database that has the cms tables but not that content. A page that exists, by slug or by the route
+ * it answers, is left alone.
  */
 class SitePagesSeeder extends Seeder
 {
@@ -33,20 +35,29 @@ class SitePagesSeeder extends Seeder
     public function run(): void
     {
         foreach (self::PAGES as $slug => $page) {
-            $created = CmsPage::query()->firstOrCreate(['slug' => $slug], [
+            if (CmsPage::query()->where('slug', $slug)->orWhere('custom_route', $page['route'])->exists()) {
+                continue;
+            }
+
+            $created = CmsPage::query()->create([
+                'slug' => $slug,
                 'title' => $page['title'],
                 'custom_route' => $page['route'],
                 'status' => CmsPageStatus::PUBLISHED,
                 'published_at' => now(),
             ]);
 
-            if ($created->wasRecentlyCreated && $slug === 'donate') {
+            if ($slug === 'donate') {
                 $this->seedDonateBlocks($created);
             }
         }
     }
 
-    private function seedDonateBlocks(CmsPage $page): void
+    /**
+     * The donate page's blocks as a test fixture: a PayPal card with preset amounts, a Zelle card, a GitHub
+     * Sponsors card and a thank-you band. Tests of how the donate template reads its blocks start from these.
+     */
+    public function seedDonateBlocks(CmsPage $page): void
     {
         $blocks = [
             [10, 'donation_hero', 'Donate Hero', [
