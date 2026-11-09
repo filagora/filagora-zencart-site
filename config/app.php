@@ -151,6 +151,12 @@ return [
     |
     */
 
+    /*
+    | Destructive artisan commands (migrate:fresh, db:wipe, ...) refuse to run in production unless
+    | this is set, as on the old site.
+    */
+    'allow_destructive_commands_in_production' => (bool) env('ALLOW_DESTRUCTIVE_COMMANDS_IN_PRODUCTION', false),
+
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),

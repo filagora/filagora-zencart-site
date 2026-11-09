@@ -90,6 +90,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
@@ -127,6 +128,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDatabaseStatementTimeout();
+
+        DB::prohibitDestructiveCommands(
+            $this->app->isProduction() && ! config('app.allow_destructive_commands_in_production', false),
+        );
 
         // Forums are searchable on the site-wide search page, as they were with Scout.
         $this->callAfterResolving(SearchIndexRegistry::class, fn (SearchIndexRegistry $indexes) => $indexes->register($this->app->make(ForumSearchIndex::class)));
