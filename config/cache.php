@@ -34,6 +34,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Deploy-Surviving Operational State Store
+    |--------------------------------------------------------------------------
+    |
+    | Knowledge about the world that a deploy does not restart, such as the search circuit breaker
+    | (filagora-search.circuit.store). Production sets CACHE_DURABLE_STORE=durable, as on the old
+    | site. Unset or blank falls back to the default store.
+    |
+    */
+
+    'durable' => env('CACHE_DURABLE_STORE') ?: null,
+
+    /*
+    |--------------------------------------------------------------------------
     | Cache Stores
     |--------------------------------------------------------------------------
     |
@@ -104,6 +117,17 @@ return [
         'limiter' => [
             'driver' => 'redis',
             'connection' => env('REDIS_LIMITER_CONNECTION', 'limiter'),
+            'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'default'),
+        ],
+
+        // Operational state that must outlive a release: circuit breakers, and anything else
+        // describing the world rather than derived from the database. Shares the queue's
+        // connection, which no cache flush reaches. Never store code-shaped payloads here: no
+        // deploy invalidates these keys, so a release that changes their shape reads the previous
+        // release's data.
+        'durable' => [
+            'driver' => 'redis',
+            'connection' => env('REDIS_DURABLE_CONNECTION', 'default'),
             'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'default'),
         ],
 
