@@ -93,6 +93,47 @@ Adoption is a separate step on purpose. `filagora:adopt` records that the packag
 changes nothing else); it is for the first deploy onto the live database, not something `migrate` does. Its
 dry run fails the deploy on anything it would not adopt.
 
+## How a package change reaches a site
+
+The packages are never deployed. Only this repository is: a package change reaches a running site as a new
+version in `composer.lock`, shipped by a manual deploy.
+
+1. **Package repository:** a change merges to `master` after its own CI. Nothing live changes.
+2. **Release:** a `v*` tag runs the shared `release.yml`, which creates the GitHub release from the changelog
+   and, when the release adds or changes migrations, puts a **Database migrations** section at the top of the
+   notes. Packagist indexes the tag.
+3. **This repository:** Dependabot (`.github/dependabot.yml`) opens one pull request that raises the
+   constraints of the `filagora/*` packages and updates `composer.lock`. The release notes, migrations flag
+   included, are quoted in it. CI runs the tests against the locked versions, which is the only place
+   cross-package breakage shows up. Merging it changes no live code.
+4. **Deploy:** someone runs the `Deploy` workflow by hand from `master`; the `production` environment gates it
+   and the self-hosted runner on the target host does the work (see "What a deploy does").
+5. **After the switch:** the smoke check runs if `DEPLOY_SMOKE_URLS` is set, and a failure makes the previous
+   release current again.
+
+### What stops a deploy reaching the wrong host
+
+Several independent guards, because a copy of a live host looks like the live host:
+
+- The deploy job runs only on a runner registered for this repository, with the `filagora-production` label. A
+  host without one cannot be deployed to.
+- `DEPLOY_EXPECTED_APP_ENV` makes the script refuse unless the shared `.env` has that `APP_ENV`. A test or
+  staging host sets `staging`, so a live host's `.env` fails the check.
+- `DEPLOY_FORBIDDEN_ADDRESSES` refuses a machine that has one of the listed addresses. Use it on a copy of a
+  live host, which keeps its hostname, so `DEPLOY_EXPECTED_HOSTNAME` cannot tell the two apart.
+- The environment's branch policy allows `master` only, and it should require reviewers.
+
+### Migrations and rollback
+
+A rollback makes the previous release's code current; it does not undo migrations. A release's migrations must
+therefore work with the previous release's code: add in one release, remove in a later one. The rule and a
+checklist are in the `filagora-shared` repository, `docs/migration-safety.md`.
+
+### Before pointing the checks at a host
+
+Leave `DEPLOY_SMOKE_URLS` unset until something answers at the URL: the check would fail and roll back a
+healthy deploy. Switch `DEPLOY_ENV_CHECK` from `warn` to `strict` once the shared `.env` has no flagged keys.
+
 ## The environment file
 
 Create `shared/.env` before the first deploy. Besides the usual database, mail and cache settings it needs:
