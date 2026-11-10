@@ -48,6 +48,19 @@ that. Set one up once, as below.
 | `DEPLOY_SCHEDULER_SERVICE` | empty | systemd unit running `schedule:work`; restarted if set |
 | `DEPLOY_QUEUE_WORKER_SERVICES` | empty | comma-separated units; must be active after the deploy |
 | `DEPLOY_SEARCH_REINDEX_ARGS` | `--sync-settings` | arguments for `filagora:search:reindex` |
+| `DEPLOY_ENV_CHECK` | `warn` | `site:check-env` on the shared `.env` before the switch: `off` skips it, `warn` prints what needs attention, `strict` fails the deploy on it |
+| `DEPLOY_EXPECTED_HOSTNAME` | empty | refuse to run unless `hostname` equals this |
+| `DEPLOY_FORBIDDEN_ADDRESSES` | empty | comma-separated addresses; refuse to run if the host has any of them (a copy of production keeps its hostname, so use this to keep it from deploying to the real host) |
+| `DEPLOY_SMOKE_URLS` | empty | comma-separated URLs (for example `https://<host>/up`) that must answer below 400 after the switch; empty skips the check |
+| `DEPLOY_SMOKE_RESOLVE` | empty | curl `--resolve` value (`<host>:443:127.0.0.1`) so the check reaches the origin, not the CDN |
+
+If a smoke check fails, the deploy makes the previous release current again (the same steps as
+`rollback_release.sh`), exits non-zero, and prunes nothing. Only code is rolled back: migrations that already ran
+stay. A migration in a release must therefore work with the previous release's code: add a column or table in one
+release, and remove the old one in a later release.
+
+Package updates arrive as Dependabot pull requests (`.github/dependabot.yml`) that change `composer.lock`. Merging
+one changes no live code: deploying is still the manual `Deploy` run.
 
 Two inputs are chosen per run: `run_adopt` and `run_search_reindex`.
 

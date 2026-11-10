@@ -285,9 +285,117 @@ assert_file_exists() {
   fi
 }
 
+# Refuses to run on a machine the deploy was not meant for; runs before anything is touched.
+assert_deploy_target() {
+  local actual_hostname
+  local addresses
+  local forbidden
+  local address
+
+  if [ -n "${DEPLOY_EXPECTED_HOSTNAME}" ]; then
+    actual_hostname="$(hostname)"
+
+    if [ "${actual_hostname}" != "${DEPLOY_EXPECTED_HOSTNAME}" ]; then
+      echo "Refusing to deploy: this host is ${actual_hostname}, expected ${DEPLOY_EXPECTED_HOSTNAME}." >&2
+      exit 1
+    fi
+  fi
+
+  if [ -n "${DEPLOY_FORBIDDEN_ADDRESSES}" ]; then
+    addresses=" $(hostname -I 2>/dev/null || true) "
+
+    IFS=',' read -ra forbidden <<<"${DEPLOY_FORBIDDEN_ADDRESSES}"
+
+    for address in "${forbidden[@]}"; do
+      address="$(echo "${address}" | xargs)"
+
+      if [ -n "${address}" ] && [[ "${addresses}" == *" ${address} "* ]]; then
+        echo "Refusing to deploy: this host has the forbidden address ${address}." >&2
+        exit 1
+      fi
+    done
+  fi
+}
+
+# Runs from the new release directory, before the switch. site:check-env exits non-zero when the file has
+# a renamed, unread or unknown key; in `warn` mode that is printed and the deploy goes on.
+check_environment_file() {
+  case "${DEPLOY_ENV_CHECK}" in
+    off)
+      return
+      ;;
+    warn | strict)
+      if php artisan site:check-env "${DEPLOY_SHARED_ENV_PATH}"; then
+        return
+      fi
+
+      if [ "${DEPLOY_ENV_CHECK}" = "strict" ]; then
+        echo "Environment check failed for ${DEPLOY_SHARED_ENV_PATH}; refusing to switch." >&2
+        exit 1
+      fi
+
+      echo "Warning: environment check found keys that need attention in ${DEPLOY_SHARED_ENV_PATH}; continuing deploy." >&2
+      ;;
+    *)
+      echo "DEPLOY_ENV_CHECK must be off, warn or strict (got: ${DEPLOY_ENV_CHECK})" >&2
+      exit 1
+      ;;
+  esac
+}
+
+# Succeeds when every URL answers below 400 within the retries; a reload leaves a moment where workers are
+# still coming up, so each URL gets a few attempts before it counts as failed.
+smoke_check_urls() {
+  local urls_csv="$1"
+  local retries="${DEPLOY_SMOKE_RETRIES}"
+  local interval="${DEPLOY_SMOKE_INTERVAL_SECONDS}"
+  local resolve_args=()
+  local url
+  local attempt
+  local ok
+
+  if [ -n "${DEPLOY_SMOKE_RESOLVE}" ]; then
+    resolve_args=(--resolve "${DEPLOY_SMOKE_RESOLVE}")
+  fi
+
+  IFS=',' read -ra urls <<<"${urls_csv}"
+
+  for url in "${urls[@]}"; do
+    url="$(echo "${url}" | xargs)"
+
+    if [ -z "${url}" ]; then
+      continue
+    fi
+
+    ok=0
+
+    for attempt in $(seq 1 "${retries}"); do
+      if curl -fsS -o /dev/null --max-time 15 "${resolve_args[@]}" "${url}"; then
+        ok=1
+        break
+      fi
+
+      if [ "${attempt}" -lt "${retries}" ]; then
+        sleep "${interval}"
+      fi
+    done
+
+    if [ "${ok}" -ne 1 ]; then
+      echo "Smoke check failed: ${url}" >&2
+      return 1
+    fi
+
+    echo "Smoke check passed: ${url}"
+  done
+}
+
 require_env "DEPLOY_BASE_PATH"
 require_env "RELEASE_ID"
 require_env "ARTIFACT_PATH"
+
+# Resolved now: the script changes directory later and may have been started by a relative path.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 
 DEPLOY_WEB_GROUP="${DEPLOY_WEB_GROUP:-www-data}"
 DEPLOY_KEEP_RELEASES="${DEPLOY_KEEP_RELEASES:-5}"
@@ -310,6 +418,23 @@ DEPLOY_WEB_SERVICE="${DEPLOY_WEB_SERVICE:-nginx}"
 DEPLOY_SCHEDULER_SERVICE="${DEPLOY_SCHEDULER_SERVICE:-}"
 DEPLOY_MIN_FREE_MB="${DEPLOY_MIN_FREE_MB:-1024}"
 DEPLOY_QUEUE_WORKER_SERVICES="${DEPLOY_QUEUE_WORKER_SERVICES:-}"
+# What `site:check-env` does with the shared .env before the switch: `off` skips it, `warn` prints the
+# keys that need attention and carries on, `strict` fails the deploy on them.
+DEPLOY_ENV_CHECK="${DEPLOY_ENV_CHECK:-warn}"
+# Which machine this may run on. Both are empty by default (no restriction). DEPLOY_EXPECTED_HOSTNAME must
+# equal `hostname`; DEPLOY_FORBIDDEN_ADDRESSES (comma-separated) refuses the run if the host has any of them.
+# Use the second to keep a copy of production, whose hostname is the same, from deploying to the real one.
+DEPLOY_EXPECTED_HOSTNAME="${DEPLOY_EXPECTED_HOSTNAME:-}"
+DEPLOY_FORBIDDEN_ADDRESSES="${DEPLOY_FORBIDDEN_ADDRESSES:-}"
+# After the switch, each comma-separated URL must answer with a status below 400 (for example
+# https://www.example.com/up). Empty skips the check. If one fails, the previous release is made current
+# again. DEPLOY_SMOKE_RESOLVE ("host:443:127.0.0.1") makes curl reach the origin directly, past the CDN.
+DEPLOY_SMOKE_URLS="${DEPLOY_SMOKE_URLS:-}"
+DEPLOY_SMOKE_RESOLVE="${DEPLOY_SMOKE_RESOLVE:-}"
+DEPLOY_SMOKE_RETRIES="${DEPLOY_SMOKE_RETRIES:-5}"
+DEPLOY_SMOKE_INTERVAL_SECONDS="${DEPLOY_SMOKE_INTERVAL_SECONDS:-3}"
+
+assert_deploy_target
 
 RELEASES_DIR="${DEPLOY_BASE_PATH}/releases"
 SHARED_DIR="${DEPLOY_BASE_PATH}/shared"
@@ -468,6 +593,8 @@ if [ "${DEPLOY_RUN_DOCTOR}" = "1" ]; then
   php artisan filagora:doctor
 fi
 
+check_environment_file
+
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
@@ -482,6 +609,9 @@ if ! php artisan plugins:warm-cache --flush; then
 fi
 
 php artisan about >/dev/null
+
+# Remembered for the smoke check's rollback. Empty on the first deploy, when there is nothing to go back to.
+PREVIOUS_RELEASE_DIR="$(readlink -f "${CURRENT_LINK}" 2>/dev/null || true)"
 
 ln -sfn "${NEW_RELEASE_DIR}" "${STAGING_LINK}"
 mv -Tf "${STAGING_LINK}" "${CURRENT_LINK}"
@@ -541,6 +671,25 @@ run_privileged systemctl reload "${DEPLOY_WEB_SERVICE}"
 # nothing here.
 if [ -n "${DEPLOY_SCHEDULER_SERVICE}" ] && systemctl cat "${DEPLOY_SCHEDULER_SERVICE}" >/dev/null 2>&1; then
   run_privileged systemctl restart "${DEPLOY_SCHEDULER_SERVICE}"
+fi
+
+# Before anything is pruned, so a failed deploy still has its previous release to go back to. Only the code
+# is rolled back: migrations that already ran stay, so release migrations must stay compatible with the
+# previous release's code (add first, remove a release later).
+if [ -n "${DEPLOY_SMOKE_URLS}" ] && ! smoke_check_urls "${DEPLOY_SMOKE_URLS}"; then
+  if [ -n "${PREVIOUS_RELEASE_DIR}" ] && [ -d "${PREVIOUS_RELEASE_DIR}" ]; then
+    echo "Rolling back to $(basename "${PREVIOUS_RELEASE_DIR}"); migrations from this release were not reverted." >&2
+    DEPLOY_BASE_PATH="${DEPLOY_BASE_PATH}" \
+      RELEASE_ID="$(basename "${PREVIOUS_RELEASE_DIR}")" \
+      DEPLOY_PHP_FPM_SERVICE="${DEPLOY_PHP_FPM_SERVICE}" \
+      DEPLOY_WEB_SERVICE="${DEPLOY_WEB_SERVICE}" \
+      DEPLOY_QUEUE_WORKER_SERVICES="${DEPLOY_QUEUE_WORKER_SERVICES}" \
+      bash "${SCRIPT_DIR}/rollback_release.sh" || echo "Automatic rollback failed; roll back by hand." >&2
+  else
+    echo "No previous release to roll back to." >&2
+  fi
+
+  exit 1
 fi
 
 # Retire old releases only after the reload has moved workers onto the new

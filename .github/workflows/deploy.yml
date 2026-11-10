@@ -169,6 +169,11 @@ jobs:
           DEPLOY_SCHEDULER_SERVICE: ${{ vars.DEPLOY_SCHEDULER_SERVICE }}
           DEPLOY_QUEUE_WORKER_SERVICES: ${{ vars.DEPLOY_QUEUE_WORKER_SERVICES }}
           DEPLOY_SEARCH_REINDEX_ARGS: ${{ vars.DEPLOY_SEARCH_REINDEX_ARGS }}
+          DEPLOY_ENV_CHECK: ${{ vars.DEPLOY_ENV_CHECK }}
+          DEPLOY_EXPECTED_HOSTNAME: ${{ vars.DEPLOY_EXPECTED_HOSTNAME }}
+          DEPLOY_FORBIDDEN_ADDRESSES: ${{ vars.DEPLOY_FORBIDDEN_ADDRESSES }}
+          DEPLOY_SMOKE_URLS: ${{ vars.DEPLOY_SMOKE_URLS }}
+          DEPLOY_SMOKE_RESOLVE: ${{ vars.DEPLOY_SMOKE_RESOLVE }}
           RUN_ADOPT: ${{ inputs.run_adopt }}
           RUN_SEARCH_REINDEX: ${{ inputs.run_search_reindex }}
         run: |
@@ -185,6 +190,11 @@ jobs:
           DEPLOY_SCHEDULER_SERVICE="${DEPLOY_SCHEDULER_SERVICE:-}" \
           DEPLOY_QUEUE_WORKER_SERVICES="${DEPLOY_QUEUE_WORKER_SERVICES:-}" \
           DEPLOY_SEARCH_REINDEX_ARGS="${DEPLOY_SEARCH_REINDEX_ARGS:---sync-settings}" \
+          DEPLOY_ENV_CHECK="${DEPLOY_ENV_CHECK:-warn}" \
+          DEPLOY_EXPECTED_HOSTNAME="${DEPLOY_EXPECTED_HOSTNAME:-}" \
+          DEPLOY_FORBIDDEN_ADDRESSES="${DEPLOY_FORBIDDEN_ADDRESSES:-}" \
+          DEPLOY_SMOKE_URLS="${DEPLOY_SMOKE_URLS:-}" \
+          DEPLOY_SMOKE_RESOLVE="${DEPLOY_SMOKE_RESOLVE:-}" \
           DEPLOY_RUN_ADOPT="$([ "${RUN_ADOPT}" = "true" ] && echo 1 || echo 0)" \
           DEPLOY_RUN_SEARCH_REINDEX="$([ "${RUN_SEARCH_REINDEX}" = "true" ] && echo 1 || echo 0)" \
           bash scripts/deploy/release_deploy.sh
