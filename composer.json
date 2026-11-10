@@ -29,7 +29,7 @@
         "honeybadger-io/honeybadger-laravel": "^5.1",
         "intervention/image": "^4.2",
         "laravel/framework": "^13.17",
-        "laravel/sanctum": "^4.3",
+        "laravel/sanctum": "^4.4",
         "laravel/slack-notification-channel": "^3.8",
         "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "^3.35",
