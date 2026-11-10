@@ -30,7 +30,7 @@
         "intervention/image": "^4.2",
         "laravel/framework": "^13.17",
         "laravel/sanctum": "^4.3",
-        "laravel/slack-notification-channel": "^3.8",
+        "laravel/slack-notification-channel": "^3.11",
         "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "^3.35",
         "spatie/laravel-backup": "^10.3"
