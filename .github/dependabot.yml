@@ -1,0 +1,18 @@
+version: 2
+
+updates:
+  # Package releases reach the site as a lockfile bump. One pull request per run for the Filagora
+  # packages, so a coordinated release (core, then the packages built on it) lands together. Merging
+  # changes nothing live: deploying is the manual Deploy workflow.
+  - package-ecosystem: composer
+    directory: /
+    schedule:
+      interval: daily
+    # The packages are 0.x, where a minor release can be breaking: raise the constraint so the update
+    # shows up as a pull request that CI runs, instead of waiting for someone to widen the range.
+    versioning-strategy: increase
+    open-pull-requests-limit: 5
+    groups:
+      filagora:
+        patterns:
+          - 'filagora/*'
