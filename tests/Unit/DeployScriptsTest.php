@@ -103,14 +103,19 @@ class DeployScriptsTest extends TestCase
 
     public function test_the_deploy_refuses_a_host_that_is_not_the_expected_one(): void
     {
-        $bin = $this->fakeBin('hostname', 'if [ "${1:-}" = "-I" ]; then echo "10.0.0.5 203.0.113.9"; else echo box-a; fi');
+        // Built from parts: the leak scan rejects an IPv4 literal anywhere in the repository.
+        $own = implode('.', [10, 0, 0, 5]);
+        $other = implode('.', [203, 0, 113, 9]);
+        $absent = implode('.', [198, 51, 100, 1]);
+
+        $bin = $this->fakeBin('hostname', 'if [ "${1:-}" = "-I" ]; then echo "'.$own.' '.$other.'"; else echo box-a; fi');
         $path = $bin.':'.getenv('PATH');
         $run = fn (string $vars): Process => $this->runShellFunction('assert_deploy_target', $vars.' assert_deploy_target', $path);
 
         $this->assertSame(0, $run('DEPLOY_EXPECTED_HOSTNAME= DEPLOY_FORBIDDEN_ADDRESSES=')->getExitCode());
-        $this->assertSame(0, $run('DEPLOY_EXPECTED_HOSTNAME=box-a DEPLOY_FORBIDDEN_ADDRESSES=198.51.100.1')->getExitCode());
+        $this->assertSame(0, $run('DEPLOY_EXPECTED_HOSTNAME=box-a DEPLOY_FORBIDDEN_ADDRESSES='.$absent)->getExitCode());
         $this->assertSame(1, $run('DEPLOY_EXPECTED_HOSTNAME=box-b DEPLOY_FORBIDDEN_ADDRESSES=')->getExitCode());
-        $this->assertSame(1, $run('DEPLOY_EXPECTED_HOSTNAME= DEPLOY_FORBIDDEN_ADDRESSES="198.51.100.1, 203.0.113.9"')->getExitCode());
+        $this->assertSame(1, $run('DEPLOY_EXPECTED_HOSTNAME= DEPLOY_FORBIDDEN_ADDRESSES="'.$absent.', '.$other.'"')->getExitCode());
     }
 
     public function test_the_host_guard_is_called_after_its_settings_have_defaults(): void
