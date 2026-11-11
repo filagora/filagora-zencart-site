@@ -11,8 +11,20 @@ updates:
     # The packages are 0.x, where a minor release can be breaking: raise the constraint so the update
     # shows up as a pull request that CI runs, instead of waiting for someone to widen the range.
     versioning-strategy: increase
-    open-pull-requests-limit: 5
+    # Each group is one pull request, so ten leaves room for a major bump or two beside them. A low limit
+    # let ungrouped bumps fill every slot and could hold back a Filagora release.
+    open-pull-requests-limit: 10
     groups:
       filagora:
         patterns:
           - 'filagora/*'
+      # Everything else that is routine (minor and patch) arrives as one pull request, not one per package,
+      # which also avoids a composer.lock conflict between them. Majors stay separate: they need a look.
+      routine:
+        patterns:
+          - '*'
+        exclude-patterns:
+          - 'filagora/*'
+        update-types:
+          - minor
+          - patch
