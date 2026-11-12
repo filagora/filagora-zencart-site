@@ -2,11 +2,21 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\User;
+use Filagora\Entitlements\Services\AuthorizationService;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class Fail2banStatsOverview extends StatsOverviewWidget
 {
+    public static function canView(): bool
+    {
+        $user = auth()->user();
+
+        return $user instanceof User
+            && app(AuthorizationService::class)->allows($user, 'operator.system.fail2ban.view');
+    }
+
     public int $jailCount = 0;
 
     public int $currentlyBanned = 0;

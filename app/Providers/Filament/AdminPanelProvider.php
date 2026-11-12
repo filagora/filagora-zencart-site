@@ -69,6 +69,7 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 FilamentJobsMonitorPlugin::make()
                     ->enableNavigation(fn (): bool => app(AuthorizationService::class)->allows(auth()->user(), 'operator.queue_monitors.view'))
+                    ->authorize(fn (): bool => app(AuthorizationService::class)->allows(auth()->user(), 'operator.queue_monitors.view'))
                     ->navigationGroup(fn (): string => app(NavigationGroupRegistry::class)->label('logs'))
                     ->navigationSort(50)
                     ->navigationIcon('heroicon-o-queue-list')

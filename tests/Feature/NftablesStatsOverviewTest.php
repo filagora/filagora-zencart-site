@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Filament\Widgets\NftablesStatsOverview;
+use App\Models\User;
+use Filagora\Entitlements\Models\UserEntitlementGrant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\Concerns\SeedsSitePages;
@@ -14,6 +16,15 @@ class NftablesStatsOverviewTest extends TestCase
 
     public function test_nftables_stats_widget_renders_cards_with_expected_labels(): void
     {
+        $user = User::factory()->create();
+        UserEntitlementGrant::query()->create([
+            'user_id' => $user->id,
+            'entitlement_key' => 'operator.system.nftables.view',
+            'grant_type' => 'manual',
+            'starts_at' => now()->subMinute(),
+        ]);
+        $this->actingAs($user);
+
         Livewire::test(NftablesStatsOverview::class, [
             'tableCount' => 2,
             'tables' => ['inet/filter', 'ip/filter'],

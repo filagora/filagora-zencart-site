@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Filament\Widgets\Fail2banStatsOverview;
+use App\Models\User;
+use Filagora\Entitlements\Models\UserEntitlementGrant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\Concerns\SeedsSitePages;
@@ -14,6 +16,15 @@ class Fail2banStatsOverviewTest extends TestCase
 
     public function test_fail2ban_stats_widget_renders_cards_with_expected_labels(): void
     {
+        $user = User::factory()->create();
+        UserEntitlementGrant::query()->create([
+            'user_id' => $user->id,
+            'entitlement_key' => 'operator.system.fail2ban.view',
+            'grant_type' => 'manual',
+            'starts_at' => now()->subMinute(),
+        ]);
+        $this->actingAs($user);
+
         Livewire::test(Fail2banStatsOverview::class, [
             'jailCount' => 4,
             'currentlyBanned' => 2,
