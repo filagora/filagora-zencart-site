@@ -1892,16 +1892,16 @@
         },
         {
             "name": "filagora/filagora-forums",
-            "version": "v0.6.5",
+            "version": "v0.6.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-forums.git",
-                "reference": "ac0f8d4c857099e634bdf46def0be3484e934539"
+                "reference": "3fd8ca415ce5f0a571dbda2c06cdbc226b3e85e2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-forums/zipball/ac0f8d4c857099e634bdf46def0be3484e934539",
-                "reference": "ac0f8d4c857099e634bdf46def0be3484e934539",
+                "url": "https://api.github.com/repos/filagora/filagora-forums/zipball/3fd8ca415ce5f0a571dbda2c06cdbc226b3e85e2",
+                "reference": "3fd8ca415ce5f0a571dbda2c06cdbc226b3e85e2",
                 "shasum": ""
             },
             "require": {
@@ -1950,9 +1950,9 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-forums/issues",
-                "source": "https://github.com/filagora/filagora-forums/tree/v0.6.5"
+                "source": "https://github.com/filagora/filagora-forums/tree/v0.6.6"
             },
-            "time": "2026-11-12T19:48:52+00:00"
+            "time": "2026-11-13T19:44:55+00:00"
         },
         {
             "name": "filagora/filagora-logs",
