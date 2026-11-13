@@ -91,7 +91,7 @@
             <button class="w-fit rounded-surface border border-[#cabca8] bg-white px-3 py-2 text-sm font-semibold text-[#304458] transition hover:border-[#8f3f1f] hover:text-[#8f3f1f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8f3f1f]" type="button" data-markdown-preview data-markdown-source="compose-body" data-markdown-preview-panel="compose-body-preview">Preview</button>
             <section id="compose-body-preview" class="rounded-surface border border-[#cabca8] bg-[#f8f6f1] p-3" hidden>
                 <h3 class="text-sm font-semibold text-[#304458]">Preview</h3>
-                <div class="mt-2 text-sm text-[#304458]" data-reply-preview-content></div>
+                <div class="forum-rendered-content mt-2 text-sm text-[#304458]" data-reply-preview-content></div>
             </section>
 
             <button type="submit" class="w-fit rounded-surface border border-[#933c1f] bg-[#933c1f] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#7f3219] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8f3f1f]">Send Message</button>

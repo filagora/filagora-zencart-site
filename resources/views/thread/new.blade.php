@@ -101,7 +101,7 @@
             </div>
             <section id="thread-body-preview" class="rounded-control border border-[#d8dce2] bg-[#f8f6f1] p-3" hidden>
                 <h3 class="text-sm font-semibold text-[#304458]">Preview</h3>
-                <div class="mt-2 text-sm text-[#304458]" data-reply-preview-content></div>
+                <div class="forum-rendered-content mt-2 text-sm text-[#304458]" data-reply-preview-content></div>
             </section>
 
             <label for="thread-attachments" class="text-sm font-semibold text-[#5c6570]">Attachments (optional)</label>
