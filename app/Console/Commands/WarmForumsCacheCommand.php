@@ -102,14 +102,8 @@ class WarmForumsCacheCommand extends Command
             ForumVisibility::PAID_ONLY => $scope === ForumsIndexCache::SCOPE_MEMBER,
             ForumVisibility::PAID_OR_AUTHOR => $scope !== ForumsIndexCache::SCOPE_GUEST,
             ForumVisibility::STAFF_AUTHOR_ONLY => $scope !== ForumsIndexCache::SCOPE_GUEST
-                && (bool) $forum->show_when_empty
-                && $this->isForumEmpty($forum),
+                && (bool) $forum->show_when_empty,
         };
-    }
-
-    private function isForumEmpty(Forum $forum): bool
-    {
-        return (int) ($forum->thread_count ?? 0) === 0;
     }
 
     /**
