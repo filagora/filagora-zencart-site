@@ -433,7 +433,7 @@ Profile
                 <button class="w-fit rounded-surface border border-[#d8dce2] bg-white px-3 py-2 text-sm font-semibold text-[#304458] transition hover:border-[#8f3f1f] hover:text-[#8f3f1f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8f3f1f]" type="button" data-markdown-preview data-markdown-source="profile-signature" data-markdown-preview-panel="profile-signature-preview">Preview signature</button>
                 <section id="profile-signature-preview" class="rounded-surface border border-[#d8dce2] bg-[#f8f6f1] p-3" hidden>
                     <h3 class="text-sm font-semibold text-[#304458]">Signature preview</h3>
-                    <div class="mt-2 text-sm text-[#304458]" data-reply-preview-content></div>
+                    <div class="forum-rendered-content mt-2 text-sm text-[#304458]" data-reply-preview-content></div>
                 </section>
 
                 <button type="submit" class="{{ $primaryButtonClass }}">Save Settings</button>
