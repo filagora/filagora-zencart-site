@@ -35,7 +35,7 @@ Open <https://filagora-zencart-site.ddev.site/> for the site and <https://filago
 
 ## Develop the packages alongside this app
 
-To change a package and see the result here without releasing it, use the local checkouts instead of the Packagist versions. This needs DDEV and nothing else.
+To change a package and see the result here without releasing it, use the local checkouts instead of the Packagist versions. This needs DDEV and a shell that runs bash scripts: Linux, macOS (the scripts stick to the bash 3.2 that macOS ships), or WSL2 on Windows. Native PowerShell or cmd cannot run them.
 
 1. **Clone every package next to this project**, so each sits at `../filagora-<name>` (`core`, `entitlements`, `forums`, `logs`, `cms`, `compliance`, `messages`, `search`, `push`, `memberships`, `notifications`, `plugins`, `plugins-security`, `zencart`). `bin/dev-link` stops and names any that is missing.
 2. **Link:** `bin/dev-link`. It restarts DDEV, adds a path repository for each checkout to `composer.json`, and installs them as symlinks, so `vendor/filagora/*` points at your clones. Edit a package and reload the site.
