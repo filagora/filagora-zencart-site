@@ -17,5 +17,5 @@ See the README: DDEV, `composer install`, `php artisan migrate --seed`, `php art
 - Do not add private hostnames, IP addresses, personal email addresses, keys or real user data to
   code, docs or test fixtures. CI runs a leak scan; use reserved example domains and the
   documentation IP ranges in tests.
-- Sign the [Zen Cart Contributor License Agreement](public/cla.txt) terms by opening your first
-  pull request: submitting a contribution means you accept them.
+- By submitting a pull request you agree to the [Filagora Contributor License Agreement](public/cla.txt):
+  your contribution is licensed under the MIT License, the same as the project.
