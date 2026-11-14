@@ -3,7 +3,7 @@
     "name": "filagora/filagora-zencart-site",
     "type": "project",
     "description": "The Zen Cart support site: the application built on the Filagora packages and the Zen Cart profile. Private.",
-    "license": "proprietary",
+    "license": "MIT",
     "require": {
         "php": "^8.4",
         "bacon/bacon-qr-code": "^3.1",
