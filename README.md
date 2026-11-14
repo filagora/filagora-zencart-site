@@ -35,7 +35,14 @@ Open <https://filagora-zencart-site.ddev.site/> for the site and <https://filago
 
 ## Develop the packages alongside this app
 
-Clone the package repositories next to this one and run `bin/dev-link` (and `bin/dev-unlink` to undo it), exactly as in the demo.
+To change a package and see the result here without releasing it, use the local checkouts instead of the Packagist versions. This needs DDEV and nothing else.
+
+1. **Clone every package next to this project**, so each sits at `../filagora-<name>` (`core`, `entitlements`, `forums`, `logs`, `cms`, `compliance`, `messages`, `search`, `push`, `memberships`, `notifications`, `plugins`, `plugins-security`, `zencart`). `bin/dev-link` stops and names any that is missing.
+2. **Link:** `bin/dev-link`. It restarts DDEV, adds a path repository for each checkout to `composer.json`, and installs them as symlinks, so `vendor/filagora/*` points at your clones. Edit a package and reload the site.
+3. **Commit the package changes in the package's own repository**, not here. This site only sees a package's changes once it has a tagged release and the constraint in `composer.json` is raised.
+4. **Unlink before committing anything here:** `bin/dev-unlink`. It discards every uncommitted change to `composer.json` and `composer.lock` (so make dependency changes after unlinking, not while linked) and reinstalls the Packagist versions. Never commit those two files while linked.
+
+`bin/dev-link` gives each checkout a fake version (for example `0.6.x-dev` for forums) so the packages' own `^0.x` constraints still resolve. When a package moves to a new minor, bump its line in the `lines` map at the top of the script, otherwise Composer reports a conflict.
 
 ## Tests
 
