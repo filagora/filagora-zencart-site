@@ -8,31 +8,27 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-# A symlinked checkout reports itself as dev-master, which would not satisfy the packages'
-# own ^0.x constraints on each other, so each is given the release line it stands for.
-# Bump a line when a package moves to a new 0.x minor.
-declare -A lines=(
-  [core]=0.2.x-dev
-  [entitlements]=0.2.x-dev
-  [forums]=0.6.x-dev
-  [logs]=0.3.x-dev
-  [cms]=0.3.x-dev
-  [compliance]=0.1.x-dev
-  [messages]=0.3.x-dev
-  [search]=0.2.x-dev
-  [push]=0.1.x-dev
-  [memberships]=0.1.x-dev
-  [notifications]=0.1.x-dev
-  [plugins]=0.3.x-dev
-  [plugins-security]=0.1.x-dev
-  [zencart]=0.13.x-dev
-)
+packages=(core entitlements forums logs cms compliance messages search push memberships notifications plugins plugins-security zencart)
 
-for name in "${!lines[@]}"; do
+# A symlinked checkout reports itself as dev-master, which would not satisfy the packages'
+# own ^0.x constraints on each other. Each checkout is therefore given the release line of its
+# newest tag (v0.6.9 stands for 0.6.x-dev), so nothing here needs updating as packages release.
+declare -A lines=()
+
+for name in "${packages[@]}"; do
   if [ ! -d "../filagora-${name}" ]; then
     echo "Missing ../filagora-${name}: clone it next to this project first." >&2
     exit 1
   fi
+
+  tag=$(git -C "../filagora-${name}" tag --list 'v[0-9]*' --sort=-v:refname | head -n 1)
+
+  if [[ ! "$tag" =~ ^v([0-9]+)\.([0-9]+)\. ]]; then
+    echo "../filagora-${name} has no version tag: run 'git fetch --tags' there." >&2
+    exit 1
+  fi
+
+  lines[$name]="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.x-dev"
 done
 
 ddev restart >/dev/null
@@ -40,7 +36,7 @@ ddev restart >/dev/null
 # Composer puts a new repository ahead of Packagist, so the local copy is preferred. The path
 # is where DDEV mounts the sibling checkouts inside the container.
 requires=()
-for name in "${!lines[@]}"; do
+for name in "${packages[@]}"; do
   ddev composer config "repositories.filagora-${name}" \
     "{\"type\":\"path\",\"url\":\"/var/www/filagora-${name}\",\"options\":{\"symlink\":true,\"versions\":{\"filagora/filagora-${name}\":\"${lines[$name]}\"}}}"
   requires+=("filagora/filagora-${name}:@dev")
