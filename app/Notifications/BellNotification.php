@@ -24,6 +24,7 @@ class BellNotification extends Notification implements ShouldQueue
         private readonly string $category,
         private readonly int|string|null $actorId = null,
         private readonly ?string $coalesce = null,
+        private readonly int|string|null $threadId = null,
     ) {}
 
     /**
@@ -37,7 +38,7 @@ class BellNotification extends Notification implements ShouldQueue
     /**
      * `actor_id` records the person named in the title so erasing them can remove what mentions them.
      *
-     * @return array{title: string, body: string, url: string, category: string, actor_id: int|string|null, coalesce_key: ?string}
+     * @return array{title: string, body: string, url: string, category: string, actor_id: int|string|null, coalesce_key: ?string, thread_id: int|string|null}
      */
     public function toArray(object $notifiable): array
     {
@@ -48,6 +49,8 @@ class BellNotification extends Notification implements ShouldQueue
             'category' => $this->category,
             'actor_id' => $this->actorId,
             'coalesce_key' => $this->coalesce,
+            // Where it links into a thread: opening it re-checks the member can still read it.
+            'thread_id' => $this->threadId,
         ];
     }
 }

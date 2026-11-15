@@ -22,6 +22,7 @@ return [
         'filter_all' => 'All',
         'filter_unread' => 'Unread',
         'empty_unread' => 'No unread notifications.',
+        'unavailable' => 'That conversation is no longer available to you.',
     ],
     'plugin' => [
         'subjects' => [

@@ -44,7 +44,7 @@ class BellListeners
 
         foreach ($this->users($event->recipients) as $user) {
             if ($this->wants($user, StandardCategories::THREAD_UPDATES_INSTANT)) {
-                $user->notify(new BellNotification((string) $event->thread->title, $name.': '.$this->plain((string) $post->body), $url, StandardCategories::THREAD_UPDATES_INSTANT, $author?->getKey(), 'thread:'.$event->thread->getKey()));
+                $user->notify(new BellNotification((string) $event->thread->title, $name.': '.$this->plain((string) $post->body), $url, StandardCategories::THREAD_UPDATES_INSTANT, $author?->getKey(), 'thread:'.$event->thread->getKey(), threadId: $event->thread->getKey()));
             }
         }
     }
@@ -57,7 +57,7 @@ class BellListeners
 
         foreach ($this->users($event->users) as $user) {
             if ($this->wants($user, StandardCategories::MENTION)) {
-                $user->notify(new BellNotification(__('notifications.mention.push.title', ['author' => $this->nameOf($post->author)]), $this->plain((string) $post->body), $url, StandardCategories::MENTION, $post->author?->getKey()));
+                $user->notify(new BellNotification(__('notifications.mention.push.title', ['author' => $this->nameOf($post->author)]), $this->plain((string) $post->body), $url, StandardCategories::MENTION, $post->author?->getKey(), threadId: $thread?->getKey()));
             }
         }
     }

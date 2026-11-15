@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Http\Controllers\ForumController;
 use App\Models\User;
+use App\Notifications\Concerns\GatesOnThreadAccess;
 use Filagora\Forums\Models\Post;
 use Filagora\Forums\Models\Thread;
 use Filagora\Forums\Support\Models;
@@ -25,7 +26,7 @@ use Illuminate\Support\Str;
  */
 class ThreadUpdatedNotification extends Notification implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use GatesOnThreadAccess, Queueable, SerializesModels;
 
     /**
      * A reply deleted before the worker runs is not mailed, and an edited one is mailed as it now reads.
@@ -39,6 +40,10 @@ class ThreadUpdatedNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
+        if (! $this->recipientCanReadThread($notifiable, $this->thread)) {
+            return [];
+        }
+
         if (! $notifiable instanceof User) {
             return ['mail'];
         }

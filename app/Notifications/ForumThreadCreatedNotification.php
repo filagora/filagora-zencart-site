@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\User;
 use App\Notifications\Channels\CoalescingDatabaseChannel;
+use App\Notifications\Concerns\GatesOnThreadAccess;
 use App\Support\LegacyTextDecoder;
 use Filagora\Forums\Models\Thread;
 use Filagora\Forums\Support\Models;
@@ -24,7 +25,7 @@ use Illuminate\Support\Str;
  */
 class ForumThreadCreatedNotification extends Notification implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use GatesOnThreadAccess, Queueable, SerializesModels;
 
     public const CATEGORY = 'forum.new_threads';
 
@@ -40,6 +41,10 @@ class ForumThreadCreatedNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
+        if (! $this->recipientCanReadThread($notifiable, $this->thread)) {
+            return [];
+        }
+
         if (! $notifiable instanceof User) {
             return ['mail'];
         }
@@ -59,7 +64,7 @@ class ForumThreadCreatedNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * @return array{title: string, body: string, url: string, category: string, actor_id: int|null, coalesce_key: string}
+     * @return array{title: string, body: string, url: string, category: string, actor_id: int|null, coalesce_key: string, thread_id: int|string}
      */
     public function toArray(object $notifiable): array
     {
@@ -70,6 +75,7 @@ class ForumThreadCreatedNotification extends Notification implements ShouldQueue
             'category' => self::CATEGORY,
             'actor_id' => $this->thread->author_id !== null ? (int) $this->thread->author_id : null,
             'coalesce_key' => 'forum:'.$this->thread->forum_id,
+            'thread_id' => $this->thread->getKey(),
         ];
     }
 

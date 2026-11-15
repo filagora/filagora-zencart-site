@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Http\Controllers\ForumController;
 use App\Models\User;
+use App\Notifications\Concerns\GatesOnThreadAccess;
 use Filagora\Forums\Enums\DeliveryMode;
 use Filagora\Forums\Models\ThreadSubscriptionDigestItem;
 use Filagora\Forums\Support\Models;
@@ -21,7 +22,7 @@ use Illuminate\Notifications\Notification;
  */
 class ThreadDigestNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use GatesOnThreadAccess, Queueable;
 
     private const MAX_ITEMS = 20;
 
@@ -35,9 +36,23 @@ class ThreadDigestNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
+        if ($this->visibleItems($notifiable) === []) {
+            return [];
+        }
+
         return ! $notifiable instanceof User || app(Preferences::class)->canDeliver($notifiable, StandardCategories::THREAD_UPDATES_DIGEST)
             ? ['mail']
             : [];
+    }
+
+    /**
+     * The items whose thread the recipient can still open when the digest is sent.
+     *
+     * @return list<ThreadSubscriptionDigestItem>
+     */
+    private function visibleItems(object $notifiable): array
+    {
+        return array_values(array_filter($this->items, fn (ThreadSubscriptionDigestItem $item): bool => $this->recipientCanReadThread($notifiable, $item->thread)));
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -47,7 +62,9 @@ class ThreadDigestNotification extends Notification implements ShouldQueue
             : __('notifications.thread.frequency.daily');
         $items = [];
 
-        foreach (array_slice($this->items, 0, self::MAX_ITEMS) as $item) {
+        $visible = $this->visibleItems($notifiable);
+
+        foreach (array_slice($visible, 0, self::MAX_ITEMS) as $item) {
             $thread = $item->thread;
             $post = $item->post;
 
@@ -69,7 +86,7 @@ class ThreadDigestNotification extends Notification implements ShouldQueue
             ->markdown('emails.notifications.thread-digest', [
                 'subjectPrefix' => $subjectPrefix,
                 'items' => $items,
-                'hasMore' => count($this->items) > self::MAX_ITEMS,
+                'hasMore' => count($visible) > self::MAX_ITEMS,
                 'profileUrl' => $managePreferencesUrl,
                 'unsubscribeUrl' => $notifiable instanceof User
                     ? $unsubscribe->url($notifiable, StandardCategories::THREAD_UPDATES_DIGEST)

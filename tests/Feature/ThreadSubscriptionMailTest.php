@@ -77,7 +77,7 @@ class ThreadSubscriptionMailTest extends TestCase
         [$thread, $post, $recipient] = $this->threadWithReply();
 
         event(new SubscribersToNotify($post, $thread, [$recipient]));
-        event(new ThreadDigestReady($recipient, DeliveryMode::DAILY, []));
+        event(new ThreadDigestReady($recipient, DeliveryMode::DAILY, [new ThreadSubscriptionDigestItem(['thread_id' => $thread->getKey(), 'post_id' => $post->getKey()])]));
 
         Notification::assertSentTo($recipient, ThreadUpdatedNotification::class);
         Notification::assertSentTo($recipient, ThreadDigestNotification::class);
@@ -125,7 +125,8 @@ class ThreadSubscriptionMailTest extends TestCase
         $recipient = User::factory()->create();
         $group = ForumGroup::query()->create(['name' => 'Main', 'slug' => 'main', 'is_active' => true]);
         $forum = Forum::query()->create(['forum_group_id' => $group->id, 'name' => 'General', 'slug' => 'general', 'is_active' => true]);
-        $thread = Thread::query()->create(['forum_id' => $forum->id, 'author_id' => $author->id, 'title' => 'A thread', 'slug' => 'a-thread']);
+        // Reloaded, as a queued notification's models are: the database fills in the approved status.
+        $thread = Thread::query()->create(['forum_id' => $forum->id, 'author_id' => $author->id, 'title' => 'A thread', 'slug' => 'a-thread'])->refresh();
         $post = Post::query()->create(['thread_id' => $thread->id, 'author_id' => $author->id, 'body' => 'A reply']);
 
         return [$thread, $post, $recipient];
