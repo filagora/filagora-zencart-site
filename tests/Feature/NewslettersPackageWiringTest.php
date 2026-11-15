@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Filament\RichEditor\Plugins\InsertMediaLibraryImagePlugin;
+use App\Jobs\SendNewsletterCampaignEmail;
 use App\Models\User;
 use Filagora\Newsletters\Contracts\NewsletterMedia;
 use Filagora\Newsletters\Filament\RichEditor\EditorSetup;
+use Filagora\Newsletters\Jobs\SendCampaignEmail;
 use Filagora\Newsletters\Models\Newsletter;
 use Filagora\Newsletters\Services\Subscribers;
 use Filagora\ZenCart\Support\CmsNewsletterMedia;
@@ -64,6 +66,19 @@ class NewslettersPackageWiringTest extends TestCase
         $this->artisan('newsletter:queue-scheduled')->assertExitCode(0);
         $this->artisan('newsletter:export-subscribers', ['path' => sys_get_temp_dir().'/newsletter-site-export.csv'])->assertExitCode(0);
         @unlink(sys_get_temp_dir().'/newsletter-site-export.csv');
+    }
+
+    public function test_a_recipient_job_queued_under_the_old_class_name_still_runs(): void
+    {
+        $job = new SendNewsletterCampaignEmail(41);
+
+        $this->assertInstanceOf(SendCampaignEmail::class, $job);
+        $this->assertSame(41, $job->newsletterSendId);
+        $this->assertInstanceOf(SendCampaignEmail::class, unserialize(str_replace(
+            ['O:'.strlen(SendCampaignEmail::class).':"'.SendCampaignEmail::class.'"'],
+            ['O:'.strlen('App\\Jobs\\SendNewsletterCampaignEmail').':"App\\Jobs\\SendNewsletterCampaignEmail"'],
+            serialize($job),
+        )));
     }
 
     public function test_the_site_keeps_one_route_for_each_newsletter_name(): void

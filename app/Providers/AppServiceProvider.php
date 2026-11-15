@@ -60,6 +60,7 @@ use Filagora\Forums\Models\Post;
 use Filagora\Forums\Models\Thread;
 use Filagora\Forums\Support\Models;
 use Filagora\Messages\Events\MessageReceived;
+use Filagora\Newsletters\Jobs\SendCampaignEmail;
 use Filagora\Notifications\Category;
 use Filagora\Notifications\Enums\NotificationChannel;
 use Filagora\Notifications\NotificationCategories;
@@ -119,6 +120,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Recipient jobs queued before the newsletters moved into their package carry the old class
+        // name. Until the mail queue has drained of them, the old name resolves to the package's job
+        // (it holds only a public send id, so it unserialises as it was).
+        if (! class_exists('App\\Jobs\\SendNewsletterCampaignEmail', false)) {
+            class_alias(SendCampaignEmail::class, 'App\\Jobs\\SendNewsletterCampaignEmail');
+        }
+
         $this->configureDatabaseStatementTimeout();
 
         DB::prohibitDestructiveCommands(
