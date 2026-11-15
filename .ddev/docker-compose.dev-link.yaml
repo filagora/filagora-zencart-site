@@ -13,6 +13,7 @@ services:
       - ../../filagora-search:/var/www/filagora-search
       - ../../filagora-push:/var/www/filagora-push
       - ../../filagora-memberships:/var/www/filagora-memberships
+      - ../../filagora-newsletters:/var/www/filagora-newsletters
       - ../../filagora-notifications:/var/www/filagora-notifications
       - ../../filagora-plugins:/var/www/filagora-plugins
       - ../../filagora-plugins-security:/var/www/filagora-plugins-security

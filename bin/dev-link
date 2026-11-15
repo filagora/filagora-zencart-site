@@ -8,7 +8,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-packages=(core entitlements forums logs cms compliance messages search push memberships notifications plugins plugins-security zencart)
+packages=(core entitlements forums logs cms compliance messages search push memberships notifications plugins plugins-security newsletters zencart)
 
 # A symlinked checkout reports itself as dev-master, which would not satisfy the packages'
 # own ^0.x constraints on each other. Each checkout is therefore given the release line of its
