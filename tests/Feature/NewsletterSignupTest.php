@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\NewsletterSubscriber;
 use App\Models\User;
 use App\Models\UserPrivacyPolicyAcceptance;
-use App\NewsletterSubscriberStatus;
-use App\Notifications\NewsletterConfirmSubscriptionNotification;
-use App\Services\NewsletterSubscriberService;
 use Filagora\Compliance\Models\PrivacyPolicyVersion;
+use Filagora\Newsletters\Enums\NewsletterSubscriberStatus;
+use Filagora\Newsletters\Models\NewsletterSubscriber;
+use Filagora\Newsletters\Notifications\ConfirmSubscription;
+use Filagora\Newsletters\Services\Subscribers;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\Concerns\SeedsSitePages;
@@ -37,12 +37,12 @@ class NewsletterSignupTest extends TestCase
         $this->assertSame('Newsletter User', $subscriber->name);
         $this->assertSame(NewsletterSubscriberStatus::Pending, $subscriber->status);
         $this->assertSame('public_signup', $subscriber->source);
-        $this->assertSame(NewsletterSubscriberService::PUBLIC_CONSENT_TEXT, $subscriber->consent_text);
+        $this->assertSame(app(Subscribers::class)->publicConsentText(), $subscriber->consent_text);
         $this->assertSame('public-v1', $subscriber->consent_version);
 
         Notification::assertSentOnDemand(
-            NewsletterConfirmSubscriptionNotification::class,
-            function (NewsletterConfirmSubscriptionNotification $notification, array $channels, object $notifiable): bool {
+            ConfirmSubscription::class,
+            function (ConfirmSubscription $notification, array $channels, object $notifiable): bool {
                 $mail = $notification->toMail($notifiable);
 
                 return ($notifiable->routes['mail'] ?? null) === 'NEWSLETTER@example.TEST'
@@ -66,7 +66,7 @@ class NewsletterSignupTest extends TestCase
             ->assertSessionHasErrors('website');
 
         $this->assertSame(0, NewsletterSubscriber::query()->count());
-        Notification::assertSentOnDemandTimes(NewsletterConfirmSubscriptionNotification::class, 0);
+        Notification::assertSentOnDemandTimes(ConfirmSubscription::class, 0);
     }
 
     public function test_signed_confirmation_link_subscribes_pending_subscriber(): void
@@ -78,7 +78,7 @@ class NewsletterSignupTest extends TestCase
             'source' => 'public_signup',
         ]);
 
-        $url = app(NewsletterSubscriberService::class)->signedConfirmationUrl($subscriber);
+        $url = app(Subscribers::class)->signedConfirmationUrl($subscriber);
 
         $this->get($url)
             ->assertOk()
@@ -119,7 +119,7 @@ class NewsletterSignupTest extends TestCase
             'confirmed_at' => now()->subWeek(),
         ]);
 
-        $url = app(NewsletterSubscriberService::class)->signedUnsubscribeUrl($subscriber);
+        $url = app(Subscribers::class)->signedUnsubscribeUrl($subscriber);
 
         $this->get($url)
             ->assertOk()
@@ -163,7 +163,7 @@ class NewsletterSignupTest extends TestCase
     public function test_authenticated_subscribed_user_sees_status_and_unsubscribe_option(): void
     {
         $user = $this->makeAcknowledgedUser(['email' => 'reader@example.test']);
-        app(NewsletterSubscriberService::class)->subscribeFromProfile($user);
+        app(Subscribers::class)->subscribeFromProfile($user);
 
         $this->actingAs($user)
             ->get(route('newsletter.show'))

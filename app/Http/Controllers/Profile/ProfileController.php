@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Profile;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Profile\ProfilePage;
-use App\Services\NewsletterSubscriberService;
 use App\TimeFormat;
 use Closure;
+use Filagora\Newsletters\Services\Subscribers;
 use Filagora\Notifications\Services\Preferences;
 use Filament\Auth\Notifications\VerifyEmail;
 use Filament\Facades\Filament;
@@ -28,7 +28,7 @@ class ProfileController extends Controller
     public function __construct(
         private readonly ProfilePage $page,
         private readonly Preferences $preferences,
-        private readonly NewsletterSubscriberService $newsletter,
+        private readonly Subscribers $newsletter,
     ) {}
 
     public function show(Request $request): View|RedirectResponse

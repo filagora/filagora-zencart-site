@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\NewsletterSubscriber;
 use App\Models\User;
 use App\Sanitiser\Sanitiser;
 use App\Sanitiser\SanitiserPolicy;
 use App\Sanitiser\UnclassifiedTablesException;
+use Filagora\Newsletters\Models\NewsletterSubscriber;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;

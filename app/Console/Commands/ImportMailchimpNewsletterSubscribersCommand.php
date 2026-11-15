@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\NewsletterSubscriberService;
+use App\Services\NewsletterMailchimpImporter;
 use Illuminate\Console\Command;
 use SplFileObject;
 
@@ -15,7 +15,7 @@ class ImportMailchimpNewsletterSubscribersCommand extends Command
     protected $description = 'Import Mailchimp newsletter subscribers from a CSV export.';
 
     public function __construct(
-        private readonly NewsletterSubscriberService $newsletterSubscriberService,
+        private readonly NewsletterMailchimpImporter $importer,
     ) {
         parent::__construct();
     }
@@ -65,7 +65,7 @@ class ImportMailchimpNewsletterSubscribersCommand extends Command
                 $data[$header] = $row[$index] ?? null;
             }
 
-            $result = $this->newsletterSubscriberService->importMailchimpRow($data, $dryRun);
+            $result = $this->importer->importMailchimpRow($data, $dryRun);
             if (! array_key_exists($result, $stats)) {
                 $stats[$result] = 0;
             }

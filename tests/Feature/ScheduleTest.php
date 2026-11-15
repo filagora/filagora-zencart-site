@@ -21,7 +21,7 @@ class ScheduleTest extends TestCase
             'daily digests' => ['filagora:forums:send-digest daily', '0 8 * * *'],
             'weekly digests' => ['filagora:forums:send-digest weekly', '0 8 * * 1'],
             'sitemap' => ['sitemap:generate', '0 3 * * *'],
-            'newsletter queue' => ['newsletter:queue-scheduled', '* * * * *'],
+            'newsletter queue' => ['filagora:newsletters:queue-scheduled', '* * * * *'],
             'scheduled pages' => ['filagora:cms:publish-due', '* * * * *'],
             'orphaned attachments' => ['filagora:forums:prune-attachments', '0 * * * *'],
             'webhook records' => ['webhooks:prune-events', '0 * * * *'],

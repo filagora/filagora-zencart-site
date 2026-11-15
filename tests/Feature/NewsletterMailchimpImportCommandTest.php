@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\NewsletterSubscriber;
-use App\NewsletterSubscriberStatus;
+use Filagora\Newsletters\Enums\NewsletterSubscriberStatus;
+use Filagora\Newsletters\Models\NewsletterSubscriber;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\SeedsSitePages;
 use Tests\TestCase;

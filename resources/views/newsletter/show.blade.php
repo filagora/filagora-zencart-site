@@ -6,7 +6,7 @@
 
 @php
     $authUser = auth()->user();
-    $isSubscribed = $newsletterSubscriber?->status === \App\NewsletterSubscriberStatus::Subscribed;
+    $isSubscribed = $newsletterSubscriber?->status === \Filagora\Newsletters\Enums\NewsletterSubscriberStatus::Subscribed;
 @endphp
 
 @section('content')

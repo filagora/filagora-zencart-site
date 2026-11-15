@@ -3,17 +3,17 @@
 namespace Tests\Feature;
 
 use App\Jobs\ProcessMailgunWebhook;
-use App\Models\Newsletter;
-use App\Models\NewsletterEvent;
-use App\Models\NewsletterSend;
-use App\Models\NewsletterSubscriber;
 use App\Models\WebhookEvent;
-use App\NewsletterEventType;
-use App\NewsletterSendStatus;
-use App\NewsletterStatus;
-use App\NewsletterSubscriberStatus;
 use App\Services\Mailgun\MailgunWebhookHandler;
 use App\WebhookProvider;
+use Filagora\Newsletters\Enums\NewsletterEventType;
+use Filagora\Newsletters\Enums\NewsletterSendStatus;
+use Filagora\Newsletters\Enums\NewsletterStatus;
+use Filagora\Newsletters\Enums\NewsletterSubscriberStatus;
+use Filagora\Newsletters\Models\Newsletter;
+use Filagora\Newsletters\Models\NewsletterEvent;
+use Filagora\Newsletters\Models\NewsletterSend;
+use Filagora\Newsletters\Models\NewsletterSubscriber;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;

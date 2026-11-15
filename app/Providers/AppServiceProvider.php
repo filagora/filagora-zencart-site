@@ -14,9 +14,6 @@ use App\Listeners\SendThreadSubscriptionMail;
 use App\Mail\Transport\MailtrapApiTransport;
 use App\Markdown\BlankLineGapExtension;
 use App\Markdown\ZenCartHtmlTransformer;
-use App\Models\Newsletter;
-use App\Models\NewsletterBlock;
-use App\Models\NewsletterSubscriber;
 use App\Models\User;
 use App\Notifications\BellListeners;
 use App\Notifications\ForumThreadCreatedNotification;
@@ -26,9 +23,6 @@ use App\Observers\FlushForumsIndexCacheObserver;
 use App\Observers\SyncUserPostCountObserver;
 use App\Policies\ForumPostPolicy;
 use App\Policies\ForumThreadPolicy;
-use App\Policies\NewsletterBlockPolicy;
-use App\Policies\NewsletterPolicy;
-use App\Policies\NewsletterSubscriberPolicy;
 use App\Policies\PluginPolicy;
 use App\Policies\PluginReleasePolicy;
 use App\Search\ForumSearchIndex;
@@ -45,8 +39,6 @@ use Filagora\Compliance\Events\PrivacyRequestStatusChanged;
 use Filagora\Compliance\Events\PrivacyRequestSubmitted;
 use Filagora\Core\Content\ExtensionRegistry;
 use Filagora\Core\Content\MarkdownRenderer;
-use Filagora\Core\Navigation\NavigationGroupDefinition;
-use Filagora\Core\Navigation\NavigationGroupRegistry;
 use Filagora\Core\Settings\SettingDefinition;
 use Filagora\Core\Settings\SettingsRegistry;
 use Filagora\Core\Settings\SettingType;
@@ -166,9 +158,6 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive('cmsMarkdownInline', fn (string $expression): string => "<?php echo \\App\\Support\\CmsMarkdown::inline({$expression}); ?>");
 
         Gate::policy(Post::class, ForumPostPolicy::class);
-        Gate::policy(Newsletter::class, NewsletterPolicy::class);
-        Gate::policy(NewsletterBlock::class, NewsletterBlockPolicy::class);
-        Gate::policy(NewsletterSubscriber::class, NewsletterSubscriberPolicy::class);
 
         // Staff acting as another member: needs the "act as" entitlement, never as themselves, and
         // never as an operator they could not themselves make.
@@ -280,13 +269,6 @@ class AppServiceProvider extends ServiceProvider
             $config['endpoint'] ?? config('services.mailtrap.endpoint'),
         ));
 
-        $this->app->make(NavigationGroupRegistry::class)->register(new NavigationGroupDefinition(
-            key: 'newsletters',
-            label: fn (): string => __('dashboard.navigation_groups.newsletters'),
-            icon: 'heroicon-o-envelope',
-            sort: 50,
-        ));
-
         Event::listen(ForumStatsChanged::class, fn () => ForumsIndexCache::flushAll());
 
         // The in-app side of what the packages announce (they send the mail).
@@ -325,8 +307,6 @@ class AppServiceProvider extends ServiceProvider
 
             return [Limit::perMinute(3)->by($key), Limit::perHour(30)->by($key)];
         });
-
-        RateLimiter::for('newsletter-signup', fn (Request $request): Limit => Limit::perMinute(5)->by('newsletter-signup:'.($request->ip() ?: 'unknown')));
 
         RateLimiter::for('privacy-request-submit', function (Request $request): array {
             $key = $request->user()?->id !== null ? 'user:'.$request->user()->id : 'ip:'.$request->ip();

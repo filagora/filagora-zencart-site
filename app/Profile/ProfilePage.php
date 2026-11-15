@@ -5,7 +5,6 @@ namespace App\Profile;
 use App\Ai\AiChatFeature;
 use App\Api\ApiScopeCatalog;
 use App\Models\User;
-use App\Services\NewsletterSubscriberService;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -24,6 +23,7 @@ use Filagora\Forums\Services\ForumSubscriptions;
 use Filagora\Memberships\Models\MembershipPlan;
 use Filagora\Memberships\Models\UserMembership;
 use Filagora\Memberships\Services\Memberships;
+use Filagora\Newsletters\Services\Subscribers;
 use Filagora\Notifications\Services\Preferences;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
@@ -46,7 +46,7 @@ class ProfilePage
         private readonly ApiScopeCatalog $apiScopes,
         private readonly EntitlementResolver $entitlementResolver,
         private readonly Memberships $memberships,
-        private readonly NewsletterSubscriberService $newsletter,
+        private readonly Subscribers $newsletter,
         private readonly ForumAccess $forumAccess,
     ) {}
 

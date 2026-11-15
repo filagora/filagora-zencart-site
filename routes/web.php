@@ -19,9 +19,6 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MarkdownPreviewController;
 use App\Http\Controllers\MembersController;
 use App\Http\Controllers\MessageController;
-use App\Http\Controllers\NewsletterController;
-use App\Http\Controllers\NewsletterLinkClickController;
-use App\Http\Controllers\NewsletterPreviewController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PluginCommunityController;
@@ -122,7 +119,6 @@ Route::middleware('frontend.verified')->group(function (): void {
     Route::post('/push/subscriptions/resync', [PushSubscriptionController::class, 'resync'])->middleware('throttle:push-subscription')->name('push.subscriptions.resync');
     Route::delete('/push/subscriptions', [PushSubscriptionController::class, 'destroy'])->middleware('throttle:push-subscription')->name('push.subscriptions.destroy');
 
-    Route::get('/staff/newsletters/{newsletter}/preview', NewsletterPreviewController::class)->name('newsletters.preview');
     Route::post('/profile/newsletter', [NewsletterConsentController::class, 'update'])->name('profile.newsletter.update');
 
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
@@ -288,12 +284,6 @@ Route::middleware('frontend.verified')->group(function (): void {
     Route::post('/plugins/{plugin:slug}/releases/{release}/grant-auto-publish', [PluginModerationController::class, 'grantAutoPublishToReleaseAuthor'])->name('plugins.release.grant-auto-publish');
     Route::post('/plugins/{plugin:slug}/releases/{release}/zc-versions', [PluginSubmissionController::class, 'updateReleaseZcVersions'])->name('plugins.release.zc-versions.update');
 });
-
-Route::get('/newsletter', [NewsletterController::class, 'show'])->name('newsletter.show');
-Route::post('/newsletter', [NewsletterController::class, 'store'])->middleware('throttle:newsletter-signup')->name('newsletter.store');
-Route::get('/newsletter/confirm/{subscriber}', [NewsletterController::class, 'confirm'])->middleware('signed')->name('newsletter.confirm');
-Route::get('/newsletter/unsubscribe/{subscriber}', [NewsletterController::class, 'unsubscribe'])->middleware('signed')->name('newsletter.unsubscribe');
-Route::get('/newsletter/click/{newsletter}/{blockKey}', NewsletterLinkClickController::class)->middleware('signed')->where('blockKey', '[A-Za-z0-9-]+')->name('newsletter.link-click');
 
 Route::post('/webhooks/mailgun', MailgunWebhookController::class)->name('webhooks.mailgun');
 Route::post('/webhooks/mailtrap', MailtrapWebhookController::class)->name('webhooks.mailtrap');

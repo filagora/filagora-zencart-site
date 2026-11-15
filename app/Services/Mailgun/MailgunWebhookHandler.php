@@ -3,14 +3,14 @@
 namespace App\Services\Mailgun;
 
 use App\Models\User;
-use App\Services\NewsletterMailgunEventHandler;
 use App\Services\NotificationPreferenceService;
+use Filagora\Newsletters\Services\DeliveryEvents;
 use Illuminate\Support\Facades\Log;
 
 class MailgunWebhookHandler
 {
     public function __construct(
-        private readonly NewsletterMailgunEventHandler $newsletterMailgunEventHandler,
+        private readonly DeliveryEvents $newsletterEvents,
     ) {}
 
     public function handle(array $eventData): string
@@ -23,7 +23,7 @@ class MailgunWebhookHandler
             ]);
         }
 
-        $newsletterResult = $this->newsletterMailgunEventHandler->handle($eventData);
+        $newsletterResult = $this->newsletterEvents->handle('mailgun', $eventData);
 
         if ($newsletterResult !== null) {
             return $newsletterResult;

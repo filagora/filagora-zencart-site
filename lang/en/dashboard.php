@@ -7,7 +7,6 @@ return [
         'queues' => 'Queues',
         'plugins' => 'Plugins',
         'content' => 'Content',
-        'newsletters' => 'Newsletters',
         'privacy' => 'Privacy & Cookies',
         'logs' => 'Logs',
         'system' => 'System',
@@ -43,11 +42,6 @@ return [
         'media' => 'Media',
         'tags' => 'Tags',
         'site_notifications' => 'Site Notifications',
-        // Newsletters
-        'newsletters' => 'Newsletters',
-        'newsletter_blocks' => 'Blocks',
-        'newsletter_subscribers' => 'Subscribers',
-        'newsletter_settings' => 'Settings',
         // Privacy & Cookies
         'privacy_policy_versions' => 'Privacy Policy Versions',
         'cookie_policy_versions' => 'Cookie Policy Versions',

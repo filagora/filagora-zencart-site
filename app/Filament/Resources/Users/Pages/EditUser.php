@@ -5,11 +5,11 @@ namespace App\Filament\Resources\Users\Pages;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
 use App\Services\Auth\RegistrationService;
-use App\Services\NewsletterSubscriberService;
 use App\Services\UserOperatorAccessManager;
 use App\Support\UserImpersonation;
 use App\Support\UserOperatorAccessAssignment;
 use App\Support\UserTwoFactorAdminStatus;
+use Filagora\Newsletters\Services\Subscribers;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -85,7 +85,7 @@ class EditUser extends EditRecord
 
         if ($emailChanged) {
             // The newsletter list keeps the old address with its consent; it must not follow the account.
-            app(NewsletterSubscriberService::class)->unlinkUserForEmailChange($record, $oldEmail);
+            app(Subscribers::class)->unlinkUserForEmailChange($record, $oldEmail);
 
             if ($verifiedAt === null) {
                 $this->sendVerificationToNewAddress($record);

@@ -3,20 +3,20 @@
 namespace App\Services\Mailtrap;
 
 use App\Models\User;
-use App\Services\NewsletterMailtrapEventHandler;
+use Filagora\Newsletters\Services\DeliveryEvents;
 use Illuminate\Support\Facades\Log;
 
 class MailtrapWebhookHandler
 {
     public function __construct(
-        private readonly NewsletterMailtrapEventHandler $newsletterMailtrapEventHandler,
+        private readonly DeliveryEvents $newsletterEvents,
     ) {}
 
     public function handle(array $eventData): string
     {
         $event = $eventData['event'] ?? null;
 
-        $newsletterResult = $this->newsletterMailtrapEventHandler->handle($eventData);
+        $newsletterResult = $this->newsletterEvents->handle('mailtrap', $eventData);
 
         if ($newsletterResult !== null) {
             return $newsletterResult;

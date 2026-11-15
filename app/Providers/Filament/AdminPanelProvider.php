@@ -26,6 +26,7 @@ use Filagora\Forums\Filament\Widgets\ModerationQueueStats;
 use Filagora\Logs\FilagoraLogsPlugin;
 use Filagora\Memberships\FilagoraMembershipsPlugin;
 use Filagora\Messages\FilagoraMessagesPlugin;
+use Filagora\Newsletters\NewslettersPlugin;
 use Filagora\Notifications\NotificationsPlugin;
 use Filagora\Plugins\FilagoraPluginsPlugin;
 use Filagora\PluginsSecurity\FilagoraPluginsSecurityPlugin;
@@ -83,6 +84,7 @@ class AdminPanelProvider extends PanelProvider
                 FilagoraMessagesPlugin::make(),
                 FilagoraMembershipsPlugin::make(),
                 NotificationsPlugin::make(),
+                NewslettersPlugin::make(),
                 ...(BugReportsFeature::installed() ? [FilagoraForumBugReportsPlugin::make()] : []),
                 ...(AiChatFeature::installed() ? [FilagoraAiPlugin::make()] : []),
                 FilagoraPluginsPlugin::make(),

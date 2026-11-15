@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Profile;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\NewsletterSubscriberService;
+use Filagora\Newsletters\Services\Subscribers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
  */
 class NewsletterConsentController extends Controller
 {
-    public function __construct(private readonly NewsletterSubscriberService $subscribers) {}
+    public function __construct(private readonly Subscribers $subscribers) {}
 
     public function update(Request $request): RedirectResponse
     {

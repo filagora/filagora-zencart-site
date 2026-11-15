@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "214d92dd882692873b7518ce8769871b",
+    "content-hash": "59aec8f2a7df4a7836c4ad5135f77bab",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1594,16 +1594,16 @@
         },
         {
             "name": "filagora/filagora-cms",
-            "version": "v0.3.3",
+            "version": "v0.3.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-cms.git",
-                "reference": "0481341c0013c0972b8b6cb43c82b33a754ab11a"
+                "reference": "23b2949a03b969fdd2564fe09f99a355ce58ba7e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-cms/zipball/0481341c0013c0972b8b6cb43c82b33a754ab11a",
-                "reference": "0481341c0013c0972b8b6cb43c82b33a754ab11a",
+                "url": "https://api.github.com/repos/filagora/filagora-cms/zipball/23b2949a03b969fdd2564fe09f99a355ce58ba7e",
+                "reference": "23b2949a03b969fdd2564fe09f99a355ce58ba7e",
                 "shasum": ""
             },
             "require": {
@@ -1652,22 +1652,22 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-cms/issues",
-                "source": "https://github.com/filagora/filagora-cms/tree/v0.3.3"
+                "source": "https://github.com/filagora/filagora-cms/tree/v0.3.6"
             },
-            "time": "2026-10-28T01:31:36+00:00"
+            "time": "2026-11-14T10:33:14+00:00"
         },
         {
             "name": "filagora/filagora-compliance",
-            "version": "v0.1.0",
+            "version": "v0.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-compliance.git",
-                "reference": "5c30934b0d95b819a3f544bafa26cf596e7ebcba"
+                "reference": "cd48ae16315eb6793b94f735706dc810f4b56fa1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-compliance/zipball/5c30934b0d95b819a3f544bafa26cf596e7ebcba",
-                "reference": "5c30934b0d95b819a3f544bafa26cf596e7ebcba",
+                "url": "https://api.github.com/repos/filagora/filagora-compliance/zipball/cd48ae16315eb6793b94f735706dc810f4b56fa1",
+                "reference": "cd48ae16315eb6793b94f735706dc810f4b56fa1",
                 "shasum": ""
             },
             "require": {
@@ -1717,22 +1717,22 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-compliance/issues",
-                "source": "https://github.com/filagora/filagora-compliance/tree/v0.1.0"
+                "source": "https://github.com/filagora/filagora-compliance/tree/v0.1.3"
             },
-            "time": "2026-10-14T22:09:11+00:00"
+            "time": "2026-11-14T10:33:07+00:00"
         },
         {
             "name": "filagora/filagora-core",
-            "version": "v0.2.3",
+            "version": "v0.2.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-core.git",
-                "reference": "8b006d489676d03e1fa31dfbc6be9cdaab47fc24"
+                "reference": "b45b088079d7efcd8a681b323dba2b85c5b43e07"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-core/zipball/8b006d489676d03e1fa31dfbc6be9cdaab47fc24",
-                "reference": "8b006d489676d03e1fa31dfbc6be9cdaab47fc24",
+                "url": "https://api.github.com/repos/filagora/filagora-core/zipball/b45b088079d7efcd8a681b323dba2b85c5b43e07",
+                "reference": "b45b088079d7efcd8a681b323dba2b85c5b43e07",
                 "shasum": ""
             },
             "require": {
@@ -1773,22 +1773,22 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-core/issues",
-                "source": "https://github.com/filagora/filagora-core/tree/v0.2.3"
+                "source": "https://github.com/filagora/filagora-core/tree/v0.2.6"
             },
-            "time": "2026-11-12T18:29:03+00:00"
+            "time": "2026-11-14T10:33:41+00:00"
         },
         {
             "name": "filagora/filagora-entitlements",
-            "version": "v0.2.3",
+            "version": "v0.2.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-entitlements.git",
-                "reference": "8ceca0b42db88432832549ab954fe2eef7aa5123"
+                "reference": "c05cfdc0881aeda5892023fadb2e54392ccc78d0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-entitlements/zipball/8ceca0b42db88432832549ab954fe2eef7aa5123",
-                "reference": "8ceca0b42db88432832549ab954fe2eef7aa5123",
+                "url": "https://api.github.com/repos/filagora/filagora-entitlements/zipball/c05cfdc0881aeda5892023fadb2e54392ccc78d0",
+                "reference": "c05cfdc0881aeda5892023fadb2e54392ccc78d0",
                 "shasum": ""
             },
             "require": {
@@ -1829,9 +1829,9 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-entitlements/issues",
-                "source": "https://github.com/filagora/filagora-entitlements/tree/v0.2.3"
+                "source": "https://github.com/filagora/filagora-entitlements/tree/v0.2.6"
             },
-            "time": "2026-11-12T19:24:52+00:00"
+            "time": "2026-11-14T10:32:06+00:00"
         },
         {
             "name": "filagora/filagora-forum-bugreports",
@@ -1892,16 +1892,16 @@
         },
         {
             "name": "filagora/filagora-forums",
-            "version": "v0.6.6",
+            "version": "v0.6.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-forums.git",
-                "reference": "3fd8ca415ce5f0a571dbda2c06cdbc226b3e85e2"
+                "reference": "ca26a1c22c6efb2534a425ba639f00327a6ef307"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-forums/zipball/3fd8ca415ce5f0a571dbda2c06cdbc226b3e85e2",
-                "reference": "3fd8ca415ce5f0a571dbda2c06cdbc226b3e85e2",
+                "url": "https://api.github.com/repos/filagora/filagora-forums/zipball/ca26a1c22c6efb2534a425ba639f00327a6ef307",
+                "reference": "ca26a1c22c6efb2534a425ba639f00327a6ef307",
                 "shasum": ""
             },
             "require": {
@@ -1950,9 +1950,9 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-forums/issues",
-                "source": "https://github.com/filagora/filagora-forums/tree/v0.6.6"
+                "source": "https://github.com/filagora/filagora-forums/tree/v0.6.10"
             },
-            "time": "2026-11-13T19:44:55+00:00"
+            "time": "2026-11-14T10:33:35+00:00"
         },
         {
             "name": "filagora/filagora-logs",
@@ -2017,16 +2017,16 @@
         },
         {
             "name": "filagora/filagora-memberships",
-            "version": "v0.1.1",
+            "version": "v0.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-memberships.git",
-                "reference": "86031c822d630862ecfc44ac26cbd964c96ffe43"
+                "reference": "67cc143da7df27702c5067335119e69dadd15c28"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-memberships/zipball/86031c822d630862ecfc44ac26cbd964c96ffe43",
-                "reference": "86031c822d630862ecfc44ac26cbd964c96ffe43",
+                "url": "https://api.github.com/repos/filagora/filagora-memberships/zipball/67cc143da7df27702c5067335119e69dadd15c28",
+                "reference": "67cc143da7df27702c5067335119e69dadd15c28",
                 "shasum": ""
             },
             "require": {
@@ -2075,22 +2075,22 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-memberships/issues",
-                "source": "https://github.com/filagora/filagora-memberships/tree/v0.1.1"
+                "source": "https://github.com/filagora/filagora-memberships/tree/v0.1.4"
             },
-            "time": "2026-10-18T16:19:16+00:00"
+            "time": "2026-11-14T10:32:14+00:00"
         },
         {
             "name": "filagora/filagora-messages",
-            "version": "v0.3.0",
+            "version": "v0.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-messages.git",
-                "reference": "c85fb5dbbbaf186dc11323544dc703e9715369cb"
+                "reference": "15a50db55b390e9d305f023ff70919c4501c5ea5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-messages/zipball/c85fb5dbbbaf186dc11323544dc703e9715369cb",
-                "reference": "c85fb5dbbbaf186dc11323544dc703e9715369cb",
+                "url": "https://api.github.com/repos/filagora/filagora-messages/zipball/15a50db55b390e9d305f023ff70919c4501c5ea5",
+                "reference": "15a50db55b390e9d305f023ff70919c4501c5ea5",
                 "shasum": ""
             },
             "require": {
@@ -2136,22 +2136,80 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-messages/issues",
-                "source": "https://github.com/filagora/filagora-messages/tree/v0.3.0"
+                "source": "https://github.com/filagora/filagora-messages/tree/v0.3.3"
             },
-            "time": "2026-10-22T19:12:30+00:00"
+            "time": "2026-11-14T10:32:35+00:00"
         },
         {
-            "name": "filagora/filagora-notifications",
+            "name": "filagora/filagora-newsletters",
             "version": "v0.1.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/filagora/filagora-notifications.git",
-                "reference": "e1a4c6f2f88160edd735f7d7180759ed2a9e86d6"
+                "url": "https://github.com/filagora/filagora-newsletters.git",
+                "reference": "ab170f91b05fca9cbb5e4f1837d398a5fcc25a0b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-notifications/zipball/e1a4c6f2f88160edd735f7d7180759ed2a9e86d6",
-                "reference": "e1a4c6f2f88160edd735f7d7180759ed2a9e86d6",
+                "url": "https://api.github.com/repos/filagora/filagora-newsletters/zipball/ab170f91b05fca9cbb5e4f1837d398a5fcc25a0b",
+                "reference": "ab170f91b05fca9cbb5e4f1837d398a5fcc25a0b",
+                "shasum": ""
+            },
+            "require": {
+                "filagora/filagora-core": "^0.2.2",
+                "filament/filament": "^5.0",
+                "php": "^8.4"
+            },
+            "require-dev": {
+                "filagora/filagora-entitlements": "^0.2.2",
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.0",
+                "orchestra/testbench": "^11.0",
+                "pestphp/pest": "^4.0",
+                "pestphp/pest-plugin-laravel": "^4.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Filagora\\Newsletters\\NewslettersServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Filagora\\Newsletters\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Newsletters for Filagora: subscribers with consent, campaigns built from content blocks, scheduled sends, link tracking, and delivery events, independent of any one mail provider.",
+            "keywords": [
+                "email",
+                "filagora",
+                "filament",
+                "laravel",
+                "newsletters"
+            ],
+            "support": {
+                "issues": "https://github.com/filagora/filagora-newsletters/issues",
+                "source": "https://github.com/filagora/filagora-newsletters/tree/v0.1.0"
+            },
+            "time": "2026-11-14T16:25:29+00:00"
+        },
+        {
+            "name": "filagora/filagora-notifications",
+            "version": "v0.1.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/filagora/filagora-notifications.git",
+                "reference": "31042ac6ae1d8238449a895e4a2386e8ecffd11a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/filagora/filagora-notifications/zipball/31042ac6ae1d8238449a895e4a2386e8ecffd11a",
+                "reference": "31042ac6ae1d8238449a895e4a2386e8ecffd11a",
                 "shasum": ""
             },
             "require": {
@@ -2162,7 +2220,7 @@
             "require-dev": {
                 "filagora/filagora-entitlements": "^0.2.2",
                 "filagora/filagora-forums": "^0.6",
-                "filagora/filagora-messages": "^0.2",
+                "filagora/filagora-messages": "^0.3",
                 "filagora/filagora-push": "^0.1",
                 "larastan/larastan": "^3.0",
                 "laravel/pint": "^1.0",
@@ -2203,22 +2261,22 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-notifications/issues",
-                "source": "https://github.com/filagora/filagora-notifications/tree/v0.1.0"
+                "source": "https://github.com/filagora/filagora-notifications/tree/v0.1.3"
             },
-            "time": "2026-10-22T14:58:00+00:00"
+            "time": "2026-11-14T10:33:49+00:00"
         },
         {
             "name": "filagora/filagora-plugins",
-            "version": "v0.3.0",
+            "version": "v0.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-plugins.git",
-                "reference": "08ac7a1638f71f6b52daf190d2c4c223c271445b"
+                "reference": "9075c7309730fd92a87941b62bc3df8ebb38cd07"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-plugins/zipball/08ac7a1638f71f6b52daf190d2c4c223c271445b",
-                "reference": "08ac7a1638f71f6b52daf190d2c4c223c271445b",
+                "url": "https://api.github.com/repos/filagora/filagora-plugins/zipball/9075c7309730fd92a87941b62bc3df8ebb38cd07",
+                "reference": "9075c7309730fd92a87941b62bc3df8ebb38cd07",
                 "shasum": ""
             },
             "require": {
@@ -2263,9 +2321,9 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-plugins/issues",
-                "source": "https://github.com/filagora/filagora-plugins/tree/v0.3.0"
+                "source": "https://github.com/filagora/filagora-plugins/tree/v0.3.3"
             },
-            "time": "2026-10-22T16:31:41+00:00"
+            "time": "2026-11-14T10:33:00+00:00"
         },
         {
             "name": "filagora/filagora-plugins-security",
@@ -2451,16 +2509,16 @@
         },
         {
             "name": "filagora/filagora-zencart",
-            "version": "v0.13.2",
+            "version": "v0.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-zencart.git",
-                "reference": "ba0e51876fe35becc0829360aa6db034858d330d"
+                "reference": "9c66f15b83f54e76a83f2bb58eca6971937c1c23"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/ba0e51876fe35becc0829360aa6db034858d330d",
-                "reference": "ba0e51876fe35becc0829360aa6db034858d330d",
+                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/9c66f15b83f54e76a83f2bb58eca6971937c1c23",
+                "reference": "9c66f15b83f54e76a83f2bb58eca6971937c1c23",
                 "shasum": ""
             },
             "require": {
@@ -2471,6 +2529,7 @@
                 "filagora/filagora-forums": "^0.6.5",
                 "filagora/filagora-memberships": "^0.1.1",
                 "filagora/filagora-messages": "^0.3",
+                "filagora/filagora-newsletters": "^0.1",
                 "filagora/filagora-notifications": "^0.1",
                 "filagora/filagora-plugins": "^0.3",
                 "php": "^8.4",
@@ -2530,23 +2589,23 @@
                 "zen-cart"
             ],
             "support": {
-                "source": "https://github.com/filagora/filagora-zencart/tree/v0.13.2",
+                "source": "https://github.com/filagora/filagora-zencart/tree/v0.14.0",
                 "issues": "https://github.com/filagora/filagora-zencart/issues"
             },
-            "time": "2026-11-12T20:56:51+00:00"
+            "time": "2026-11-15T08:43:50+00:00"
         },
         {
             "name": "filament/actions",
-            "version": "v5.11.2",
+            "version": "v5.11.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/actions.git",
-                "reference": "28a22306943c6fae37264c048338ef48315166b6"
+                "reference": "c9179d3f618dd8a308c24e6b16ff213ff9a87552"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/actions/zipball/28a22306943c6fae37264c048338ef48315166b6",
-                "reference": "28a22306943c6fae37264c048338ef48315166b6",
+                "url": "https://api.github.com/repos/filamentphp/actions/zipball/c9179d3f618dd8a308c24e6b16ff213ff9a87552",
+                "reference": "c9179d3f618dd8a308c24e6b16ff213ff9a87552",
                 "shasum": ""
             },
             "require": {
@@ -2582,20 +2641,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-11-07T20:51:15+00:00"
+            "time": "2026-11-13T13:11:09+00:00"
         },
         {
             "name": "filament/filament",
-            "version": "v5.11.2",
+            "version": "v5.11.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/panels.git",
-                "reference": "7d9e33836b5c3ece70eec463abfc18a0632359bd"
+                "reference": "d04964a2ae6d18664280be4ba67db26a0192a808"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/panels/zipball/7d9e33836b5c3ece70eec463abfc18a0632359bd",
-                "reference": "7d9e33836b5c3ece70eec463abfc18a0632359bd",
+                "url": "https://api.github.com/repos/filamentphp/panels/zipball/d04964a2ae6d18664280be4ba67db26a0192a808",
+                "reference": "d04964a2ae6d18664280be4ba67db26a0192a808",
                 "shasum": ""
             },
             "require": {
@@ -2640,20 +2699,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-11-07T20:50:20+00:00"
+            "time": "2026-11-13T13:04:11+00:00"
         },
         {
             "name": "filament/forms",
-            "version": "v5.11.2",
+            "version": "v5.11.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/forms.git",
-                "reference": "753856c2ef28a371f0a36f69780e7102d675b3a0"
+                "reference": "a995e283a0828d73c786602739b8808d2ff90da4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/forms/zipball/753856c2ef28a371f0a36f69780e7102d675b3a0",
-                "reference": "753856c2ef28a371f0a36f69780e7102d675b3a0",
+                "url": "https://api.github.com/repos/filamentphp/forms/zipball/a995e283a0828d73c786602739b8808d2ff90da4",
+                "reference": "a995e283a0828d73c786602739b8808d2ff90da4",
                 "shasum": ""
             },
             "require": {
@@ -2693,20 +2752,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-11-07T20:25:00+00:00"
+            "time": "2026-11-13T12:59:39+00:00"
         },
         {
             "name": "filament/infolists",
-            "version": "v5.11.2",
+            "version": "v5.11.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/infolists.git",
-                "reference": "171c25130b9197f01495ced635a110b5342a997e"
+                "reference": "139c17f78b6d7487549e313c1e020f0ca7f4da86"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/infolists/zipball/171c25130b9197f01495ced635a110b5342a997e",
-                "reference": "171c25130b9197f01495ced635a110b5342a997e",
+                "url": "https://api.github.com/repos/filamentphp/infolists/zipball/139c17f78b6d7487549e313c1e020f0ca7f4da86",
+                "reference": "139c17f78b6d7487549e313c1e020f0ca7f4da86",
                 "shasum": ""
             },
             "require": {
@@ -2738,20 +2797,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-11-07T20:48:12+00:00"
+            "time": "2026-11-13T12:51:20+00:00"
         },
         {
             "name": "filament/notifications",
-            "version": "v5.11.2",
+            "version": "v5.11.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/notifications.git",
-                "reference": "c898e57d8c691046d81b58a5286244df79cf7987"
+                "reference": "3927f0ec6cf4fb1e09a02383c7b5ed7fecdf14c6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/notifications/zipball/c898e57d8c691046d81b58a5286244df79cf7987",
-                "reference": "c898e57d8c691046d81b58a5286244df79cf7987",
+                "url": "https://api.github.com/repos/filamentphp/notifications/zipball/3927f0ec6cf4fb1e09a02383c7b5ed7fecdf14c6",
+                "reference": "3927f0ec6cf4fb1e09a02383c7b5ed7fecdf14c6",
                 "shasum": ""
             },
             "require": {
@@ -2785,20 +2844,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-11-07T20:47:08+00:00"
+            "time": "2026-11-13T13:01:40+00:00"
         },
         {
             "name": "filament/query-builder",
-            "version": "v5.11.2",
+            "version": "v5.11.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/query-builder.git",
-                "reference": "1960a811ade88f28ea72d9e9e4be8a0930b24de0"
+                "reference": "e75f020c16202716fc7c84e60a7d4d9eb7164184"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/query-builder/zipball/1960a811ade88f28ea72d9e9e4be8a0930b24de0",
-                "reference": "1960a811ade88f28ea72d9e9e4be8a0930b24de0",
+                "url": "https://api.github.com/repos/filamentphp/query-builder/zipball/e75f020c16202716fc7c84e60a7d4d9eb7164184",
+                "reference": "e75f020c16202716fc7c84e60a7d4d9eb7164184",
                 "shasum": ""
             },
             "require": {
@@ -2831,20 +2890,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-11-07T20:50:35+00:00"
+            "time": "2026-11-13T13:10:30+00:00"
         },
         {
             "name": "filament/schemas",
-            "version": "v5.11.2",
+            "version": "v5.11.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/schemas.git",
-                "reference": "73599baf82dada2704a72a6658855538f3082a2c"
+                "reference": "b82ac6e5314c2c987cfa163032618784404f0f59"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/schemas/zipball/73599baf82dada2704a72a6658855538f3082a2c",
-                "reference": "73599baf82dada2704a72a6658855538f3082a2c",
+                "url": "https://api.github.com/repos/filamentphp/schemas/zipball/b82ac6e5314c2c987cfa163032618784404f0f59",
+                "reference": "b82ac6e5314c2c987cfa163032618784404f0f59",
                 "shasum": ""
             },
             "require": {
@@ -2876,20 +2935,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-11-07T20:48:31+00:00"
+            "time": "2026-11-13T13:06:00+00:00"
         },
         {
             "name": "filament/support",
-            "version": "v5.11.2",
+            "version": "v5.11.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/support.git",
-                "reference": "4869a47a6fe3a04f6b3ab87acceffe33af1ab8fb"
+                "reference": "dc2cb8659b75bf2ce6b1ffe230e0eba2b6324f8d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/support/zipball/4869a47a6fe3a04f6b3ab87acceffe33af1ab8fb",
-                "reference": "4869a47a6fe3a04f6b3ab87acceffe33af1ab8fb",
+                "url": "https://api.github.com/repos/filamentphp/support/zipball/dc2cb8659b75bf2ce6b1ffe230e0eba2b6324f8d",
+                "reference": "dc2cb8659b75bf2ce6b1ffe230e0eba2b6324f8d",
                 "shasum": ""
             },
             "require": {
@@ -2936,20 +2995,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-11-07T20:46:50+00:00"
+            "time": "2026-11-13T13:10:45+00:00"
         },
         {
             "name": "filament/tables",
-            "version": "v5.11.2",
+            "version": "v5.11.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/tables.git",
-                "reference": "9bf79cee5fe707017d2324c8abd23093301c8ff8"
+                "reference": "7baa9297f7a713151baa5bf8f5e84ee73169c545"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/tables/zipball/9bf79cee5fe707017d2324c8abd23093301c8ff8",
-                "reference": "9bf79cee5fe707017d2324c8abd23093301c8ff8",
+                "url": "https://api.github.com/repos/filamentphp/tables/zipball/7baa9297f7a713151baa5bf8f5e84ee73169c545",
+                "reference": "7baa9297f7a713151baa5bf8f5e84ee73169c545",
                 "shasum": ""
             },
             "require": {
@@ -2982,20 +3041,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-11-07T20:50:56+00:00"
+            "time": "2026-11-13T13:22:10+00:00"
         },
         {
             "name": "filament/widgets",
-            "version": "v5.11.2",
+            "version": "v5.11.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/widgets.git",
-                "reference": "307d763465c6d5b4bb25910d1e9cf7149800673b"
+                "reference": "d2fc5ec7decb0e2d948d45130cd1cd25f6100381"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/widgets/zipball/307d763465c6d5b4bb25910d1e9cf7149800673b",
-                "reference": "307d763465c6d5b4bb25910d1e9cf7149800673b",
+                "url": "https://api.github.com/repos/filamentphp/widgets/zipball/d2fc5ec7decb0e2d948d45130cd1cd25f6100381",
+                "reference": "d2fc5ec7decb0e2d948d45130cd1cd25f6100381",
                 "shasum": ""
             },
             "require": {
@@ -3026,7 +3085,7 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-11-07T20:51:25+00:00"
+            "time": "2026-11-13T12:59:18+00:00"
         },
         {
             "name": "fruitcake/php-cors",
@@ -3163,25 +3222,26 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "8.3.1",
+            "version": "8.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "7d9b1f430bb65ac664e120af227bf9a795ad6333"
+                "reference": "f8aca40edffeae0ec508b92f4594766083c6e203"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/7d9b1f430bb65ac664e120af227bf9a795ad6333",
-                "reference": "7d9b1f430bb65ac664e120af227bf9a795ad6333",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/f8aca40edffeae0ec508b92f4594766083c6e203",
+                "reference": "f8aca40edffeae0ec508b92f4594766083c6e203",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "guzzlehttp/promises": "^3.1",
-                "guzzlehttp/psr7": "^3.2",
+                "guzzlehttp/psr7": "^3.4",
                 "php": "^7.4 || ^8.0",
                 "psr/http-client": "^1.0",
                 "psr/http-factory": "^1.0",
+                "symfony/deprecation-contracts": "^2.5 || ^3.0",
                 "symfony/polyfill-php80": "^1.25",
                 "symfony/polyfill-php82": "^1.27"
             },
@@ -3269,7 +3329,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/8.3.1"
+                "source": "https://github.com/guzzle/guzzle/tree/8.5.0"
             },
             "funding": [
                 {
@@ -3285,7 +3345,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-25T21:35:34+00:00"
+            "time": "2026-11-13T03:12:32+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -3373,22 +3433,23 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "3.2.0",
+            "version": "3.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "cdc139396207a5eba10c242d241fb014cb098390"
+                "reference": "180bd6fcebd1dc289cbec5c576135f4b6f576e02"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/cdc139396207a5eba10c242d241fb014cb098390",
-                "reference": "cdc139396207a5eba10c242d241fb014cb098390",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/180bd6fcebd1dc289cbec5c576135f4b6f576e02",
+                "reference": "180bd6fcebd1dc289cbec5c576135f4b6f576e02",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.4 || ^8.0",
                 "psr/http-factory": "^1.1",
                 "psr/http-message": "^2.0",
+                "symfony/deprecation-contracts": "^2.5 || ^3.0",
                 "symfony/polyfill-php80": "^1.25",
                 "symfony/polyfill-php82": "^1.27"
             },
@@ -3472,7 +3533,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/3.2.0"
+                "source": "https://github.com/guzzle/psr7/tree/3.4.0"
             },
             "funding": [
                 {
@@ -3488,7 +3549,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-17T23:57:19+00:00"
+            "time": "2026-11-13T03:03:24+00:00"
         },
         {
             "name": "guzzlehttp/uri-template",
@@ -7268,16 +7329,16 @@
         },
         {
             "name": "ramsey/uuid",
-            "version": "4.9.4",
+            "version": "4.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ramsey/uuid.git",
-                "reference": "75d73f48d02797c2c285a7e9f348fadc0102ffe2"
+                "reference": "f9aa3efc8015fcbc013d84d699583b268ccb593a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ramsey/uuid/zipball/75d73f48d02797c2c285a7e9f348fadc0102ffe2",
-                "reference": "75d73f48d02797c2c285a7e9f348fadc0102ffe2",
+                "url": "https://api.github.com/repos/ramsey/uuid/zipball/f9aa3efc8015fcbc013d84d699583b268ccb593a",
+                "reference": "f9aa3efc8015fcbc013d84d699583b268ccb593a",
                 "shasum": ""
             },
             "require": {
@@ -7289,23 +7350,22 @@
                 "rhumsaa/uuid": "self.version"
             },
             "require-dev": {
-                "captainhook/captainhook": "^5.25",
-                "captainhook/plugin-composer": "^5.3",
-                "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-                "ergebnis/composer-normalize": "^2.47",
-                "mockery/mockery": "^1.6",
-                "paragonie/random-lib": "^2",
-                "php-mock/php-mock": "^2.6",
-                "php-mock/php-mock-mockery": "^1.5",
+                "captainhook/captainhook": "^5.29.3",
+                "captainhook/plugin-composer": "^5.3.3",
+                "dealerdirect/phpcodesniffer-composer-installer": "^1.2.1",
+                "mockery/mockery": "^1.6.15",
+                "paragonie/random-lib": "^2.0.3",
+                "php-mock/php-mock": "^2.7.0",
+                "php-mock/php-mock-mockery": "^1.5.0",
                 "php-parallel-lint/php-parallel-lint": "^1.4.0",
                 "phpbench/phpbench": "^1.2.14",
-                "phpstan/extension-installer": "^1.4",
-                "phpstan/phpstan": "^2.1",
-                "phpstan/phpstan-mockery": "^2.0",
-                "phpstan/phpstan-phpunit": "^2.0",
-                "phpunit/phpunit": "^9.6",
-                "slevomat/coding-standard": "^8.18",
-                "squizlabs/php_codesniffer": "^3.13"
+                "phpstan/extension-installer": "^1.4.3",
+                "phpstan/phpstan": "^2.3.5",
+                "phpstan/phpstan-mockery": "^2.0.0",
+                "phpstan/phpstan-phpunit": "^2.1.2",
+                "phpunit/phpunit": "^9.6.39",
+                "slevomat/coding-standard": "^8.31.3",
+                "squizlabs/php_codesniffer": "^4.0.4"
             },
             "suggest": {
                 "ext-bcmath": "Enables faster math with arbitrary-precision integers using BCMath.",
@@ -7340,9 +7400,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ramsey/uuid/issues",
-                "source": "https://github.com/ramsey/uuid/tree/4.9.4"
+                "source": "https://github.com/ramsey/uuid/tree/4.10.0"
             },
-            "time": "2026-09-16T11:39:30+00:00"
+            "time": "2026-11-14T23:23:20+00:00"
         },
         {
             "name": "ryangjchandler/blade-capture-directive",

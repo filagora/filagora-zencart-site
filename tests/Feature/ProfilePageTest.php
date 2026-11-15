@@ -2,10 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\NewsletterSubscriber;
 use App\Models\User;
-use App\NewsletterSubscriberStatus;
-use App\Services\NewsletterSubscriberService;
 use App\TimeFormat;
 use Filagora\Compliance\Models\PrivacyPolicyVersion;
 use Filagora\Compliance\Models\UserPrivacyPolicyAcceptance;
@@ -13,6 +10,9 @@ use Filagora\Core\Models\Setting;
 use Filagora\Entitlements\Models\EntitlementDefinition;
 use Filagora\Entitlements\Models\EntitlementRequest;
 use Filagora\Entitlements\Models\UserEntitlementGrant;
+use Filagora\Newsletters\Enums\NewsletterSubscriberStatus;
+use Filagora\Newsletters\Models\NewsletterSubscriber;
+use Filagora\Newsletters\Services\Subscribers;
 use Filagora\Notifications\Services\Preferences;
 use Filament\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -462,7 +462,7 @@ class ProfilePageTest extends TestCase
         $this->assertSame('old@example.com', $subscriber->email);
         $this->assertSame('old@example.com', $subscriber->normalized_email);
         $this->assertSame(NewsletterSubscriberStatus::Subscribed, $subscriber->status);
-        $this->assertNull(app(NewsletterSubscriberService::class)->forUser($user));
+        $this->assertNull(app(Subscribers::class)->forUser($user));
     }
 
     public function test_authenticated_user_can_change_password(): void

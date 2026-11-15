@@ -2,10 +2,10 @@
 
 use App\Notifications\BugReportUpdatedNotification;
 use App\Notifications\EntitlementRequestMailNotification;
-use App\Notifications\NewsletterConfirmSubscriptionNotification;
 use App\Notifications\PostReportSubmittedNotification;
 use App\Notifications\PrivacyMailNotification;
 use Filagora\Messages\Notifications\MessageReceivedNotification;
+use Filagora\Newsletters\Notifications\ConfirmSubscription;
 use Filament\Auth\Notifications\VerifyEmail as FilamentVerifyEmail;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -22,7 +22,7 @@ return [
             ResetPassword::class,
             VerifyEmail::class,
             FilamentVerifyEmail::class,
-            NewsletterConfirmSubscriptionNotification::class,
+            ConfirmSubscription::class,
             PrivacyMailNotification::class,
             MessageReceivedNotification::class,
             PostReportSubmittedNotification::class,

@@ -12,7 +12,7 @@ Profile
         $authUser = auth()->user();
         $activeTab = $activeTab ?? 'details';
         $newsletterSubscriber = $newsletterSubscriber ?? null;
-        $newsletterSubscribed = $newsletterSubscriber?->status === \App\NewsletterSubscriberStatus::Subscribed;
+        $newsletterSubscribed = $newsletterSubscriber?->status === \Filagora\Newsletters\Enums\NewsletterSubscriberStatus::Subscribed;
         $newsletterStatusLabel = $newsletterSubscriber?->status?->value ?? 'not subscribed';
         $detailsBag = $errors->getBag('details');
         $passwordBag = $errors->getBag('password');

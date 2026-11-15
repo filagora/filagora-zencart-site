@@ -4,10 +4,10 @@ namespace Tests\Feature;
 
 use App\Notifications\BugReportUpdatedNotification;
 use App\Notifications\EntitlementRequestMailNotification;
-use App\Notifications\NewsletterConfirmSubscriptionNotification;
 use App\Notifications\PostReportSubmittedNotification;
 use App\Notifications\PrivacyMailNotification;
 use Filagora\Messages\Notifications\MessageReceivedNotification;
+use Filagora\Newsletters\Notifications\ConfirmSubscription;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Tests\TestCase;
@@ -38,7 +38,7 @@ class EmailLogBodiesConfigTest extends TestCase
             PrivacyMailNotification::class,
             MessageReceivedNotification::class,
             PostReportSubmittedNotification::class,
-            NewsletterConfirmSubscriptionNotification::class,
+            ConfirmSubscription::class,
             EntitlementRequestMailNotification::class,
             BugReportUpdatedNotification::class,
         ] as $sensitive) {
