@@ -149,6 +149,38 @@ Create `shared/.env` before the first deploy. Besides the usual database, mail a
 - The version-check cache sync: `PLUGIN_CACHE_SYNC_BASE_URL`, `PLUGIN_CACHE_SYNC_AUTH_TOKEN`,
   `PLUGIN_CACHE_SYNC_ENABLED` (leave it off until the cutover's re-push).
 
+## Switching on the version-check cache sync
+
+The plugin library pushes each plugin's version-check answer to the cache in front of Zen Cart stores (the
+separate cache application) whenever a plugin or one of its releases changes. It is off until
+`PLUGIN_CACHE_SYNC_ENABLED` is set. Until it is on, the cache serves what it last pulled from the old site, so
+switch it on as part of the cutover and send everything once. Needs `filagora-zencart` 0.14.1 or later.
+
+1. **Keys.** `PLUGIN_CACHE_SYNC_AUTH_TOKEN` must equal the value on the cache application. `PLUGIN_CACHE_SYNC_BASE_URL`
+   defaults to the production cache (`config/filagora-zencart.php`). Never switch it on at a test clone: it would
+   write to the real cache. Leave `PLUGIN_CACHE_SYNC_ENABLED` off and deploy.
+2. **Switch on** (`PLUGIN_CACHE_SYNC_ENABLED=true`) and restart the queue workers so they read it.
+3. **Try one plugin.** `php artisan filagora:zencart:push-versioncheck-cache --id=<old library id> --now` prints
+   `1 plugin(s) sent`. A wrong token fails the command with a 401 from the cache. Then ask the cache for it as a store
+   would and compare with the site's own answer:
+
+       curl -s -A 'Plugin Version Check [<id>] example.com' https://plugins.zen-cart.com/versioncheck/<id>
+       curl -s https://www.zen-cart.com/plugincheck/<id>
+
+4. **Send everything**, with one queue worker running:
+
+       php artisan filagora:zencart:push-versioncheck-cache
+
+   The cache refuses more than 300 writes a minute from one address, and a refused write fails the job into its
+   30, 120 and 300 second backoff. The command therefore queues at most 240 a minute (`--per-minute`; 0 for no limit,
+   which will exceed it). With a little over two thousand plugins that is about ten minutes.
+5. **Check.** `php artisan queue:failed` should be empty. A failure is a plugin the cache did not take (a 429, a wrong
+   token, the cache down); once the cause is gone, send just those: `--id=<id> --id=<id>`.
+
+Run step 4 again after anything that changes the shape of the answer (the stored entries keep their old shape until
+that plugin is next saved), and after the cache application's own cache has been emptied. A delete is answered 200
+whether or not the cache held the entry, so removing a plugin never fails on that.
+
 ## For a site built on the packages
 
 Any deploy method works (Forge, Envoyer, a script). The steps the packages add to an ordinary Laravel deploy:
