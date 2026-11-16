@@ -167,15 +167,24 @@ switch it on as part of the cutover and send everything once. Needs `filagora-ze
        curl -s -A 'Plugin Version Check [<id>] example.com' https://plugins.zen-cart.com/versioncheck/<id>
        curl -s https://www.zen-cart.com/plugincheck/<id>
 
-4. **Send everything**, with one queue worker running:
+4. **Send everything**, with one queue worker running the whole time:
 
        php artisan filagora:zencart:push-versioncheck-cache
 
    The cache refuses more than 300 writes a minute from one address, and a refused write fails the job into its
    30, 120 and 300 second backoff. The command therefore queues at most 240 a minute (`--per-minute`; 0 for no limit,
    which will exceed it). With a little over two thousand plugins that is about ten minutes.
+
+   The jobs are delayed in steps, so the worker must be a running one (the supervised worker is). A worker started
+   with `--stop-when-empty` leaves as soon as the jobs that are due are done and the rest wait. With `--now` the
+   command sends in its own process and waits between sends instead; at `--per-minute=0` it stops at the first
+   refusal, with the rest unsent, so run it again with the default rate.
 5. **Check.** `php artisan queue:failed` should be empty. A failure is a plugin the cache did not take (a 429, a wrong
    token, the cache down); once the cause is gone, send just those: `--id=<id> --id=<id>`.
+
+A rehearsal against a stand-in for the cache (650 plugins) took 178 seconds at the default rate with no refusals, and
+at no limit the cache took exactly 300 and then refused. The real cache has not yet been asked the step 3 question
+by this site, so do that step by hand first.
 
 Run step 4 again after anything that changes the shape of the answer (the stored entries keep their old shape until
 that plugin is next saved), and after the cache application's own cache has been emptied. A delete is answered 200
