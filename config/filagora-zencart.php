@@ -13,6 +13,14 @@ return [
         'plugin_route' => null,
         'thread_route' => null,
     ],
+    // The version-check cache the plugin library pushes to. The profile has no default for `base_url`; this
+    // site's is the production cache, as the site it replaced had, so an `.env` carried over without
+    // PLUGIN_CACHE_SYNC_BASE_URL still reaches it. Sync stays off until PLUGIN_CACHE_SYNC_ENABLED is set.
+    'cache_sync' => [
+        'enabled' => env('PLUGIN_CACHE_SYNC_ENABLED', false),
+        'base_url' => env('PLUGIN_CACHE_SYNC_BASE_URL') ?: 'https://plugins.zen-cart.com',
+        'auth_token' => env('PLUGIN_CACHE_SYNC_AUTH_TOKEN'),
+    ],
     // The Zen Cart documentation the AI chat reads (`docs:import`): a local checkout if
     // ZENCART_DOCS_PATH is set, else a fresh clone. `base_url` is where the pages are published,
     // for the links the chat cites. The profile has no default for it; this site's is its own.
