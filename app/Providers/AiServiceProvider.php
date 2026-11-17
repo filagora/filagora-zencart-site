@@ -30,11 +30,10 @@ class AiServiceProvider extends ServiceProvider
         foreach (['enabled', 'subject', 'max_files', 'max_file_bytes', 'max_batch_bytes', 'max_batches', 'timeout_seconds'] as $setting) {
             config(["filagora-plugins-security.analyzers.llm.{$setting}" => config("ai.plugin_review.{$setting}")]);
         }
-    }
 
-    public function boot(): void
-    {
-        $this->app->make(ChatProviderManager::class)->extend('digitalocean', fn () => new DigitalOceanChatProvider);
-        $this->app->make(EmbeddingProviderManager::class)->extend('digitalocean', fn () => new DigitalOceanEmbeddingProvider);
+        // Added when a manager is first built, not in boot(): the package providers boot before this one,
+        // and some of them ask for the embedding provider while they do.
+        $this->callAfterResolving(ChatProviderManager::class, fn (ChatProviderManager $chat) => $chat->extend('digitalocean', fn () => new DigitalOceanChatProvider));
+        $this->callAfterResolving(EmbeddingProviderManager::class, fn (EmbeddingProviderManager $embeddings) => $embeddings->extend('digitalocean', fn () => new DigitalOceanEmbeddingProvider));
     }
 }
