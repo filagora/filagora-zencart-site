@@ -1470,16 +1470,16 @@
         },
         {
             "name": "filagora/filagora-ai",
-            "version": "v0.1.4",
+            "version": "v0.1.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-ai.git",
-                "reference": "9ad4c7ed3b895cd417e698da3b4bad5398fb9c30"
+                "reference": "fb0bcce3e29e7444391b2e1e3bdb2fbea62980a2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-ai/zipball/9ad4c7ed3b895cd417e698da3b4bad5398fb9c30",
-                "reference": "9ad4c7ed3b895cd417e698da3b4bad5398fb9c30",
+                "url": "https://api.github.com/repos/filagora/filagora-ai/zipball/fb0bcce3e29e7444391b2e1e3bdb2fbea62980a2",
+                "reference": "fb0bcce3e29e7444391b2e1e3bdb2fbea62980a2",
                 "shasum": ""
             },
             "require": {
@@ -1526,9 +1526,9 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-ai/issues",
-                "source": "https://github.com/filagora/filagora-ai/tree/v0.1.4"
+                "source": "https://github.com/filagora/filagora-ai/tree/v0.1.8"
             },
-            "time": "2026-11-08T15:42:50+00:00"
+            "time": "2026-11-17T18:48:54+00:00"
         },
         {
             "name": "filagora/filagora-ai-forums",
