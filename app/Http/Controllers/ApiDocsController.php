@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Api\PluginMarketplaceSpec;
 use Illuminate\Http\Response;
 
 class ApiDocsController extends Controller
@@ -71,7 +72,7 @@ class ApiDocsController extends Controller
     <div class="topbar">
         <div>
             <h1 class="title">Plugin Marketplace API</h1>
-            <p class="subtitle">Read-oriented catalog, release, download, update-check, and optional subscription contract.</p>
+            <p class="subtitle">Catalogue, release, download, update-check and subscription contract, and the changes owners and staff make.</p>
         </div>
         <a class="link" href="{$escapedSpecUrl}">Raw OpenAPI YAML</a>
     </div>
@@ -106,13 +107,9 @@ class ApiDocsController extends Controller
 HTML);
     }
 
-    public function pluginMarketplaceSpec(): Response
+    public function pluginMarketplaceSpec(PluginMarketplaceSpec $spec): Response
     {
-        $path = base_path('docs/openapi-plugin-marketplace.yaml');
-
-        abort_unless(is_file($path), 404);
-
-        return response(file_get_contents($path), 200, [
+        return response($spec->yaml(), 200, [
             'Content-Type' => 'application/yaml; charset=UTF-8',
         ]);
     }

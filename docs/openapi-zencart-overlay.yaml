@@ -1,0 +1,64 @@
+# What the Zen Cart profile adds to the plugins package's OpenAPI description
+# (vendor/filagora/filagora-plugins/resources/openapi/filagora-plugins.yaml). Merged over it by
+# App\Api\PluginMarketplaceSpec; a key given here replaces the package's value for that key.
+paths:
+  /api/v1/plugins/{slug}/releases:
+    post:
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                encapsulated:
+                  type: string
+                  enum: [yes, no, unknown]
+                  description: Whether the archive is an encapsulated plugin (a `zc_plugins` layout with a manifest). An encapsulated archive must resolve to one install folder the plugin does not share with another.
+                zc_versions:
+                  type: array
+                  items: { type: integer }
+                  description: The ids of the Zen Cart versions the release works with, from the Zen Cart versions list.
+components:
+  schemas:
+    Plugin:
+      properties:
+        legacy_vbulletin_file_id:
+          type: [integer, "null"]
+          description: The id deployed Zen Cart stores know the plugin by, the one the version check answers for.
+        zip_root:
+          type: string
+          description: The plugin's install folder, from its encapsulated archives. Empty until it has one.
+    Release:
+      properties:
+        encapsulated:
+          type: string
+          enum: [yes, no, unknown]
+        version_folder:
+          type: [string, "null"]
+          description: The version folder inside an encapsulated archive.
+        zc_versions:
+          type: array
+          description: The Zen Cart versions the release works with, in list order.
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              version: { type: string, examples: ["v2.1.0"] }
+        compatibility:
+          description: The Zen Cart versions the release works with, as labels, in list order.
+          items: { type: string }
+    UpdateCheckRequest:
+      properties:
+        target:
+          description: The Zen Cart version to match releases against, for example `2.1.0`. Without it the newest release is returned.
+        plugins:
+          items:
+            properties:
+              legacy_vbulletin_file_id: { type: integer, description: "The id Zen Cart stores know the plugin by." }
+              zip_root: { type: string, description: "The plugin's install folder." }
+            description: Identified by `slug`, `legacy_vbulletin_file_id`, `zip_root` or `id`.
+    UpdateRow:
+      properties:
+        latest_compatible_release:
+          properties:
+            compatibility:
+              items: { type: string }

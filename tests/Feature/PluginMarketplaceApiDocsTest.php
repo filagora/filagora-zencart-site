@@ -2,11 +2,29 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Routing\Route as LaravelRoute;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\Yaml\Yaml;
 use Tests\TestCase;
 
+/**
+ * The marketplace API docs: the plugins package's OpenAPI description with this site's title, address
+ * and Zen Cart fields laid over it. The package tests that it describes every route it registers.
+ */
 class PluginMarketplaceApiDocsTest extends TestCase
 {
+    /**
+     * @return array<string, mixed>
+     */
+    private function servedSpec(): array
+    {
+        $response = $this->get(route('docs.api.plugin-marketplace.spec'));
+
+        $response->assertOk();
+
+        return Yaml::parse($response->getContent());
+    }
+
     public function test_plugin_marketplace_api_docs_page_is_available(): void
     {
         $response = $this->get(route('docs.api.plugin-marketplace'));
@@ -27,23 +45,81 @@ class PluginMarketplaceApiDocsTest extends TestCase
             ->assertSee('/api/v1/plugins:');
     }
 
-    public function test_the_openapi_spec_documents_core_paths_the_site_really_serves(): void
+    public function test_the_spec_describes_the_api_routes_the_site_really_serves_and_only_those(): void
     {
-        $spec = (string) file_get_contents(base_path('docs/openapi-plugin-marketplace.yaml'));
+        $documented = [];
 
-        $this->assertStringContainsString('openapi: 3.1.0', $spec);
-        $this->assertStringContainsString('title: Zen Cart Plugin Marketplace API', $spec);
-
-        preg_match_all('#^  (/api/v1/[^\s:]+):#m', $spec, $matches);
-        $documented = $matches[1];
-        $served = collect(Route::getRoutes()->getRoutes())->map(fn ($route): string => '/'.$route->uri())->all();
-
-        foreach (['/api/v1/plugin-types', '/api/v1/plugins', '/api/v1/plugins/{slug}', '/api/v1/plugins/{slug}/releases', '/api/v1/plugins/{slug}/releases/{version}', '/api/v1/plugins/{slug}/download/{version}', '/api/v1/plugins/updates'] as $path) {
-            $this->assertContains($path, $documented);
+        foreach ($this->servedSpec()['paths'] as $path => $item) {
+            foreach (['get', 'post', 'put', 'patch', 'delete'] as $method) {
+                if (isset($item[$method])) {
+                    $documented[] = $method.' '.$path;
+                }
+            }
         }
 
-        foreach ($documented as $path) {
-            $this->assertContains($path, $served, "{$path} is documented but not served.");
+        $served = collect(Route::getRoutes()->getRoutes())
+            ->filter(fn (LaravelRoute $route): bool => str_starts_with((string) $route->getName(), 'filagora-plugins.api.'))
+            ->flatMap(fn (LaravelRoute $route): array => collect($route->methods())
+                ->reject(fn (string $method): bool => in_array($method, ['HEAD', 'OPTIONS'], true))
+                ->map(fn (string $method): string => strtolower($method).' /'.$route->uri())
+                ->all())
+            ->all();
+
+        sort($documented);
+        sort($served);
+
+        $this->assertNotEmpty($served);
+        $this->assertSame($served, $documented);
+    }
+
+    public function test_the_spec_carries_this_sites_title_address_and_zen_cart_fields(): void
+    {
+        $spec = $this->servedSpec();
+        $schemas = $spec['components']['schemas'];
+
+        $this->assertSame('Zen Cart Plugin Marketplace API', $spec['info']['title']);
+        $this->assertSame(rtrim(config('app.url'), '/'), $spec['servers'][0]['url']);
+        $this->assertStringNotContainsString('example.com', (string) json_encode($spec));
+        $this->assertStringNotContainsString('the package registers', $spec['info']['description']);
+        $this->assertStringContainsString('Who may call', $spec['info']['description']);
+
+        $this->assertArrayHasKey('legacy_vbulletin_file_id', $schemas['Plugin']['properties']);
+        $this->assertArrayHasKey('zip_root', $schemas['Plugin']['properties']);
+        $this->assertArrayHasKey('zc_versions', $schemas['Release']['properties']);
+        $this->assertSame(['yes', 'no', 'unknown'], $schemas['Release']['properties']['encapsulated']['enum']);
+        $this->assertSame('string', $schemas['Release']['properties']['compatibility']['items']['type']);
+
+        $upload = $spec['paths']['/api/v1/plugins/{slug}/releases']['post']['requestBody']['content']['multipart/form-data']['schema']['properties'];
+
+        $this->assertArrayHasKey('zc_versions', $upload);
+        $this->assertArrayHasKey('encapsulated', $upload);
+        $this->assertArrayHasKey('zip_file', $upload, 'the package\'s own upload fields are kept');
+    }
+
+    public function test_laying_the_overlay_over_the_package_keeps_the_documents_structure_valid(): void
+    {
+        $spec = $this->servedSpec();
+
+        // An empty requirement (a guest may call) must stay an object, not become a list.
+        $this->assertSame([], $spec['paths']['/api/v1/plugins']['get']['security'][0]);
+        $this->assertSame(['plugins:read'], $spec['paths']['/api/v1/plugins']['get']['security'][1]['bearer']);
+
+        $refs = [];
+        array_walk_recursive($spec, function ($value, $key) use (&$refs): void {
+            if ($key === '$ref') {
+                $refs[] = $value;
+            }
+        });
+
+        $this->assertNotEmpty($refs);
+
+        foreach ($refs as $ref) {
+            $node = $spec;
+
+            foreach (explode('/', ltrim($ref, '#/')) as $part) {
+                $this->assertArrayHasKey($part, $node, "{$ref} does not resolve.");
+                $node = $node[$part];
+            }
         }
     }
 }
