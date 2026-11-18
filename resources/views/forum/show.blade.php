@@ -24,6 +24,7 @@
     @endphp
 
     <div class="mx-auto max-w-[1320px] px-6 py-8 md:px-10">
+    @include('partials.site_guest_intro')
     @include('forum.partials.unverified_banner')
     @include('forum.partials.header_nav')
 
@@ -50,6 +51,11 @@
                         <button type="submit" class="{{ $threadActionButtonClass }}">{{ ($isForumSubscribed ?? false) ? 'Unsubscribe' : 'Subscribe' }}</button>
                     </form>
                 @endif
+                @guest
+                    @if($canToggleForumSubscription ?? false)
+                        <button type="button" class="{{ $threadActionButtonClass }}" data-auth-modal-url="/login">Subscribe</button>
+                    @endif
+                @endguest
                 @if($canReplyFromForumPage)
                     <a href="{{ route('threads.create.form', $forum) }}" class="{{ $threadPrimaryActionClass }}">Start New Thread</a>
                 @elseif(auth()->check() && !auth()->user()?->hasVerifiedEmail())

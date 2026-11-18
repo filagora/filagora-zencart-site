@@ -28,6 +28,7 @@
     @endphp
 
     <div class="mx-auto max-w-[1320px] px-6 py-8 md:px-10">
+    @include('partials.site_guest_intro')
     @include('forum.partials.unverified_banner')
     @include('forum.partials.header_nav')
     @include('forum.partials.moderation_queue')

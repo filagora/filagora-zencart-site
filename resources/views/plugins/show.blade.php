@@ -23,6 +23,7 @@
         $canonicalPluginId = (int) ($plugin->legacy_vbulletin_file_id ?? $plugin->getKey());
     @endphp
     <div class="mx-auto max-w-[1320px] px-6 py-8 md:px-10">
+    @include('partials.site_guest_intro')
     @include('plugins.partials.unverified_banner')
     @include('plugins.partials.submissions_paused_banner')
 

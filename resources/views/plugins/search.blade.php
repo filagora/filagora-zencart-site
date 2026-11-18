@@ -16,6 +16,7 @@
     @endphp
 
     <div class="mx-auto max-w-[1100px] px-6 py-8 md:px-10">
+    @include('partials.site_guest_intro')
         <header class="mb-6">
             <h1 class="ui-page-title">Search Plugins</h1>
             <p class="ui-page-subtitle mt-2">
