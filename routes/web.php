@@ -289,7 +289,7 @@ Route::post('/webhooks/mailgun', MailgunWebhookController::class)->name('webhook
 Route::post('/webhooks/mailtrap', MailtrapWebhookController::class)->name('webhooks.mailtrap');
 
 Route::get('/docs/api/plugin-marketplace', [ApiDocsController::class, 'pluginMarketplace'])->name('docs.api.plugin-marketplace');
-Route::get('/docs/api/plugin-marketplace/openapi.yaml', [ApiDocsController::class, 'pluginMarketplaceSpec'])->name('docs.api.plugin-marketplace.spec');
+Route::get('/docs/api/plugin-marketplace/openapi', [ApiDocsController::class, 'pluginMarketplaceSpec'])->name('docs.api.plugin-marketplace.spec');
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 Route::get('/plugins', [PluginLibraryController::class, 'index'])->name('plugins.index');
 Route::get('/plugins/search', [PluginLibraryController::class, 'search'])->name('plugins.search');

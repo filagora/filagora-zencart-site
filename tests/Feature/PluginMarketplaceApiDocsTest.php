@@ -45,6 +45,14 @@ class PluginMarketplaceApiDocsTest extends TestCase
             ->assertSee('/api/v1/plugins:');
     }
 
+    public function test_the_spec_url_has_no_file_extension_because_the_web_server_answers_those_itself(): void
+    {
+        // On production nginx answers a .yaml path with its own 404 before the request reaches PHP, so
+        // the docs page, which loads the spec from this URL, showed nothing. An extensionless path
+        // reaches the application.
+        $this->assertSame('', pathinfo((string) parse_url(route('docs.api.plugin-marketplace.spec'), PHP_URL_PATH), PATHINFO_EXTENSION));
+    }
+
     public function test_the_spec_describes_the_api_routes_the_site_really_serves_and_only_those(): void
     {
         $documented = [];
