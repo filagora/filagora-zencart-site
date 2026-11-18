@@ -2267,16 +2267,16 @@
         },
         {
             "name": "filagora/filagora-plugins",
-            "version": "v0.5.0",
+            "version": "v0.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-plugins.git",
-                "reference": "fa9d27f9839c926a21772bb7a8f9b8b7c87ded62"
+                "reference": "aa5bc94bba6b399e28d97ecbb38f26b52b80f38d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-plugins/zipball/fa9d27f9839c926a21772bb7a8f9b8b7c87ded62",
-                "reference": "fa9d27f9839c926a21772bb7a8f9b8b7c87ded62",
+                "url": "https://api.github.com/repos/filagora/filagora-plugins/zipball/aa5bc94bba6b399e28d97ecbb38f26b52b80f38d",
+                "reference": "aa5bc94bba6b399e28d97ecbb38f26b52b80f38d",
                 "shasum": ""
             },
             "require": {
@@ -2321,9 +2321,9 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-plugins/issues",
-                "source": "https://github.com/filagora/filagora-plugins/tree/v0.5.0"
+                "source": "https://github.com/filagora/filagora-plugins/tree/v0.5.1"
             },
-            "time": "2026-11-18T11:38:52+00:00"
+            "time": "2026-11-18T14:51:54+00:00"
         },
         {
             "name": "filagora/filagora-plugins-security",
