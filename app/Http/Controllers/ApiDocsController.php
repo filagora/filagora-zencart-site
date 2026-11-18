@@ -11,6 +11,9 @@ class ApiDocsController extends Controller
     {
         $specUrl = route('docs.api.plugin-marketplace.spec');
         $escapedSpecUrl = e($specUrl);
+        // Served from this site: the Content-Security-Policy does not allow Redoc's CDN (see
+        // public/assets/js/redoc/README.txt).
+        $redocUrl = e(asset('assets/js/redoc/redoc.standalone-2.5.4.js'));
 
         return response(<<<HTML
 <!DOCTYPE html>
@@ -79,7 +82,7 @@ class ApiDocsController extends Controller
 
     <div id="redoc-container"></div>
 
-    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+    <script src="{$redocUrl}"></script>
     <script>
         Redoc.init({$this->jsonLiteral($specUrl)}, {
             hideDownloadButton: false,

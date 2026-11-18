@@ -31,8 +31,25 @@ class PluginMarketplaceApiDocsTest extends TestCase
 
         $response->assertOk()
             ->assertSee('Plugin Marketplace API')
-            ->assertSee(route('docs.api.plugin-marketplace.spec'), false)
-            ->assertSee('cdn.redoc.ly', false);
+            ->assertSee(route('docs.api.plugin-marketplace.spec'), false);
+    }
+
+    public function test_the_docs_page_loads_only_scripts_from_this_site_because_the_security_policy_allows_no_other_for_it(): void
+    {
+        // The site's Content-Security-Policy (sent by the web server) allows scripts from a short list of
+        // hosts, and Redoc's CDN is not on it: loaded from there, the page drew nothing but its header.
+        $html = $this->get(route('docs.api.plugin-marketplace'))->getContent();
+
+        preg_match_all('/<script[^>]+src="([^"]+)"/', $html, $matches);
+
+        $this->assertNotEmpty($matches[1]);
+
+        foreach ($matches[1] as $src) {
+            $this->assertStringStartsWith(rtrim(config('app.url'), '/').'/', $src, "{$src} is not served from this site.");
+        }
+
+        $this->assertFileExists(public_path('assets/js/redoc/redoc.standalone-2.5.4.js'));
+        $this->assertStringContainsString('redoc.standalone-2.5.4.js', $html);
     }
 
     public function test_plugin_marketplace_openapi_spec_route_returns_yaml(): void
