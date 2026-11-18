@@ -6,6 +6,7 @@ use App\Filament\Auth\Responses\LoginResponse as AppLoginResponse;
 use App\Filament\Auth\Responses\RegistrationResponse as AppRegistrationResponse;
 use App\Forum\BugReportsFeature;
 use App\Forum\ReportedPostUrl;
+use App\Listeners\LogApiChange;
 use App\Listeners\SendBugReportNotification;
 use App\Listeners\SendForumThreadNotifications;
 use App\Listeners\SendPluginMail;
@@ -64,6 +65,7 @@ use Filagora\Newsletters\Jobs\SendCampaignEmail;
 use Filagora\Notifications\Category;
 use Filagora\Notifications\Enums\NotificationChannel;
 use Filagora\Notifications\NotificationCategories;
+use Filagora\Plugins\Events\ApiChangeMade;
 use Filagora\Plugins\Events\PluginModerated;
 use Filagora\Plugins\Events\PluginReported;
 use Filagora\Plugins\Events\PluginReportReviewed;
@@ -256,6 +258,9 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(PrivacyRequestSubmitted::class, [SendPrivacyMail::class, 'submitted']);
         Event::listen(PrivacyRequestStatusChanged::class, [SendPrivacyMail::class, 'statusChanged']);
         Event::listen(PrivacyReplySent::class, [SendPrivacyMail::class, 'replied']);
+
+        // Every change made through the plugin API is written to its own log with the key it came with.
+        Event::listen(ApiChangeMade::class, [LogApiChange::class, 'record']);
 
         // The site's own plugin mail, in place of the plugins package's.
         Event::listen(PluginSubmitted::class, [SendPluginMail::class, 'pluginSubmitted']);

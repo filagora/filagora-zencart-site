@@ -180,6 +180,18 @@ return [
             'days' => env('PAYPAL_LOG_DAYS', 90),
         ],
 
+        /*
+         * Who changed what through the plugin API, and with which key (App\Listeners\LogApiChange):
+         * the person, the plugin, the token's id, the address it came from. For tracing a leaked or
+         * abused key, so it is kept apart from the main stack and held for 90 days.
+         */
+        'api-audit' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/api-audit.log'),
+            'level' => 'info',
+            'days' => env('API_AUDIT_LOG_DAYS', 90),
+        ],
+
         'backup' => [
             'driver' => 'daily',
             'path' => storage_path('logs/backup.log'),
