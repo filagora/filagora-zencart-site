@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a5dd4ab98769bd8b01015d7f0b804ae6",
+    "content-hash": "6e6f9cc2418ed6619fbf3935a2ed17c1",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -2267,16 +2267,16 @@
         },
         {
             "name": "filagora/filagora-plugins",
-            "version": "v0.5.1",
+            "version": "v0.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-plugins.git",
-                "reference": "aa5bc94bba6b399e28d97ecbb38f26b52b80f38d"
+                "reference": "5a3aefd327a7c1c88d6fad846469e792196adc2b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-plugins/zipball/aa5bc94bba6b399e28d97ecbb38f26b52b80f38d",
-                "reference": "aa5bc94bba6b399e28d97ecbb38f26b52b80f38d",
+                "url": "https://api.github.com/repos/filagora/filagora-plugins/zipball/5a3aefd327a7c1c88d6fad846469e792196adc2b",
+                "reference": "5a3aefd327a7c1c88d6fad846469e792196adc2b",
                 "shasum": ""
             },
             "require": {
@@ -2321,28 +2321,28 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-plugins/issues",
-                "source": "https://github.com/filagora/filagora-plugins/tree/v0.5.1"
+                "source": "https://github.com/filagora/filagora-plugins/tree/v0.6.0"
             },
-            "time": "2026-11-18T14:51:54+00:00"
+            "time": "2026-11-18T16:11:33+00:00"
         },
         {
             "name": "filagora/filagora-plugins-security",
-            "version": "v0.1.6",
+            "version": "v0.1.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-plugins-security.git",
-                "reference": "4282f8d179e0640ddc7326ee2c7b4ba30816a542"
+                "reference": "659fec3ffc9a9039a579a70f94a14aa20d53a7a4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-plugins-security/zipball/4282f8d179e0640ddc7326ee2c7b4ba30816a542",
-                "reference": "4282f8d179e0640ddc7326ee2c7b4ba30816a542",
+                "url": "https://api.github.com/repos/filagora/filagora-plugins-security/zipball/659fec3ffc9a9039a579a70f94a14aa20d53a7a4",
+                "reference": "659fec3ffc9a9039a579a70f94a14aa20d53a7a4",
                 "shasum": ""
             },
             "require": {
                 "ext-zip": "*",
                 "filagora/filagora-core": "^0.2.2",
-                "filagora/filagora-plugins": "^0.3 || ^0.4 || ^0.5",
+                "filagora/filagora-plugins": ">=0.3 <1.0",
                 "filament/filament": "^5.0",
                 "php": "^8.4"
             },
@@ -2382,9 +2382,9 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-plugins-security/issues",
-                "source": "https://github.com/filagora/filagora-plugins-security/tree/v0.1.6"
+                "source": "https://github.com/filagora/filagora-plugins-security/tree/v0.1.7"
             },
-            "time": "2026-11-18T12:03:36+00:00"
+            "time": "2026-11-18T16:25:24+00:00"
         },
         {
             "name": "filagora/filagora-push",
@@ -2509,16 +2509,16 @@
         },
         {
             "name": "filagora/filagora-zencart",
-            "version": "v0.14.3",
+            "version": "v0.14.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-zencart.git",
-                "reference": "3268c8e9f8101178dd1691ad4c3418393ad939d9"
+                "reference": "67d73c779c801edcfdd87f0b66b9b7e878720b53"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/3268c8e9f8101178dd1691ad4c3418393ad939d9",
-                "reference": "3268c8e9f8101178dd1691ad4c3418393ad939d9",
+                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/67d73c779c801edcfdd87f0b66b9b7e878720b53",
+                "reference": "67d73c779c801edcfdd87f0b66b9b7e878720b53",
                 "shasum": ""
             },
             "require": {
@@ -2531,7 +2531,7 @@
                 "filagora/filagora-messages": "^0.3",
                 "filagora/filagora-newsletters": "^0.1",
                 "filagora/filagora-notifications": "^0.1",
-                "filagora/filagora-plugins": "^0.3 || ^0.4 || ^0.5",
+                "filagora/filagora-plugins": ">=0.3 <1.0",
                 "php": "^8.4",
                 "symfony/yaml": "^8.1"
             },
@@ -2589,10 +2589,10 @@
                 "zen-cart"
             ],
             "support": {
-                "source": "https://github.com/filagora/filagora-zencart/tree/v0.14.3",
+                "source": "https://github.com/filagora/filagora-zencart/tree/v0.14.4",
                 "issues": "https://github.com/filagora/filagora-zencart/issues"
             },
-            "time": "2026-11-18T12:15:49+00:00"
+            "time": "2026-11-18T16:46:28+00:00"
         },
         {
             "name": "filament/actions",
