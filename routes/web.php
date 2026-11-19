@@ -46,6 +46,7 @@ use App\Http\Controllers\StaffUserImpersonationController;
 use App\Http\Controllers\ThreadAssistController;
 use App\Http\Controllers\ThreadPostingController;
 use App\Http\Controllers\UserAvatarController;
+use App\Http\Controllers\Webhooks\FaiveloWebhookController;
 use App\Http\Controllers\Webhooks\MailgunWebhookController;
 use App\Http\Controllers\Webhooks\MailtrapWebhookController;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -287,6 +288,7 @@ Route::middleware('frontend.verified')->group(function (): void {
 
 Route::post('/webhooks/mailgun', MailgunWebhookController::class)->name('webhooks.mailgun');
 Route::post('/webhooks/mailtrap', MailtrapWebhookController::class)->name('webhooks.mailtrap');
+Route::post('/webhooks/faivelo', FaiveloWebhookController::class)->name('webhooks.faivelo');
 
 Route::get('/docs/api/plugin-marketplace', [ApiDocsController::class, 'pluginMarketplace'])->name('docs.api.plugin-marketplace');
 Route::get('/docs/api/plugin-marketplace/openapi', [ApiDocsController::class, 'pluginMarketplaceSpec'])->name('docs.api.plugin-marketplace.spec');

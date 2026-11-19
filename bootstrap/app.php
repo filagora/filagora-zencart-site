@@ -58,6 +58,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->preventRequestForgery([
             'webhooks/mailgun',
             'webhooks/mailtrap',
+            'webhooks/faivelo',
             // The service worker re-posts a rotated push subscription from a background context
             // with no CSRF token. The controller checks the old endpoint is already on file for
             // the signed-in member, so a forged cross-site request cannot plant its own.

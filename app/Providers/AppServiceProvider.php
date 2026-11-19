@@ -12,6 +12,7 @@ use App\Listeners\SendForumThreadNotifications;
 use App\Listeners\SendPluginMail;
 use App\Listeners\SendPrivacyMail;
 use App\Listeners\SendThreadSubscriptionMail;
+use App\Mail\Transport\FaiveloApiTransport;
 use App\Mail\Transport\MailtrapApiTransport;
 use App\Markdown\BlankLineGapExtension;
 use App\Markdown\ZenCartHtmlTransformer;
@@ -280,6 +281,11 @@ class AppServiceProvider extends ServiceProvider
         Mail::extend('mailtrap', fn (array $config): MailtrapApiTransport => new MailtrapApiTransport(
             $config['token'] ?? config('services.mailtrap.token'),
             $config['endpoint'] ?? config('services.mailtrap.endpoint'),
+        ));
+
+        Mail::extend('faivelo', fn (array $config): FaiveloApiTransport => new FaiveloApiTransport(
+            (string) ($config['key'] ?? config('services.faivelo.key')),
+            (string) ($config['endpoint'] ?? config('services.faivelo.endpoint')),
         ));
 
         Event::listen(ForumStatsChanged::class, fn () => ForumsIndexCache::flushAll());

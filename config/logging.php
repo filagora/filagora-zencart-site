@@ -160,6 +160,13 @@ return [
             'days' => 30,
         ],
 
+        'faivelo' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/faivelo-webhooks.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => 30,
+        ],
+
         'mailtrap' => [
             'driver' => 'daily',
             'path' => storage_path('logs/mailtrap-webhooks.log'),

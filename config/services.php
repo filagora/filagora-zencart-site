@@ -55,6 +55,12 @@ return [
         'webhook_signing_key' => env('MAILGUN_WEBHOOK_SIGNING_KEY'),
     ],
 
+    'faivelo' => [
+        'key' => env('FAIVELO_API_KEY'),
+        'endpoint' => env('FAIVELO_API_ENDPOINT', 'https://faivelo.com/api/v1/emails'),
+        'webhook_signing_key' => env('FAIVELO_WEBHOOK_SIGNING_KEY'),
+    ],
+
     'mailtrap' => [
         'token' => env('MAILTRAP_API_TOKEN'),
         'endpoint' => env('MAILTRAP_API_ENDPOINT', 'https://send.api.mailtrap.io/api/send'),
