@@ -5,14 +5,15 @@
             <div style="flex:1">
                 <div>PHP v{{ PHP_VERSION }}</div>
                 <div>Laravel v{{ Illuminate\Foundation\Application::VERSION }}</div>
-                <div>Filament {{ \Composer\InstalledVersions::getPrettyVersion('filament/filament') }}</div>
-                <div>Livewire {{ \Composer\InstalledVersions::getPrettyVersion('livewire/livewire') }}</div>
+                @foreach ($this->packageVersions()['left'] as $name => $version)
+                    <div>{{ $name }} {{ $version }}</div>
+                @endforeach
             </div>
 
             <div style="flex:1">
-                <div>Scout {{ \Composer\InstalledVersions::getPrettyVersion('laravel/scout') }}</div>
-                <div>Queue Monitor {{ \Composer\InstalledVersions::getPrettyVersion('croustibat/filament-jobs-monitor') }}</div>
-                <div>Permissions {{ \Composer\InstalledVersions::getPrettyVersion('spatie/laravel-permission') }}</div>
+                @foreach ($this->packageVersions()['right'] as $name => $version)
+                    <div>{{ $name }} {{ $version }}</div>
+                @endforeach
             </div>
         </div>
     </x-filament::section>
