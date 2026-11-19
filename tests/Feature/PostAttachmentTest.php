@@ -214,7 +214,7 @@ class PostAttachmentTest extends TestCase
         ]);
         Storage::disk('local')->put($attachment->storage_path, 'bytes');
 
-        $this->get(route('post.attachments.show', $attachment))->assertForbidden();
+        $this->get(route('post.attachments.show', $attachment), ['Accept' => 'image/avif,image/webp,*/*;q=0.8'])->assertForbidden();
     }
 
     public function test_new_attachment_show_route_works_for_public_forum(): void

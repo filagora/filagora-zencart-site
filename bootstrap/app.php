@@ -12,13 +12,16 @@ use App\Http\Middleware\RepairLegacyPathEncoding;
 use App\Http\Middleware\RequestTimingMiddleware;
 use App\Http\SubsystemRoutes;
 use App\Support\TrustedHosts;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\ValidatePathEncoding;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -85,6 +88,26 @@ return Application::configure(basePath: dirname(__DIR__))
             if (app()->bound('honeybadger')) {
                 app('honeybadger')->notify($e, app('request'));
             }
+        });
+        // A signed-out visitor (e.g. logged out while on a staff-only page) who hits a
+        // permission-gated page should be asked to log in, not shown a 403.
+        $exceptions->render(static function (HttpExceptionInterface|AuthorizationException $e, Request $request) {
+            $isForbidden = $e instanceof AuthorizationException
+                || ($e instanceof HttpExceptionInterface && $e->getStatusCode() === 403 && ! $e instanceof InvalidSignatureException);
+
+            $isPageNavigation = $request->isMethod('GET')
+                && $request->bearerToken() === null
+                && ! $request->expectsJson()
+                && str_contains((string) $request->header('Accept'), 'text/html');
+
+            if (! $isForbidden || ! $isPageNavigation || $request->user() !== null) {
+                return null;
+            }
+
+            return redirect('/?'.http_build_query([
+                'auth' => 'login',
+                'intended' => '/'.ltrim($request->getRequestUri(), '/'),
+            ]))->header('Cache-Control', 'no-store, private');
         });
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),

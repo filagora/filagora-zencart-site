@@ -91,7 +91,7 @@ class LegacyAttachmentDownloadTest extends TestCase
         [$attachment] = $this->seedAttachment(ForumVisibility::STAFF_ONLY);
         Storage::disk('local')->put((string) $attachment->storage_path, 'secret');
 
-        $this->get('/attachment.php?attachmentid='.$attachment->legacy_attachment_id)
+        $this->get('/attachment.php?attachmentid='.$attachment->legacy_attachment_id, ['Accept' => 'image/avif,image/webp,*/*;q=0.8'])
             ->assertForbidden();
     }
 
