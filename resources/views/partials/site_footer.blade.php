@@ -24,7 +24,7 @@
             @endif
 
             <section class="xl:col-span-2">
-                <h3 class="ui-footer-heading">Useful Links</h3>
+                <h3 class="ui-footer-heading">{{ $footerUsefulMenuTitle ?? 'Useful Links' }}</h3>
                 <ul class="ui-footer-link-list mt-4">
                     @foreach(($footerUsefulMenuItems ?? []) as $item)
                         @continue(!is_string($item['url'] ?? null) || $item['url'] === '')
@@ -43,7 +43,7 @@
             </section>
 
             <section class="xl:col-span-2">
-                <h3 class="ui-footer-heading">Legal</h3>
+                <h3 class="ui-footer-heading">{{ $footerLegalMenuTitle ?? 'Legal' }}</h3>
                 <ul class="ui-footer-link-list mt-4">
                     @foreach(($footerLegalMenuItems ?? []) as $item)
                         @continue(!is_string($item['url'] ?? null) || $item['url'] === '')

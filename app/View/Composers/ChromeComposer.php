@@ -115,6 +115,8 @@ class ChromeComposer
             'userMenuItems' => $this->cms->navigationItems('user_menu'),
             'footerUsefulMenuItems' => $this->cms->navigationItems('footer_useful'),
             'footerLegalMenuItems' => $this->cms->navigationItems('footer_legal'),
+            'footerUsefulMenuTitle' => $this->cms->navigationTitle('footer_useful'),
+            'footerLegalMenuTitle' => $this->cms->navigationTitle('footer_legal'),
             'footerGithubBlockHtml' => $githubHtml,
             'footerNewsletterBlockHtml' => is_array($newsletterBlock?->data) ? (string) ($newsletterBlock->data['html'] ?? '') : '',
             'footerGithubLogoUrl' => $githubLogoUrl,

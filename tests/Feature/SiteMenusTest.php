@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Filagora\Cms\Models\CmsNavigation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\Concerns\SeedsSitePages;
 use Tests\TestCase;
 
@@ -41,5 +42,31 @@ class SiteMenusTest extends TestCase
             ->assertOk()
             ->assertSee('Privacy Policy')
             ->assertSee('Cookie Policy');
+    }
+
+    public function test_the_footer_headings_are_the_ones_the_live_site_shows(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSeeInOrder(['Useful Links', 'Legal', 'Newsletter']);
+    }
+
+    public function test_staff_can_rename_a_footer_heading_on_its_menu(): void
+    {
+        CmsNavigation::query()->where('name', 'footer_legal')->update(['title' => 'Policies']);
+        Cache::flush();
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Policies')
+            ->assertDontSee('>Legal<', false);
+    }
+
+    public function test_a_footer_menu_with_no_heading_keeps_the_templates_own(): void
+    {
+        CmsNavigation::query()->where('name', 'footer_legal')->update(['title' => null]);
+        Cache::flush();
+
+        $this->get('/')->assertOk()->assertSee('Legal');
     }
 }
