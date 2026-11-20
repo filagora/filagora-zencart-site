@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6e6f9cc2418ed6619fbf3935a2ed17c1",
+    "content-hash": "a74e3916ce76519312a96419450270c1",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1594,16 +1594,16 @@
         },
         {
             "name": "filagora/filagora-cms",
-            "version": "v0.3.6",
+            "version": "v0.3.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-cms.git",
-                "reference": "23b2949a03b969fdd2564fe09f99a355ce58ba7e"
+                "reference": "b1956d0656fac3c178a40eecf61d577bb1cbe608"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-cms/zipball/23b2949a03b969fdd2564fe09f99a355ce58ba7e",
-                "reference": "23b2949a03b969fdd2564fe09f99a355ce58ba7e",
+                "url": "https://api.github.com/repos/filagora/filagora-cms/zipball/b1956d0656fac3c178a40eecf61d577bb1cbe608",
+                "reference": "b1956d0656fac3c178a40eecf61d577bb1cbe608",
                 "shasum": ""
             },
             "require": {
@@ -1652,9 +1652,9 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-cms/issues",
-                "source": "https://github.com/filagora/filagora-cms/tree/v0.3.6"
+                "source": "https://github.com/filagora/filagora-cms/tree/v0.3.7"
             },
-            "time": "2026-11-14T10:33:14+00:00"
+            "time": "2026-11-20T17:20:24+00:00"
         },
         {
             "name": "filagora/filagora-compliance",
