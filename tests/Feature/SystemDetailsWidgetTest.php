@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Filament\Widgets\SystemDetailsWidget;
 use App\Models\User;
-use Composer\InstalledVersions;
 use Filagora\Entitlements\Models\UserEntitlementGrant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -15,9 +14,9 @@ class SystemDetailsWidgetTest extends TestCase
 {
     use RefreshDatabase, SeedsSitePages;
 
-    public function test_widget_renders_when_an_optional_package_is_not_installed(): void
+    public function test_widget_shows_the_search_engine_in_use(): void
     {
-        $this->assertFalse(InstalledVersions::isInstalled('laravel/scout'));
+        config(['filagora-search.engine' => 'meilisearch']);
 
         $user = User::factory()->create();
         UserEntitlementGrant::query()->create([
@@ -30,6 +29,7 @@ class SystemDetailsWidgetTest extends TestCase
 
         Livewire::test(SystemDetailsWidget::class)
             ->assertOk()
-            ->assertSee('Scout not installed');
+            ->assertSee('Search engine meilisearch')
+            ->assertDontSee('Scout');
     }
 }

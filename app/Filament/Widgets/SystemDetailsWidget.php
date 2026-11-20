@@ -33,9 +33,9 @@ class SystemDetailsWidget extends Widget
                 'Livewire' => $this->versionOf('livewire/livewire'),
             ],
             'right' => [
-                'Scout' => $this->versionOf('laravel/scout'),
+                'Filagora Search' => $this->versionOf('filagora/filagora-search'),
+                'Search engine' => (string) config('filagora-search.engine'),
                 'Queue Monitor' => $this->versionOf('croustibat/filament-jobs-monitor'),
-                'Permissions' => $this->versionOf('spatie/laravel-permission'),
             ],
         ];
     }
