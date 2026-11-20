@@ -258,7 +258,7 @@
                                     @endif
                                     @if($viewerIsStaff && filled($releaseAuthorUser->email))
                                         <a
-                                            href="mailto:{{ $releaseAuthorUser->email }}"
+                                            href="mailto:{{ $releaseAuthorUser->email }}?subject={{ rawurlencode($plugin->name) }}"
                                             class="ml-1 inline-flex items-center rounded-pill border border-[#cabca8] bg-white px-2 py-0.5 text-[11px] font-semibold text-[#304458] transition hover:border-[#8f3f1f] hover:text-[#8f3f1f]"
                                         >Email</a>
                                     @endif

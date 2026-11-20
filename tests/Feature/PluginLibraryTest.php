@@ -510,7 +510,7 @@ class PluginLibraryTest extends TestCase
         $this->actingAs($staff)
             ->get(route('plugins.show', $plugin))
             ->assertOk()
-            ->assertSee('mailto:release-author@example.test', false);
+            ->assertSee('mailto:release-author@example.test?subject='.rawurlencode($plugin->name), false);
 
         $this->actingAs($regularViewer)
             ->get(route('plugins.show', $plugin))
