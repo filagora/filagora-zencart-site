@@ -7,6 +7,7 @@
     $primaryUrl = trim((string) ($payload['primary_url'] ?? ''));
     $secondaryLabel = trim((string) ($payload['secondary_label'] ?? ''));
     $secondaryUrl = trim((string) ($payload['secondary_url'] ?? ''));
+    $titleIsLong = mb_strlen($title) > 40;
 @endphp
 
 <section class="overflow-hidden bg-[color:var(--color-site-bg)]" data-home-reveal>
@@ -16,7 +17,7 @@
                 <p class="ui-eyebrow" data-home-hero-reveal data-home-delay="20">{{ $eyebrow }}</p>
             @endif
             @if($title !== '')
-                <h1 class="ui-fluid-title mt-4 max-w-[10ch]" data-home-hero-reveal data-home-delay="60">
+                <h1 @class(['ui-fluid-title mt-4', 'max-w-[10ch]' => ! $titleIsLong, 'ui-fluid-title--long max-w-[22ch]' => $titleIsLong]) data-home-hero-reveal data-home-delay="60">
                     {{ $title }}
                 </h1>
             @endif

@@ -518,6 +518,12 @@ summary,
         text-wrap: balance;
     }
 
+    .ui-fluid-title--long {
+        font-size: clamp(1.9rem, 3.4vw, 3rem);
+        line-height: 1.04;
+        letter-spacing: -0.035em;
+    }
+
     .ui-fluid-subtitle {
         font-size: clamp(1.05rem, 2vw, 1.45rem);
         line-height: 1.7;
