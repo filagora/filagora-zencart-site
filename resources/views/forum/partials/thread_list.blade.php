@@ -90,7 +90,7 @@
                         <div class="min-w-0 flex-1">
                             <div class="inline-flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                                 @if($thread->is_pinned)
-                                    <span class="text-[11px] font-semibold text-[#8f3f1f]">Sticky</span>
+                                    <span class="text-[11px] font-semibold text-[#8f3f1f]">Pinned</span>
                                 @endif
                                 @if($thread->is_locked)
                                     <span class="text-[11px] font-semibold text-[#8f3f1f]">Locked</span>

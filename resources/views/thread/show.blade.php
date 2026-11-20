@@ -45,7 +45,7 @@
                 <h1 class="text-3xl font-semibold text-[#0f2133]">{{ $decodedThreadTitle }}</h1>
                 <div class="mt-2 inline-flex flex-wrap items-center gap-2">
                     @if($thread->is_pinned)
-                        <span class="{{ $threadPinBadgeClass }}">Sticky</span>
+                        <span class="{{ $threadPinBadgeClass }}">Pinned</span>
                     @endif
                     @if($thread->is_locked)
                         <span class="{{ $threadPinBadgeClass }}">Locked</span>

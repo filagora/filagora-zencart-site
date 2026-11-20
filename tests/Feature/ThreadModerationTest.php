@@ -508,12 +508,12 @@ class ThreadModerationTest extends TestCase
 
         $forumResponse = $this->actingAs($user)->get(route('forums.show', $forum));
         $forumResponse->assertOk();
-        $forumResponse->assertSee('Sticky');
+        $forumResponse->assertSee('Pinned');
         $forumResponse->assertSee('Locked');
 
         $threadResponse = $this->actingAs($user)->get(route('threads.show', $thread));
         $threadResponse->assertOk();
-        $threadResponse->assertSee('Sticky');
+        $threadResponse->assertSee('Pinned');
         $threadResponse->assertSee('Locked');
         $threadResponse->assertSee('This thread is locked. New replies are disabled.');
     }
