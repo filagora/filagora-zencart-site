@@ -165,6 +165,29 @@ class CmsPreviewSessionTest extends TestCase
             ->assertSessionMissing(PreviewSession::SESSION_KEY);
     }
 
+    public function test_an_editor_can_compare_the_draft_with_the_live_page_at_the_same_address(): void
+    {
+        $page = $this->pageWithDraft('faq', 'Live copy', 'Draft copy');
+        $session = $this->previewSession(pages: [$page->id]);
+
+        $this->withSession($session)
+            ->get('/pages/faq')
+            ->assertSee('Draft copy')
+            ->assertSee('View live version')
+            ->assertSee(e(url('/pages/faq?preview=off')), false);
+
+        $this->withSession($session)
+            ->get('/pages/faq?preview=off')
+            ->assertSee('Live copy')
+            ->assertDontSee('Draft copy')
+            ->assertDontSee('Previewing unpublished changes')
+            ->assertSee('You are viewing the live version of this page.')
+            ->assertSee('Back to preview')
+            ->assertHeader('Cache-Control', 'no-store, private');
+
+        $this->withSession($session)->get('/pages/faq')->assertSee('Draft copy');
+    }
+
     public function test_the_preview_session_grants_nothing_without_the_right_entitlement(): void
     {
         $page = $this->pageWithDraft('faq', 'Live copy', 'Draft copy');

@@ -70,18 +70,30 @@
 @php
     $previewSession = app(\Filagora\Cms\Preview\PreviewSession::class);
     $previewItems = $previewSession->items();
+    $previewLiveUrl = \App\Support\CmsPreviewLinks::live(request());
+    $previewStoredInSession = session()->has(\Filagora\Cms\Preview\PreviewSession::SESSION_KEY) || session()->has(\Filagora\Cms\Preview\PreviewSession::SHARE_SESSION_KEY);
 @endphp
-@if($previewItems !== [] && $previewSession->isShared())
+@if($previewSession->isViewingLive() && $previewStoredInSession)
+    <div role="status" style="background:#334155;color:#fff;padding:8px 16px;font:600 14px/1.4 system-ui,sans-serif;text-align:center">
+        You are viewing the live version of this page.
+        <a href="{{ \App\Support\CmsPreviewLinks::withoutPreviewParameter(request()) }}" style="margin-left:8px;color:#fff;text-decoration:underline;font:inherit">Back to preview</a>
+    </div>
+@elseif($previewItems !== [] && $previewSession->isShared())
     <div role="status" style="background:#7c2d12;color:#fff;padding:8px 16px;font:600 14px/1.4 system-ui,sans-serif;text-align:center">
         Shared preview of unpublished changes{{ $previewSession->sharedUntil() ? ' (link expires ' . $previewSession->sharedUntil()->format('j M Y H:i') . ')' : '' }}.
         Visitors still see the published site.
         @foreach($previewItems as $previewItem)
             <span style="background:rgba(255,255,255,.18);border-radius:4px;padding:2px 8px;margin:0 4px">{{ $previewItem['label'] }}@if($previewItem['active']) &middot; {{ $previewItem['active'] }}@endif</span>
         @endforeach
-        <form method="post" action="{{ route('cms.preview.share.exit') }}" style="display:inline">
-            @csrf
-            <button type="submit" style="margin-left:8px;background:#fff;color:#7c2d12;border:0;border-radius:4px;padding:2px 10px;font:inherit;cursor:pointer">Exit preview</button>
-        </form>
+        @if($previewSession->isFromUrl())
+            <a href="{{ \App\Support\CmsPreviewLinks::withoutPreviewParameter(request()) }}" style="margin-left:8px;color:#fff;text-decoration:underline;font:inherit">View live version</a>
+        @else
+            <a href="{{ $previewLiveUrl }}" style="margin-left:8px;color:#fff;text-decoration:underline;font:inherit">View live version</a>
+            <form method="post" action="{{ route('cms.preview.share.exit') }}" style="display:inline">
+                @csrf
+                <button type="submit" style="margin-left:8px;background:#fff;color:#7c2d12;border:0;border-radius:4px;padding:2px 10px;font:inherit;cursor:pointer">Exit preview</button>
+            </form>
+        @endif
     </div>
 @elseif($previewItems !== [])
     <div role="status" style="background:#7c2d12;color:#fff;padding:8px 16px;font:600 14px/1.4 system-ui,sans-serif;text-align:center">
@@ -115,6 +127,7 @@
                 </form>
             @endif
         @endforeach
+        <a href="{{ $previewLiveUrl }}" style="margin-left:8px;color:#fff;text-decoration:underline;font:inherit">View live version</a>
         <form method="post" action="{{ route('cms.preview.stop') }}" style="display:inline">
             @csrf
             <input type="hidden" name="return" value="{{ request()->getRequestUri() }}">

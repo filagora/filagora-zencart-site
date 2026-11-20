@@ -7,6 +7,7 @@ use Filagora\Cms\Enums\CmsPageStatus;
 use Filagora\Cms\Models\CmsNavigation;
 use Filagora\Cms\Models\CmsPage;
 use Filagora\Cms\Models\CmsPreviewShare;
+use Filagora\Cms\Preview\PreviewSession;
 use Filagora\Cms\Preview\PreviewShares;
 use Filagora\Cms\Services\NavigationDrafts;
 use Filagora\Cms\Services\PageDrafts;
@@ -138,6 +139,59 @@ class CmsPreviewShareTest extends TestCase
 
         $this->get($share->url());
         $this->get('/pages/faq')->assertSee('Live copy');
+    }
+
+    public function test_a_token_in_the_address_previews_that_request_only_and_offers_the_live_page(): void
+    {
+        $page = $this->pageWithTwoVariants();
+        $share = $this->share(pages: [$page->id => 'Layout B']);
+        $token = $share->getRawOriginal('token');
+
+        $this->get('/pages/faq?preview='.$token)
+            ->assertOk()
+            ->assertSee('Copy B')
+            ->assertDontSee('Copy A')
+            ->assertSee('Shared preview of unpublished changes')
+            ->assertSee('View live version')
+            ->assertDontSee('Exit preview')
+            ->assertSee('href="'.url('/pages/faq').'"', false)
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertHeader('Referrer-Policy', 'no-referrer')
+            ->assertSessionMissing(PreviewSession::SHARE_SESSION_KEY);
+
+        $this->get('/pages/faq')->assertSee('Live copy')->assertDontSee('Copy B')->assertDontSee('Shared preview');
+        $this->assertSame(0, $share->fresh()->open_count);
+    }
+
+    public function test_a_link_holder_can_view_the_live_page_for_one_request_and_return_to_the_preview(): void
+    {
+        $page = $this->pageWithTwoVariants();
+        $share = $this->share(pages: [$page->id => 'Layout B']);
+        $this->get($share->url());
+
+        $this->get('/pages/faq')
+            ->assertSee('Copy B')
+            ->assertSee('View live version')
+            ->assertSee(e(url('/pages/faq?preview=off')), false);
+
+        $this->get('/pages/faq?preview=off')
+            ->assertSee('Live copy')
+            ->assertDontSee('Copy B')
+            ->assertSee('You are viewing the live version of this page.')
+            ->assertSee('Back to preview')
+            ->assertHeader('X-Robots-Tag', 'noindex, nofollow');
+
+        $this->get('/pages/faq')->assertSee('Copy B');
+    }
+
+    public function test_the_live_notice_is_not_shown_to_a_visitor_with_no_preview(): void
+    {
+        $this->pageWithTwoVariants();
+
+        $this->get('/pages/faq?preview=off')
+            ->assertOk()
+            ->assertSee('Live copy')
+            ->assertDontSee('You are viewing the live version');
     }
 
     private function pageWithTwoVariants(): CmsPage
