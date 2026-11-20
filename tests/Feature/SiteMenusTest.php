@@ -51,6 +51,12 @@ class SiteMenusTest extends TestCase
             ->assertSeeInOrder(['Useful Links', 'Legal', 'Newsletter']);
     }
 
+    public function test_a_new_site_has_the_footer_headings_set_on_their_menus(): void
+    {
+        $this->assertSame('Useful Links', CmsNavigation::query()->where('name', 'footer_useful')->value('title'));
+        $this->assertSame('Legal', CmsNavigation::query()->where('name', 'footer_legal')->value('title'));
+    }
+
     public function test_staff_can_rename_a_footer_heading_on_its_menu(): void
     {
         CmsNavigation::query()->where('name', 'footer_legal')->update(['title' => 'Policies']);
