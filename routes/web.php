@@ -246,15 +246,11 @@ Route::permanentRedirect('/comparison', '/compare')->name('comparison');
 Route::get('/preview/{token}', [CmsPreviewShareController::class, 'open'])
     ->middleware('throttle:30,1')
     ->name('cms.preview.share.open');
-Route::post('/preview-exit', [CmsPreviewShareController::class, 'exit'])->name('cms.preview.share.exit');
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/staff/cms/pages/{page}/preview', [CmsPreviewController::class, 'page'])->name('cms.pages.preview');
     Route::get('/staff/cms/pages/{page}/preview/start', [CmsPreviewSessionController::class, 'startPage'])->name('cms.pages.preview.start');
     Route::get('/staff/cms/navigations/{navigation}/preview', [CmsPreviewSessionController::class, 'startNavigation'])->name('cms.navigations.preview');
-    Route::post('/staff/cms/preview/remove', [CmsPreviewSessionController::class, 'remove'])->name('cms.preview.remove');
-    Route::post('/staff/cms/preview/variant', [CmsPreviewSessionController::class, 'switchVariant'])->name('cms.preview.variant');
-    Route::post('/staff/cms/preview/stop', [CmsPreviewSessionController::class, 'stop'])->name('cms.preview.stop');
     Route::get('/staff/cms/blocks/{block}/preview', [CmsPreviewController::class, 'block'])
         ->withoutScopedBindings()
         ->name('cms.blocks.preview');

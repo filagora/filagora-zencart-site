@@ -6,7 +6,8 @@ use App\Models\User;
 use Filagora\Cms\Enums\CmsPageStatus;
 use Filagora\Cms\Models\CmsNavigation;
 use Filagora\Cms\Models\CmsPage;
-use Filagora\Cms\Preview\PreviewSession;
+use Filagora\Cms\Models\CmsPreviewShare;
+use Filagora\Cms\Preview\PreviewShares;
 use Filagora\Cms\Services\NavigationDrafts;
 use Filagora\Cms\Services\PageDrafts;
 use Filagora\Entitlements\Models\UserEntitlementGrant;
@@ -30,23 +31,45 @@ class CmsPreviewSessionTest extends TestCase
         $this->actingAs($this->staff);
     }
 
-    public function test_previewing_a_page_opens_it_at_its_public_url_and_serves_its_draft(): void
+    public function test_previewing_a_page_opens_it_at_its_public_url_with_a_link_to_its_working_draft(): void
     {
         $page = $this->pageWithDraft('faq', 'Live copy', 'Draft copy');
 
-        $this->get(route('cms.pages.preview.start', $page))
-            ->assertRedirect(route('cms.pages.show', 'faq'))
-            ->assertSessionHas(PreviewSession::SESSION_KEY, ['navigations' => [], 'pages' => [$page->id => true]]);
+        $response = $this->get(route('cms.pages.preview.start', $page));
+        $share = CmsPreviewShare::query()->latest('id')->firstOrFail();
+        $token = $share->getRawOriginal('token');
 
-        $this->withSession($this->previewSession(pages: [$page->id]))
-            ->get('/pages/faq')
+        $response->assertRedirect(route('cms.pages.show', 'faq').'?preview='.$token)->assertSessionMissing('cms_preview');
+        $this->assertSame([$page->id => true], $share->pages());
+        $this->assertSame('Editor preview', $share->label);
+        $this->assertSame($this->staff->id, $share->created_by_id);
+
+        $this->get('/pages/faq?preview='.$token)
             ->assertOk()
             ->assertSee('Draft copy')
             ->assertDontSee('Live copy')
             ->assertSee('Previewing unpublished changes');
 
+        // The same address without the token is the original, for the same signed-in editor.
+        $this->get('/pages/faq')->assertSee('Live copy')->assertDontSee('Draft copy')->assertDontSee('Previewing unpublished');
+
         auth()->logout();
         $this->get('/pages/faq')->assertSee('Live copy')->assertDontSee('Draft copy');
+    }
+
+    public function test_the_link_follows_the_working_draft_as_the_editor_keeps_editing(): void
+    {
+        $page = $this->pageWithDraft('faq', 'Live copy', 'First edit');
+        $this->get(route('cms.pages.preview.start', $page));
+        $token = CmsPreviewShare::query()->latest('id')->firstOrFail()->getRawOriginal('token');
+
+        $this->get('/pages/faq?preview='.$token)->assertSee('First edit');
+
+        $page->draftBlocks()->firstOrFail()->update(['data' => ['html' => '<p>Second edit</p>']]);
+
+        $this->get('/pages/faq?preview='.$token)->assertSee('Second edit')->assertDontSee('First edit');
+        $this->get(route('cms.pages.preview.start', $page));
+        $this->assertSame(1, CmsPreviewShare::query()->count());
     }
 
     public function test_a_draft_menu_and_the_draft_pages_it_links_to_preview_together(): void
@@ -60,42 +83,56 @@ class CmsPreviewSessionTest extends TestCase
         ], $this->staff);
 
         // Only the menu and the "linked" page are in the preview.
-        $session = $this->previewSession(menus: ['header'], pages: [$linked->id]);
+        $token = $this->token(menus: ['header'], pages: [$linked->id]);
 
-        $this->withSession($session)->get('/pages/linked')
+        $this->get('/pages/linked?preview='.$token)
             ->assertOk()
             ->assertSee('Draft linked copy')
             ->assertSee('New Section Entry')
             ->assertSee('Other Entry');
 
         // A page that is not in the preview shows its live version, inside the draft menu.
-        $this->withSession($session)->get('/pages/other')
+        $this->get('/pages/other?preview='.$token)
             ->assertOk()
             ->assertSee('Live other copy')
             ->assertDontSee('Draft other copy')
             ->assertSee('New Section Entry');
 
         // Add it, and the same URL now shows its draft.
-        $this->withSession($this->previewSession(menus: ['header'], pages: [$linked->id, $untouched->id]))
-            ->get('/pages/other')
-            ->assertSee('Draft other copy');
+        $both = $this->token(menus: ['header'], pages: [$linked->id, $untouched->id]);
+        $this->get('/pages/other?preview='.$both)->assertSee('Draft other copy');
     }
 
-    public function test_a_page_that_is_not_published_yet_is_visible_only_to_the_staff_previewing_it(): void
+    public function test_links_on_a_previewed_page_keep_the_token_but_not_into_the_staff_area_or_off_site(): void
+    {
+        $page = $this->pageWithDraft('linked', 'Live linked copy', 'Draft linked copy');
+        $menu = $this->headerMenu('Old Entry', '/pages/linked');
+        app(NavigationDrafts::class)->saveDraft($menu, [
+            ['label' => 'Entry', 'type' => 'url', 'url' => '/pages/other', 'target' => '_self'],
+            ['label' => 'Away', 'type' => 'url', 'url' => 'https://other.example/x', 'target' => '_self'],
+        ], $this->staff);
+        $token = $this->token(menus: ['header'], pages: [$page->id]);
+
+        $html = $this->get('/pages/linked?preview='.$token)->assertOk()->getContent();
+
+        $this->assertStringContainsString('href="/pages/other?preview='.$token.'"', $html);
+        $this->assertStringContainsString('href="https://other.example/x"', $html);
+        $this->assertStringNotContainsString('/login?preview=', $html);
+        $this->assertStringNotContainsString('/staff?preview=', $html);
+
+        $plain = $this->get('/pages/linked')->getContent();
+        $this->assertStringNotContainsString('preview='.$token, $plain);
+    }
+
+    public function test_a_page_that_is_not_published_yet_is_visible_only_with_the_token(): void
     {
         $page = $this->pageWithDraft('coming-soon', 'Not live yet', 'Not live yet', status: CmsPageStatus::DRAFT);
+        $token = $this->token(pages: [$page->id]);
 
         auth()->logout();
         $this->get('/pages/coming-soon')->assertNotFound();
-
-        $this->actingAs($this->staff)->withSession($this->previewSession(pages: [$page->id]))
-            ->get('/pages/coming-soon')
-            ->assertOk()
-            ->assertSee('Not live yet');
-
-        $this->actingAs($this->userWith([]))->withSession($this->previewSession(pages: [$page->id]))
-            ->get('/pages/coming-soon')
-            ->assertNotFound();
+        $this->get('/pages/coming-soon?preview=wrong')->assertNotFound();
+        $this->get('/pages/coming-soon?preview='.$token)->assertOk()->assertSee('Not live yet');
     }
 
     public function test_the_home_page_and_custom_route_pages_are_served_from_their_drafts(): void
@@ -119,12 +156,11 @@ class CmsPreviewSessionTest extends TestCase
             $page->forceFill(['seo_title' => 'Live '.$page->slug.' title'])->save();
         }
 
-        $session = $this->previewSession(pages: [$home->id, $about->id]);
+        $token = $this->token(pages: [$home->id, $about->id]);
 
-        $this->withSession($session)->get('/')->assertOk()->assertSee('<title>Draft home title</title>', false);
-        $this->withSession($session)->get('/about')->assertOk()->assertSee('<title>Draft about title</title>', false);
+        $this->get('/?preview='.$token)->assertOk()->assertSee('<title>Draft home title</title>', false);
+        $this->get('/about?preview='.$token)->assertOk()->assertSee('<title>Draft about title</title>', false);
 
-        auth()->logout();
         $this->get('/')->assertOk()->assertSee('<title>Live home title</title>', false);
         $this->get('/about')->assertOk()->assertSee('<title>Live about title</title>', false);
     }
@@ -134,99 +170,63 @@ class CmsPreviewSessionTest extends TestCase
         $page = $this->pageWithDraft('old-slug', 'Live copy', 'Draft copy');
         app(PageDrafts::class)->saveDraftFields($page, ['slug' => 'new-slug']);
 
-        $this->get(route('cms.pages.preview.start', $page))->assertRedirect(route('cms.pages.show', 'new-slug'));
+        $this->get(route('cms.pages.preview.start', $page))
+            ->assertRedirect(route('cms.pages.show', 'new-slug').'?preview='.CmsPreviewShare::query()->latest('id')->firstOrFail()->getRawOriginal('token'));
 
-        $this->withSession($this->previewSession(pages: [$page->id]))
-            ->get('/pages/new-slug')
+        $this->get('/pages/new-slug?preview='.$this->token(pages: [$page->id]))
             ->assertOk()
             ->assertSee('Draft copy');
     }
 
-    public function test_one_item_can_be_removed_and_the_whole_preview_can_be_exited(): void
+    public function test_previewing_a_menu_opens_the_home_page_with_a_link_to_its_working_draft(): void
     {
-        $page = $this->pageWithDraft('faq', 'Live copy', 'Draft copy', title: 'Frequently Asked');
         $menu = $this->headerMenu('Old Entry', '/pages/faq');
-        app(NavigationDrafts::class)->ensureDraft($menu, $this->staff);
+        app(NavigationDrafts::class)->saveDraft($menu, [
+            ['label' => 'Draft Entry', 'type' => 'url', 'url' => '/pages/faq', 'target' => '_self'],
+        ], $this->staff);
 
-        $this->withSession($this->previewSession(menus: ['header'], pages: [$page->id]))
-            ->get('/pages/faq')
-            ->assertSee('header menu')
-            ->assertSee('Frequently Asked')
-            ->assertSee('Exit preview');
+        $response = $this->get(route('cms.navigations.preview', $menu));
+        $share = CmsPreviewShare::query()->latest('id')->firstOrFail();
 
-        $this->withSession($this->previewSession(menus: ['header'], pages: [$page->id]))
-            ->post(route('cms.preview.remove'), ['type' => 'page', 'key' => (string) $page->id, 'return' => '/pages/faq'])
-            ->assertRedirect('/pages/faq')
-            ->assertSessionHas(PreviewSession::SESSION_KEY, ['navigations' => ['header' => true], 'pages' => []]);
+        $response->assertRedirect('/?preview='.$share->getRawOriginal('token'));
+        $this->assertSame(['header' => true], $share->navigations());
 
-        $this->withSession($this->previewSession(menus: ['header'], pages: [$page->id]))
-            ->post(route('cms.preview.stop'), ['return' => '//evil.example'])
-            ->assertRedirect('/')
-            ->assertSessionMissing(PreviewSession::SESSION_KEY);
+        $this->get('/about?preview='.$share->getRawOriginal('token'))->assertSee('Draft Entry')->assertDontSee('Old Entry');
+        $this->get('/about')->assertSee('Old Entry')->assertDontSee('Draft Entry');
     }
 
-    public function test_an_editor_can_compare_the_draft_with_the_live_page_at_the_same_address(): void
-    {
-        $page = $this->pageWithDraft('faq', 'Live copy', 'Draft copy');
-        $session = $this->previewSession(pages: [$page->id]);
-
-        $this->withSession($session)
-            ->get('/pages/faq')
-            ->assertSee('Draft copy')
-            ->assertSee('View live version')
-            ->assertSee(e(url('/pages/faq?preview=off')), false);
-
-        $this->withSession($session)
-            ->get('/pages/faq?preview=off')
-            ->assertSee('Live copy')
-            ->assertDontSee('Draft copy')
-            ->assertDontSee('Previewing unpublished changes')
-            ->assertSee('You are viewing the live version of this page.')
-            ->assertSee('Back to preview')
-            ->assertHeader('Cache-Control', 'no-store, private');
-
-        $this->withSession($session)->get('/pages/faq')->assertSee('Draft copy');
-    }
-
-    public function test_the_preview_session_grants_nothing_without_the_right_entitlement(): void
+    public function test_starting_a_preview_needs_the_right_entitlement(): void
     {
         $page = $this->pageWithDraft('faq', 'Live copy', 'Draft copy');
         $member = $this->userWith([]);
 
         $this->actingAs($member)->get(route('cms.pages.preview.start', $page))->assertForbidden();
-
-        $this->actingAs($member)->withSession($this->previewSession(pages: [$page->id]))
-            ->get('/pages/faq')
-            ->assertSee('Live copy')
-            ->assertDontSee('Draft copy')
-            ->assertDontSee('Previewing unpublished');
+        $this->assertSame(0, CmsPreviewShare::query()->count());
 
         $previewer = $this->userWith(['operator.cms.preview']);
-        $this->actingAs($previewer)->get(route('cms.pages.preview.start', $page))->assertRedirect(route('cms.pages.show', 'faq'));
+        $this->actingAs($previewer)->get(route('cms.pages.preview.start', $page))
+            ->assertRedirectContains(route('cms.pages.show', 'faq').'?preview=');
     }
 
-    public function test_responses_while_previewing_are_never_cacheable_or_indexable(): void
+    public function test_responses_to_a_request_with_a_token_are_never_cacheable_or_indexable(): void
     {
         $page = $this->pageWithDraft('faq', 'Live copy', 'Draft copy');
+        $token = $this->token(pages: [$page->id]);
 
-        $previewing = $this->withSession($this->previewSession(pages: [$page->id]))->get('/pages/faq')->assertOk();
+        $previewing = $this->get('/pages/faq?preview='.$token)->assertOk();
         $this->assertStringContainsString('no-store', (string) $previewing->headers->get('Cache-Control'));
         $this->assertStringContainsString('private', (string) $previewing->headers->get('Cache-Control'));
         $this->assertSame('noindex, nofollow', $previewing->headers->get('X-Robots-Tag'));
+        $this->assertSame('no-referrer', $previewing->headers->get('Referrer-Policy'));
 
-        // The same staff member with nothing in their preview gets ordinary headers.
-        $this->flushSession();
         $ordinary = $this->get('/pages/faq')->assertOk();
         $this->assertStringNotContainsString('no-store', (string) $ordinary->headers->get('Cache-Control'));
         $this->assertNull($ordinary->headers->get('X-Robots-Tag'));
 
-        // A session flag without the entitlement does not change anyone's headers.
-        $this->actingAs($this->userWith([]))->withSession($this->previewSession(pages: [$page->id]))
-            ->get('/pages/faq')
-            ->assertHeaderMissing('X-Robots-Tag');
+        $this->get('/pages/faq?preview=wrong')->assertHeaderMissing('X-Robots-Tag');
     }
 
-    public function test_a_page_without_a_draft_cannot_be_added_to_the_preview(): void
+    public function test_a_page_without_a_draft_cannot_be_previewed(): void
     {
         $page = CmsPage::query()->create([
             'slug' => 'no-draft',
@@ -239,16 +239,14 @@ class CmsPreviewSessionTest extends TestCase
     }
 
     /**
+     * A working-draft link for the signed-in staff member; returns its token.
+     *
      * @param  list<string>  $menus
      * @param  list<int>  $pages
-     * @return array<string, array<string, array<int|string, true>>>
      */
-    private function previewSession(array $menus = [], array $pages = []): array
+    private function token(array $menus = [], array $pages = []): string
     {
-        return [PreviewSession::SESSION_KEY => [
-            'navigations' => array_fill_keys($menus, true),
-            'pages' => array_fill_keys($pages, true),
-        ]];
+        return app(PreviewShares::class)->workingDraft($this->staff, $menus, $pages)->getRawOriginal('token');
     }
 
     private function pageWithDraft(string $slug, string $liveCopy, string $draftCopy, CmsPageStatus $status = CmsPageStatus::PUBLISHED, string $title = 'A Page'): CmsPage

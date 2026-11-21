@@ -7,7 +7,6 @@ use Filagora\Cms\Enums\CmsPageStatus;
 use Filagora\Cms\Models\CmsNavigation;
 use Filagora\Cms\Models\CmsPage;
 use Filagora\Cms\Models\CmsPreviewShare;
-use Filagora\Cms\Preview\PreviewSession;
 use Filagora\Cms\Preview\PreviewShares;
 use Filagora\Cms\Services\NavigationDrafts;
 use Filagora\Cms\Services\PageDrafts;
@@ -36,16 +35,21 @@ class CmsPreviewShareTest extends TestCase
     {
         $page = $this->pageWithTwoVariants();
         $share = $this->share(pages: [$page->id => 'Layout B']);
+        $token = $share->getRawOriginal('token');
 
         $this->get($share->url())
-            ->assertRedirect(route('cms.pages.show', 'faq'))
-            ->assertHeader('X-Robots-Tag', 'noindex, nofollow');
+            ->assertRedirect(route('cms.pages.show', 'faq').'?preview='.$token)
+            ->assertHeader('X-Robots-Tag', 'noindex, nofollow')
+            ->assertHeader('Referrer-Policy', 'no-referrer')
+            ->assertSessionMissing('cms_preview_share');
 
-        $this->get('/pages/faq')
+        $this->get('/pages/faq?preview='.$token)
             ->assertOk()
             ->assertSee('Copy B')
             ->assertDontSee('Copy A')
-            ->assertSee('Shared preview of unpublished changes')
+            ->assertSee('Previewing unpublished changes')
+            ->assertSee('View live version')
+            ->assertSee('Copy link')
             ->assertHeader('X-Robots-Tag', 'noindex, nofollow')
             ->assertHeader('Cache-Control', 'no-store, private');
 
@@ -53,25 +57,48 @@ class CmsPreviewShareTest extends TestCase
         app(PageDrafts::class)->switchVariant($page, 'Main', $this->staff);
         $this->assertSame('Main', app(PageDrafts::class)->activeVariantName($page));
 
-        $this->get('/pages/faq')->assertSee('Copy B')->assertDontSee('Copy A');
+        $this->get('/pages/faq?preview='.$token)->assertSee('Copy B')->assertDontSee('Copy A');
         $this->assertSame(1, $share->fresh()->open_count);
     }
 
-    public function test_a_shared_menu_variant_shows_in_the_header_for_the_visitor_only(): void
+    public function test_the_same_address_without_the_token_is_the_live_page(): void
+    {
+        $page = $this->pageWithTwoVariants();
+        $share = $this->share(pages: [$page->id => 'Layout B']);
+
+        $this->get($share->url());
+
+        $this->get('/pages/faq')
+            ->assertOk()
+            ->assertSee('Live copy')
+            ->assertDontSee('Copy B')
+            ->assertDontSee('Previewing unpublished changes')
+            ->assertHeaderMissing('X-Robots-Tag');
+    }
+
+    public function test_the_banner_offers_the_live_page_at_the_same_address_without_the_token(): void
+    {
+        $page = $this->pageWithTwoVariants();
+        $token = $this->share(pages: [$page->id => 'Layout B'])->getRawOriginal('token');
+
+        $this->get('/pages/faq?tab=1&preview='.$token)
+            ->assertSee('<a data-preview-skip href="'.e(url('/pages/faq?tab=1')).'"', false)
+            ->assertSee('View live version');
+    }
+
+    public function test_a_shared_menu_variant_shows_in_the_header_when_the_token_is_in_the_address(): void
     {
         $menu = CmsNavigation::query()->updateOrCreate(['name' => 'header'], ['items' => $this->items('Live Link')]);
         $service = app(NavigationDrafts::class);
         $service->saveDraft($menu, $this->items('Menu A'), $this->staff);
         $service->createVariant($menu, 'Menu B', false, $this->staff);
         $service->saveDraft($menu, $this->items('Menu B'), $this->staff);
-        $share = $this->share(navigations: ['header' => 'Main']);
+        $token = $this->share(navigations: ['header' => 'Main'])->getRawOriginal('token');
 
         $this->get('/about')->assertDontSee('Menu A')->assertDontSee('Menu B');
 
-        $this->get($share->url())->assertRedirect('/');
-        $this->get('/about')->assertSee('Menu A')->assertDontSee('Menu B')->assertDontSee('Live Link');
+        $this->get('/about?preview='.$token)->assertSee('Menu A')->assertDontSee('Menu B')->assertDontSee('Live Link');
 
-        $this->flushSession();
         $this->get('/about')->assertSee('Live Link')->assertDontSee('Menu A');
     }
 
@@ -84,34 +111,25 @@ class CmsPreviewShareTest extends TestCase
         $expired = $this->share(pages: [$page->id => 'Layout B']);
         $expired->update(['expires_at' => now()->subMinute()]);
         $this->get($expired->url())->assertNotFound();
+        $this->get('/pages/faq?preview='.$expired->getRawOriginal('token'))->assertSee('Live copy')->assertDontSee('Copy B');
 
         $revoked = $this->share(pages: [$page->id => 'Layout B']);
         $revoked->update(['revoked_at' => now()]);
         $this->get($revoked->url())->assertNotFound();
+        $this->get('/pages/faq?preview='.$revoked->getRawOriginal('token'))->assertSee('Live copy')->assertDontSee('Copy B');
     }
 
-    public function test_revoking_a_link_ends_the_preview_for_visitors_already_inside(): void
+    public function test_revoking_a_link_ends_the_preview_at_once(): void
     {
         $page = $this->pageWithTwoVariants();
         $share = $this->share(pages: [$page->id => 'Layout B']);
+        $token = $share->getRawOriginal('token');
 
-        $this->get($share->url());
-        $this->get('/pages/faq')->assertSee('Copy B');
+        $this->get('/pages/faq?preview='.$token)->assertSee('Copy B');
 
         app(PreviewShares::class)->revoke($share);
 
-        $this->get('/pages/faq')->assertSee('Live copy')->assertDontSee('Copy B')->assertDontSee('Shared preview');
-    }
-
-    public function test_exiting_the_preview_returns_the_visitor_to_the_live_site(): void
-    {
-        $page = $this->pageWithTwoVariants();
-        $share = $this->share(pages: [$page->id => 'Layout B']);
-
-        $this->get($share->url());
-        $this->post(route('cms.preview.share.exit'))->assertRedirect('/');
-
-        $this->get('/pages/faq')->assertSee('Live copy')->assertDontSee('Copy B');
+        $this->get('/pages/faq?preview='.$token)->assertSee('Live copy')->assertDontSee('Copy B')->assertDontSee('Previewing unpublished');
     }
 
     public function test_a_link_to_a_missing_variant_cannot_be_created_and_a_deleted_one_falls_back_to_live(): void
@@ -137,61 +155,8 @@ class CmsPreviewShareTest extends TestCase
         app(PageDrafts::class)->switchVariant($page, 'Main', $this->staff);
         app(PageDrafts::class)->deleteVariant($page, 'Layout B');
 
-        $this->get($share->url());
-        $this->get('/pages/faq')->assertSee('Live copy');
-    }
-
-    public function test_a_token_in_the_address_previews_that_request_only_and_offers_the_live_page(): void
-    {
-        $page = $this->pageWithTwoVariants();
-        $share = $this->share(pages: [$page->id => 'Layout B']);
-        $token = $share->getRawOriginal('token');
-
-        $this->get('/pages/faq?preview='.$token)
-            ->assertOk()
-            ->assertSee('Copy B')
-            ->assertDontSee('Copy A')
-            ->assertSee('Shared preview of unpublished changes')
-            ->assertSee('View live version')
-            ->assertDontSee('Exit preview')
-            ->assertSee('href="'.url('/pages/faq').'"', false)
-            ->assertHeader('Cache-Control', 'no-store, private')
-            ->assertHeader('Referrer-Policy', 'no-referrer')
-            ->assertSessionMissing(PreviewSession::SHARE_SESSION_KEY);
-
-        $this->get('/pages/faq')->assertSee('Live copy')->assertDontSee('Copy B')->assertDontSee('Shared preview');
-        $this->assertSame(0, $share->fresh()->open_count);
-    }
-
-    public function test_a_link_holder_can_view_the_live_page_for_one_request_and_return_to_the_preview(): void
-    {
-        $page = $this->pageWithTwoVariants();
-        $share = $this->share(pages: [$page->id => 'Layout B']);
-        $this->get($share->url());
-
-        $this->get('/pages/faq')
-            ->assertSee('Copy B')
-            ->assertSee('View live version')
-            ->assertSee(e(url('/pages/faq?preview=off')), false);
-
-        $this->get('/pages/faq?preview=off')
-            ->assertSee('Live copy')
-            ->assertDontSee('Copy B')
-            ->assertSee('You are viewing the live version of this page.')
-            ->assertSee('Back to preview')
-            ->assertHeader('X-Robots-Tag', 'noindex, nofollow');
-
-        $this->get('/pages/faq')->assertSee('Copy B');
-    }
-
-    public function test_the_live_notice_is_not_shown_to_a_visitor_with_no_preview(): void
-    {
-        $this->pageWithTwoVariants();
-
-        $this->get('/pages/faq?preview=off')
-            ->assertOk()
-            ->assertSee('Live copy')
-            ->assertDontSee('You are viewing the live version');
+        $this->get($share->url())->assertRedirectContains('?preview=');
+        $this->get('/pages/faq?preview='.$share->getRawOriginal('token'))->assertSee('Live copy');
     }
 
     private function pageWithTwoVariants(): CmsPage

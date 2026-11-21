@@ -70,69 +70,16 @@
 @php
     $previewSession = app(\Filagora\Cms\Preview\PreviewSession::class);
     $previewItems = $previewSession->items();
-    $previewLiveUrl = \App\Support\CmsPreviewLinks::live(request());
-    $previewStoredInSession = session()->has(\Filagora\Cms\Preview\PreviewSession::SESSION_KEY) || session()->has(\Filagora\Cms\Preview\PreviewSession::SHARE_SESSION_KEY);
 @endphp
-@if($previewSession->isViewingLive() && $previewStoredInSession)
-    <div role="status" style="background:#334155;color:#fff;padding:8px 16px;font:600 14px/1.4 system-ui,sans-serif;text-align:center">
-        You are viewing the live version of this page.
-        <a href="{{ \App\Support\CmsPreviewLinks::withoutPreviewParameter(request()) }}" style="margin-left:8px;color:#fff;text-decoration:underline;font:inherit">Back to preview</a>
-    </div>
-@elseif($previewItems !== [] && $previewSession->isShared())
+@if($previewItems !== [])
     <div role="status" style="background:#7c2d12;color:#fff;padding:8px 16px;font:600 14px/1.4 system-ui,sans-serif;text-align:center">
-        Shared preview of unpublished changes{{ $previewSession->sharedUntil() ? ' (link expires ' . $previewSession->sharedUntil()->format('j M Y H:i') . ')' : '' }}.
-        Visitors still see the published site.
+        Previewing unpublished changes{{ $previewSession->expiresAt() ? ' (link expires ' . $previewSession->expiresAt()->format('j M Y H:i') . ')' : '' }}.
+        Without <code>?{{ \Filagora\Cms\Preview\PreviewUrl::parameter() }}=</code> in the address, visitors see the published site.
         @foreach($previewItems as $previewItem)
             <span style="background:rgba(255,255,255,.18);border-radius:4px;padding:2px 8px;margin:0 4px">{{ $previewItem['label'] }}@if($previewItem['active']) &middot; {{ $previewItem['active'] }}@endif</span>
         @endforeach
-        @if($previewSession->isFromUrl())
-            <a href="{{ \App\Support\CmsPreviewLinks::withoutPreviewParameter(request()) }}" style="margin-left:8px;color:#fff;text-decoration:underline;font:inherit">View live version</a>
-        @else
-            <a href="{{ $previewLiveUrl }}" style="margin-left:8px;color:#fff;text-decoration:underline;font:inherit">View live version</a>
-            <form method="post" action="{{ route('cms.preview.share.exit') }}" style="display:inline">
-                @csrf
-                <button type="submit" style="margin-left:8px;background:#fff;color:#7c2d12;border:0;border-radius:4px;padding:2px 10px;font:inherit;cursor:pointer">Exit preview</button>
-            </form>
-        @endif
-    </div>
-@elseif($previewItems !== [])
-    <div role="status" style="background:#7c2d12;color:#fff;padding:8px 16px;font:600 14px/1.4 system-ui,sans-serif;text-align:center">
-        Previewing unpublished changes. Visitors still see the published site.
-        @foreach($previewItems as $previewItem)
-            <form method="post" action="{{ route('cms.preview.remove') }}" style="display:inline-block;margin:0 4px">
-                @csrf
-                <input type="hidden" name="type" value="{{ $previewItem['type'] }}">
-                <input type="hidden" name="key" value="{{ $previewItem['key'] }}">
-                <input type="hidden" name="return" value="{{ request()->getRequestUri() }}">
-                <span style="background:rgba(255,255,255,.18);border-radius:4px;padding:2px 8px">{{ $previewItem['label'] }}
-                    <button type="submit" aria-label="Stop previewing {{ $previewItem['label'] }}" style="background:none;border:0;color:#fff;cursor:pointer;font:inherit;padding:0 0 0 6px">&times;</button>
-                </span>
-            </form>
-        @endforeach
-        @foreach($previewItems as $previewItem)
-            @if(count($previewItem['variants']) > 1)
-                <form method="post" action="{{ route('cms.preview.variant') }}" style="display:inline-block;margin:0 4px">
-                    @csrf
-                    <input type="hidden" name="type" value="{{ $previewItem['type'] }}">
-                    <input type="hidden" name="key" value="{{ $previewItem['key'] }}">
-                    <input type="hidden" name="return" value="{{ request()->getRequestUri() }}">
-                    <label style="font-weight:400">{{ $previewItem['label'] }} variant:
-                        <select name="variant" onchange="this.form.submit()" style="font:inherit;color:#000;border-radius:4px">
-                            @foreach($previewItem['variants'] as $variantName)
-                                <option value="{{ $variantName }}" @selected($variantName === $previewItem['active'])>{{ $variantName }}</option>
-                            @endforeach
-                        </select>
-                    </label>
-                    <noscript><button type="submit">Switch</button></noscript>
-                </form>
-            @endif
-        @endforeach
-        <a href="{{ $previewLiveUrl }}" style="margin-left:8px;color:#fff;text-decoration:underline;font:inherit">View live version</a>
-        <form method="post" action="{{ route('cms.preview.stop') }}" style="display:inline">
-            @csrf
-            <input type="hidden" name="return" value="{{ request()->getRequestUri() }}">
-            <button type="submit" style="margin-left:8px;background:#fff;color:#7c2d12;border:0;border-radius:4px;padding:2px 10px;font:inherit;cursor:pointer">Exit preview</button>
-        </form>
+        <a data-preview-skip href="{{ \App\Support\CmsPreviewLinks::live(request()) }}" style="margin-left:8px;color:#fff;text-decoration:underline;font:inherit">View live version</a>
+        <button type="button" onclick="navigator.clipboard.writeText(window.location.href).then(() => { this.textContent = 'Copied' })" style="margin-left:8px;background:#fff;color:#7c2d12;border:0;border-radius:4px;padding:2px 10px;font:inherit;cursor:pointer">Copy link</button>
     </div>
 @endif
 @include('partials.form_submit_lock_overlay')
