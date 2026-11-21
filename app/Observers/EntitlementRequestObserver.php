@@ -5,11 +5,12 @@ namespace App\Observers;
 use App\Notifications\BellNotification;
 use App\Notifications\EntitlementRequestMailNotification;
 use App\Notifications\SiteCategories;
+use App\Notifications\StaffAlerts;
+use App\Notifications\StaffCategories;
 use Filagora\Core\Settings\SettingsRegistry;
 use Filagora\Entitlements\Models\EntitlementRequest;
 use Filagora\Notifications\Enums\NotificationChannel;
 use Filagora\Notifications\Services\Preferences;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * Tells the member their entitlement request was received and when its status changes, and tells
@@ -22,11 +23,17 @@ class EntitlementRequestObserver
         $request->loadMissing('user');
         $request->user?->notify(new EntitlementRequestMailNotification(EntitlementRequestMailNotification::SUBMITTED_USER, $request));
 
-        $staff = trim(app(SettingsRegistry::class)->string('entitlement_request_email'));
-
-        if (filter_var($staff, FILTER_VALIDATE_EMAIL)) {
-            Notification::route('mail', $staff)->notify(new EntitlementRequestMailNotification(EntitlementRequestMailNotification::SUBMITTED_STAFF, $request));
-        }
+        app(StaffAlerts::class)->send(
+            StaffCategories::ENTITLEMENT_REQUESTS,
+            fn () => new EntitlementRequestMailNotification(EntitlementRequestMailNotification::SUBMITTED_STAFF, $request),
+            [app(SettingsRegistry::class)->string('entitlement_request_email')],
+            fn () => new BellNotification(
+                __('notifications.staff.entitlement_request.title'),
+                (string) $request->entitlement_key,
+                route('filament.dashboard.resources.entitlement-requests.view', ['record' => $request->getKey()]),
+                StaffCategories::ENTITLEMENT_REQUESTS,
+            ),
+        );
     }
 
     public function updated(EntitlementRequest $request): void

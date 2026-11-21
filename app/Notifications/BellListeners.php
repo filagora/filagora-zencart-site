@@ -37,6 +37,7 @@ class BellListeners
     public function __construct(
         private readonly Preferences $preferences,
         private readonly PostLinks $links,
+        private readonly StaffAlerts $staffAlerts,
     ) {}
 
     public function threadUpdated(ThreadSubscribersToNotify $event): void
@@ -79,16 +80,24 @@ class BellListeners
     }
 
     /**
-     * Mails the forum support address about a new post report, when one is set.
+     * Tells the staff who moderate the forums about a new post report (the forum support address
+     * when alerts go to the team).
      */
     public function postReported(PostReported $event): void
     {
-        $address = trim((string) config('forums.support_email'));
+        $event->report->loadMissing('reporter:id,username,email');
 
-        if (filter_var($address, FILTER_VALIDATE_EMAIL) !== false) {
-            $event->report->loadMissing('reporter:id,username,email');
-            Notification::route('mail', $address)->notify(new PostReportSubmittedNotification($event->report));
-        }
+        $this->staffAlerts->send(
+            StaffCategories::POST_REPORTS,
+            fn () => new PostReportSubmittedNotification($event->report),
+            [config('forums.support_email')],
+            fn () => new BellNotification(
+                __('notifications.staff.post_report.title'),
+                $this->plain((string) $event->report->reason),
+                route('filament.dashboard.resources.post-reports.index'),
+                StaffCategories::POST_REPORTS,
+            ),
+        );
     }
 
     /**

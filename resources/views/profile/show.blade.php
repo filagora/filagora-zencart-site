@@ -518,6 +518,7 @@ Profile
                             'moderation' => 'Moderation of your content',
                             'privacy' => 'Privacy',
                             'entitlements' => 'Access requests',
+                            'staff' => 'Staff alerts',
                         ];
                         $notificationGroups = collect($notificationMatrix)->groupBy(fn (array $row): string => explode('.', $row['category']->id)[0]);
                     @endphp

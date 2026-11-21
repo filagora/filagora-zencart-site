@@ -238,6 +238,28 @@ return [
         'title' => 'Your report on :plugin was reviewed',
         'unknown_plugin' => 'a plugin',
     ],
+    'staff' => [
+        'plugin_submission' => [
+            'title' => ':plugin :version needs moderation',
+            'body' => 'Submitted by :submitter',
+        ],
+        'plugin_report' => [
+            'title' => 'A report was made about :plugin',
+        ],
+        'plugin_security' => [
+            'title' => 'Security finding in :plugin :version',
+            'body' => 'Severity: :severity',
+        ],
+        'privacy_request' => [
+            'title' => 'A new privacy request',
+        ],
+        'post_report' => [
+            'title' => 'A forum post was reported',
+        ],
+        'entitlement_request' => [
+            'title' => 'A new access request',
+        ],
+    ],
     'entitlement_request_updated' => [
         'title' => 'Your access request was updated',
     ],

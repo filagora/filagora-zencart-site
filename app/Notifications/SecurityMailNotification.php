@@ -8,6 +8,7 @@ use Filagora\Plugins\Filament\Resources\PluginReleases\PluginReleaseResource;
 use Filagora\PluginsSecurity\Enums\ScanSeverity;
 use Filagora\PluginsSecurity\Enums\ScanStatus;
 use Filagora\PluginsSecurity\Notifications\SecurityNotification;
+use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Notifications\Messages\MailMessage;
 
 /**
@@ -27,6 +28,12 @@ class SecurityMailNotification extends SecurityNotification
      */
     public function via(object $notifiable): array
     {
+        // The package mails the support address about a flagged finding. When alerts go to individual
+        // staff, `SendSecurityFlag` sends it to them instead, so that one is stood down.
+        if ($this->kind === 'finding_flagged' && $notifiable instanceof AnonymousNotifiable && app(StaffAlerts::class)->toIndividuals()) {
+            return [];
+        }
+
         return $this->mailWhenWanted($notifiable, $this->forStaff ? null : SiteCategories::PLUGIN_SUBMISSIONS);
     }
 

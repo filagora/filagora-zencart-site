@@ -2,11 +2,12 @@
 
 use App\Notifications\BackupFailedNotification;
 use App\Notifications\SearchIndexHealthCheckFailedNotification;
+use App\Notifications\StaffAlerts;
+use App\Notifications\StaffCategories;
 use Filagora\Core\Settings\SettingsRegistry;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
@@ -46,22 +47,12 @@ if ((bool) config('backup-ops.schedule.enabled', true)) {
         Log::channel($backupLogChannel())->error('Scheduled backup:run failed.');
 
         $emails = config('backup-ops.alerts.emails', []);
-        if (! is_array($emails) || $emails === []) {
-            return;
-        }
 
-        foreach ($emails as $email) {
-            $address = trim((string) $email);
-            if ($address === '') {
-                continue;
-            }
-
-            Notification::route('mail', $address)
-                ->notify(new BackupFailedNotification(
-                    app()->environment(),
-                    (string) config('app.url')
-                ));
-        }
+        app(StaffAlerts::class)->send(
+            StaffCategories::BACKUP_FAILURES,
+            fn () => new BackupFailedNotification(app()->environment(), (string) config('app.url')),
+            is_array($emails) ? array_values($emails) : [],
+        );
     });
 
     $backupCleanEvent = Schedule::command('backup:clean')
@@ -107,13 +98,11 @@ if ((bool) config('search-ops.schedule.enabled', true)) {
     $searchHealth->onFailure(function (): void {
         Log::error('Scheduled search health check found a problem.');
 
-        foreach (explode(',', (string) app(SettingsRegistry::class)->get('search_health_check_alert_emails', '')) as $email) {
-            $address = trim($email);
-
-            if ($address !== '') {
-                Notification::route('mail', $address)->notify(new SearchIndexHealthCheckFailedNotification(app()->environment(), (string) config('app.url')));
-            }
-        }
+        app(StaffAlerts::class)->send(
+            StaffCategories::SEARCH_HEALTH,
+            fn () => new SearchIndexHealthCheckFailedNotification(app()->environment(), (string) config('app.url')),
+            explode(',', (string) app(SettingsRegistry::class)->get('search_health_check_alert_emails', '')),
+        );
     });
 }
 

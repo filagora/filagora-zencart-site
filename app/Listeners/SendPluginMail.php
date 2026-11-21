@@ -2,8 +2,11 @@
 
 namespace App\Listeners;
 
+use App\Notifications\BellNotification;
 use App\Notifications\PluginMailNotification;
 use App\Notifications\PluginReportMailNotification;
+use App\Notifications\StaffAlerts;
+use App\Notifications\StaffCategories;
 use Filagora\Plugins\Enums\ModerationAction;
 use Filagora\Plugins\Events\PluginModerated;
 use Filagora\Plugins\Events\PluginReported;
@@ -17,6 +20,7 @@ use Filagora\Plugins\Models\Plugin;
 use Filagora\Plugins\Models\PluginRelease;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 /**
  * The site's plugin mail, from the plugins package's events, in place of the package's own (switched
@@ -27,6 +31,8 @@ class SendPluginMail
 {
     /** @var array<int|string, true> Releases already mailed as a new plugin's first. */
     private static array $mailedAsNewPlugin = [];
+
+    public function __construct(private readonly StaffAlerts $staffAlerts) {}
 
     public function pluginSubmitted(PluginSubmitted $event): void
     {
@@ -132,11 +138,19 @@ class SendPluginMail
 
     public function reported(PluginReported $event): void
     {
-        $support = $this->supportEmail();
+        $plugin = $event->report->plugin;
 
-        if ($support !== null) {
-            Notification::route('mail', $support)->notify(new PluginReportMailNotification($event->report, PluginReportMailNotification::SUBMITTED));
-        }
+        $this->staffAlerts->send(
+            StaffCategories::PLUGIN_REPORTS,
+            fn () => new PluginReportMailNotification($event->report, PluginReportMailNotification::SUBMITTED),
+            [$this->supportEmail()],
+            fn () => new BellNotification(
+                __('notifications.staff.plugin_report.title', ['plugin' => $plugin?->name ?? __('notifications.plugin_report_reviewed.unknown_plugin')]),
+                Str::limit(trim((string) $event->report->reason), 160),
+                $plugin !== null ? route('plugins.show', $plugin) : route('plugins.index'),
+                StaffCategories::PLUGIN_REPORTS,
+            ),
+        );
     }
 
     public function reviewed(PluginReportReviewed $event): void
@@ -162,19 +176,25 @@ class SendPluginMail
             Notification::send($by, new PluginMailNotification($data['autoPublished'] ? $kind.'_live' : $kind, $subjectKey, $this->replace($plugin, $release), $view, $data));
         }
 
-        $support = $this->supportEmail();
+        $submitter = data_get($by, 'username') ?: (data_get($by, 'name') ?: data_get($by, 'email'));
 
-        if ($support !== null) {
-            $submitter = data_get($by, 'username') ?: (data_get($by, 'name') ?: data_get($by, 'email'));
-
-            Notification::route('mail', $support)->notify(new PluginMailNotification(
+        $this->staffAlerts->send(
+            StaffCategories::PLUGIN_SUBMISSIONS,
+            fn () => new PluginMailNotification(
                 'submitted_support',
                 $supportSubjectKey,
                 $this->replace($plugin, $release),
                 $supportView,
                 $data + ['submittedBy' => $submitter, 'actionUrl' => $actionUrl],
-            ));
-        }
+            ),
+            [$this->supportEmail()],
+            fn () => new BellNotification(
+                __('notifications.staff.plugin_submission.title', ['plugin' => $plugin->name, 'version' => $release->displayVersion()]),
+                __('notifications.staff.plugin_submission.body', ['submitter' => (string) $submitter]),
+                $actionUrl,
+                StaffCategories::PLUGIN_SUBMISSIONS,
+            ),
+        );
     }
 
     /**

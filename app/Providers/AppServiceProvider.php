@@ -11,6 +11,7 @@ use App\Listeners\SendBugReportNotification;
 use App\Listeners\SendForumThreadNotifications;
 use App\Listeners\SendPluginMail;
 use App\Listeners\SendPrivacyMail;
+use App\Listeners\SendSecurityFlag;
 use App\Listeners\SendThreadSubscriptionMail;
 use App\Mail\Transport\FaiveloApiTransport;
 use App\Mail\Transport\MailtrapApiTransport;
@@ -18,8 +19,11 @@ use App\Markdown\BlankLineGapExtension;
 use App\Markdown\ZenCartHtmlTransformer;
 use App\Models\User;
 use App\Notifications\BellListeners;
+use App\Notifications\EntitlementStaffAudience;
 use App\Notifications\ForumThreadCreatedNotification;
 use App\Notifications\SiteCategories;
+use App\Notifications\StaffAlerts;
+use App\Notifications\StaffCategories;
 use App\Observers\BumpPluginsIndexCacheObserver;
 use App\Observers\EntitlementRequestObserver;
 use App\Observers\FlushForumsIndexCacheObserver;
@@ -65,6 +69,7 @@ use Filagora\Forums\Support\Models;
 use Filagora\Messages\Events\MessageReceived;
 use Filagora\Newsletters\Jobs\SendCampaignEmail;
 use Filagora\Notifications\Category;
+use Filagora\Notifications\Contracts\StaffAudience;
 use Filagora\Notifications\Enums\NotificationChannel;
 use Filagora\Notifications\NotificationCategories;
 use Filagora\Plugins\Events\ApiChangeMade;
@@ -79,6 +84,7 @@ use Filagora\Plugins\Events\SubscribersToNotify as PluginSubscribersToNotify;
 use Filagora\Plugins\Models\Plugin as PluginModel;
 use Filagora\Plugins\Models\PluginRelease as PluginReleaseModel;
 use Filagora\Plugins\Support\Models as PluginModels;
+use Filagora\PluginsSecurity\Events\SeriousFindingFlagged;
 use Filagora\Search\Support\SearchIndexRegistry;
 use Filagora\ZenCart\Models\ZcVersion;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse as FilamentLoginResponse;
@@ -110,6 +116,10 @@ class AppServiceProvider extends ServiceProvider
 
         // The dashboard's Read action on a post report opens the post, on its page, in a new tab.
         $this->app->bind(PostUrlResolver::class, ReportedPostUrl::class);
+
+        // Who holds an entitlement, for the staff a moderation alert goes to.
+        $this->app->bind(StaffAudience::class, EntitlementStaffAudience::class);
+        $this->app->singleton(StaffAlerts::class);
 
         // Rendered post and notice HTML is reused instead of re-parsed on every view.
         $this->app->singleton(FormattedContentRenderer::class, fn ($app): FormattedContentRenderer => new FormattedContentRenderer(
@@ -149,6 +159,13 @@ class AppServiceProvider extends ServiceProvider
                 default: '',
                 label: 'Entitlement Request Notification Email',
                 description: 'Staff address told about each new entitlement request. Leave empty to tell no one.',
+            ));
+            $settings->define(new SettingDefinition(
+                key: StaffAlerts::SETTING,
+                type: SettingType::Boolean,
+                default: false,
+                label: 'Send Staff Alerts To Individual Staff',
+                description: 'When enabled, alerts about plugins to moderate, privacy requests, reports, access requests, backups and search health go to each staff member who holds that area and has not turned it off (they choose under Staff alerts on their profile). When disabled, they go to the shared team addresses, as before.',
             ));
             $settings->define(new SettingDefinition(
                 key: 'moderate_first_post_for_new_users',
@@ -212,6 +229,7 @@ class AppServiceProvider extends ServiceProvider
             ));
 
             SiteCategories::register($categories);
+            StaffCategories::register($categories);
         });
     }
 
@@ -304,6 +322,7 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(MessageReceived::class, [BellListeners::class, 'messageReceived']);
         Event::listen(PluginSubscribersToNotify::class, [BellListeners::class, 'pluginUpdated']);
         Event::listen(ReleaseRejected::class, [BellListeners::class, 'releaseRejected']);
+        Event::listen(SeriousFindingFlagged::class, [SendSecurityFlag::class, 'flagged']);
         Event::listen(ReleasePublished::class, [BellListeners::class, 'releasePublished']);
         Event::listen(PluginModerated::class, [BellListeners::class, 'pluginModerated']);
         Event::listen(PluginReportReviewed::class, [BellListeners::class, 'reportReviewed']);
