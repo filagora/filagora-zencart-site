@@ -225,6 +225,22 @@ return [
     'plugin_release_rejected' => [
         'title' => ':plugin :version was not accepted',
     ],
+    'plugin_release_approved' => [
+        'title' => ':plugin :version was approved',
+    ],
+    'plugin_approved' => [
+        'title' => ':plugin was approved',
+    ],
+    'plugin_rejected' => [
+        'title' => ':plugin was not accepted',
+    ],
+    'plugin_report_reviewed' => [
+        'title' => 'Your report on :plugin was reviewed',
+        'unknown_plugin' => 'a plugin',
+    ],
+    'entitlement_request_updated' => [
+        'title' => 'Your access request was updated',
+    ],
     'private_message' => [
         'push' => [
             'title' => 'New message from :sender',

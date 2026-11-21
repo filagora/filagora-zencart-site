@@ -161,6 +161,11 @@ class ProfileController extends Controller
         foreach ($this->preferences->matrix($user) as $row) {
             $category = $row['category'];
 
+            // A required category is always on and is not a choice.
+            if ($row['locked']) {
+                continue;
+            }
+
             if ($category->isMode()) {
                 $mode = $modes[$category->id] ?? null;
 

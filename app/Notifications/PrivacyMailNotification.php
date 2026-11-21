@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\RespectsEmailChoice;
 use Filagora\Compliance\Enums\PrivacyRequestStatus;
 use Filagora\Compliance\Enums\PrivacyRequestType;
 use Filagora\Compliance\Models\PrivacyRequest;
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\URL;
  */
 class PrivacyMailNotification extends Notification implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, RespectsEmailChoice, SerializesModels;
 
     public const SUBMITTED_USER = 'submitted_user';
 
@@ -45,7 +46,7 @@ class PrivacyMailNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return $this->mailWhenWanted($notifiable, $this->kind === self::SUBMITTED_STAFF ? null : SiteCategories::PRIVACY_REQUESTS);
     }
 
     public function toMail(object $notifiable): MailMessage

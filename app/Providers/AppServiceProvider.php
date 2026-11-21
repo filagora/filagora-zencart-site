@@ -19,6 +19,7 @@ use App\Markdown\ZenCartHtmlTransformer;
 use App\Models\User;
 use App\Notifications\BellListeners;
 use App\Notifications\ForumThreadCreatedNotification;
+use App\Notifications\SiteCategories;
 use App\Observers\BumpPluginsIndexCacheObserver;
 use App\Observers\EntitlementRequestObserver;
 use App\Observers\FlushForumsIndexCacheObserver;
@@ -201,12 +202,16 @@ class AppServiceProvider extends ServiceProvider
     private function registerNotificationCategories(): void
     {
         $this->app->booted(function (): void {
-            $this->app->make(NotificationCategories::class)->register(new Category(
+            $categories = $this->app->make(NotificationCategories::class);
+
+            $categories->register(new Category(
                 ForumThreadCreatedNotification::CATEGORY,
                 'New threads in forums you subscribe to',
                 [NotificationChannel::EMAIL, NotificationChannel::PUSH, NotificationChannel::IN_APP],
                 unsubscribable: true,
             ));
+
+            SiteCategories::register($categories);
         });
     }
 
@@ -299,6 +304,9 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(MessageReceived::class, [BellListeners::class, 'messageReceived']);
         Event::listen(PluginSubscribersToNotify::class, [BellListeners::class, 'pluginUpdated']);
         Event::listen(ReleaseRejected::class, [BellListeners::class, 'releaseRejected']);
+        Event::listen(ReleasePublished::class, [BellListeners::class, 'releasePublished']);
+        Event::listen(PluginModerated::class, [BellListeners::class, 'pluginModerated']);
+        Event::listen(PluginReportReviewed::class, [BellListeners::class, 'reportReviewed']);
     }
 
     /**

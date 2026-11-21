@@ -2,9 +2,13 @@
 
 namespace App\Observers;
 
+use App\Notifications\BellNotification;
 use App\Notifications\EntitlementRequestMailNotification;
+use App\Notifications\SiteCategories;
 use Filagora\Core\Settings\SettingsRegistry;
 use Filagora\Entitlements\Models\EntitlementRequest;
+use Filagora\Notifications\Enums\NotificationChannel;
+use Filagora\Notifications\Services\Preferences;
 use Illuminate\Support\Facades\Notification;
 
 /**
@@ -40,5 +44,9 @@ class EntitlementRequestObserver
         }
 
         $request->user->notify(new EntitlementRequestMailNotification(EntitlementRequestMailNotification::STATUS_UPDATED, $request, $from, $to));
+
+        if (app(Preferences::class)->allows($request->user, SiteCategories::ENTITLEMENT_REQUESTS, NotificationChannel::IN_APP)) {
+            $request->user->notify(new BellNotification(__('notifications.entitlement_request_updated.title'), ucfirst(str_replace('_', ' ', $to)), route('profile.show', ['tab' => 'entitlements']), SiteCategories::ENTITLEMENT_REQUESTS));
+        }
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\User;
+use App\Notifications\Concerns\RespectsEmailChoice;
 use Filagora\Notifications\Services\Unsubscribe;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -20,7 +21,7 @@ use Illuminate\Notifications\Notification;
  */
 class PluginMailNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, RespectsEmailChoice;
 
     public const UPDATES_CATEGORY = 'plugins.release_updates';
 
@@ -43,7 +44,20 @@ class PluginMailNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return $this->mailWhenWanted($notifiable, $this->category());
+    }
+
+    /**
+     * What the member chose about: plugin updates for a follower, their own submissions for an
+     * author. The copy to the support address is not a choice.
+     */
+    private function category(): ?string
+    {
+        return match ($this->kind) {
+            'release_updated' => self::UPDATES_CATEGORY,
+            'submitted_support' => null,
+            default => SiteCategories::PLUGIN_SUBMISSIONS,
+        };
     }
 
     public function toMail(object $notifiable): MailMessage

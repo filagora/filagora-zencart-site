@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\RespectsEmailChoice;
 use Filagora\Entitlements\Models\EntitlementRequest;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,7 +16,7 @@ use Illuminate\Queue\SerializesModels;
  */
 class EntitlementRequestMailNotification extends Notification implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, RespectsEmailChoice, SerializesModels;
 
     public const SUBMITTED_USER = 'submitted_user';
 
@@ -37,7 +38,7 @@ class EntitlementRequestMailNotification extends Notification implements ShouldQ
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return $this->mailWhenWanted($notifiable, $this->kind === self::SUBMITTED_STAFF ? null : SiteCategories::ENTITLEMENT_REQUESTS);
     }
 
     public function toMail(object $notifiable): MailMessage

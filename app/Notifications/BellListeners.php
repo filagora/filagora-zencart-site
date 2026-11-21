@@ -13,6 +13,10 @@ use Filagora\Messages\Events\MessageReceived;
 use Filagora\Notifications\Enums\NotificationChannel;
 use Filagora\Notifications\Services\Preferences;
 use Filagora\Notifications\StandardCategories;
+use Filagora\Plugins\Enums\ModerationAction;
+use Filagora\Plugins\Events\PluginModerated;
+use Filagora\Plugins\Events\PluginReportReviewed;
+use Filagora\Plugins\Events\ReleasePublished;
 use Filagora\Plugins\Events\ReleaseRejected;
 use Filagora\Plugins\Events\SubscribersToNotify as PluginSubscribersToNotify;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -142,14 +146,64 @@ class BellListeners
     {
         $author = $event->release->uploadedBy ?? $event->plugin->owner;
 
-        if ($author instanceof User && ($event->except === null || $author->getKey() !== $event->except->getAuthIdentifier())) {
+        if ($author instanceof User && ($event->except === null || $author->getKey() !== $event->except->getAuthIdentifier()) && $this->wants($author, SiteCategories::PLUGIN_SUBMISSIONS)) {
             $author->notify(new BellNotification(
                 __('notifications.plugin_release_rejected.title', ['plugin' => $event->plugin->name, 'version' => $event->release->displayVersion()]),
                 (string) $event->note,
                 route('plugins.show', $event->plugin),
-                self::PLUGIN_UPDATES,
+                SiteCategories::PLUGIN_SUBMISSIONS,
             ));
         }
+    }
+
+    public function releasePublished(ReleasePublished $event): void
+    {
+        $author = $event->author;
+
+        if ($event->moderator === null || ! $author instanceof User || ! $this->wants($author, SiteCategories::PLUGIN_SUBMISSIONS)) {
+            return;
+        }
+
+        $author->notify(new BellNotification(
+            __('notifications.plugin_release_approved.title', ['plugin' => $event->plugin->name, 'version' => $event->release->displayVersion()]),
+            '',
+            route('plugins.show', $event->plugin),
+            SiteCategories::PLUGIN_SUBMISSIONS,
+        ));
+    }
+
+    public function pluginModerated(PluginModerated $event): void
+    {
+        $owner = $event->plugin->owner;
+
+        if (! $owner instanceof User || ! $this->wants($owner, SiteCategories::PLUGIN_SUBMISSIONS)) {
+            return;
+        }
+
+        $approved = $event->action === ModerationAction::APPROVE;
+
+        $owner->notify(new BellNotification(
+            __($approved ? 'notifications.plugin_approved.title' : 'notifications.plugin_rejected.title', ['plugin' => $event->plugin->name]),
+            $approved ? '' : (string) $event->note,
+            $approved ? route('plugins.show', $event->plugin) : route('plugins.index'),
+            SiteCategories::PLUGIN_SUBMISSIONS,
+        ));
+    }
+
+    public function reportReviewed(PluginReportReviewed $event): void
+    {
+        $reporter = $event->report->reporter;
+
+        if (! $reporter instanceof User || ! $this->wants($reporter, SiteCategories::PLUGIN_REPORTS)) {
+            return;
+        }
+
+        $reporter->notify(new BellNotification(
+            __('notifications.plugin_report_reviewed.title', ['plugin' => $event->report->plugin?->name ?? __('notifications.plugin_report_reviewed.unknown_plugin')]),
+            (string) $event->report->resolution_note,
+            $event->report->plugin !== null ? route('plugins.show', $event->report->plugin) : route('plugins.index'),
+            SiteCategories::PLUGIN_REPORTS,
+        ));
     }
 
     private function tellAuthor(?object $author, string $action, ?string $reason, string $url): void

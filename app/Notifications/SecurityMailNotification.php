@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\RespectsEmailChoice;
 use Filagora\Plugins\Enums\PluginStatus;
 use Filagora\Plugins\Filament\Resources\PluginReleases\PluginReleaseResource;
 use Filagora\PluginsSecurity\Enums\ScanSeverity;
@@ -16,6 +17,19 @@ use Illuminate\Notifications\Messages\MailMessage;
  */
 class SecurityMailNotification extends SecurityNotification
 {
+    use RespectsEmailChoice;
+
+    /**
+     * An author's mail about their own release is a choice; mail for staff (a finding to review, a
+     * review they asked for) is not.
+     *
+     * @return list<string>
+     */
+    public function via(object $notifiable): array
+    {
+        return $this->mailWhenWanted($notifiable, $this->forStaff ? null : SiteCategories::PLUGIN_SUBMISSIONS);
+    }
+
     public function toMail(object $notifiable): MailMessage
     {
         return match ($this->kind) {

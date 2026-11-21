@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\RespectsEmailChoice;
 use Filagora\Plugins\Models\PluginReport;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,7 +16,7 @@ use Illuminate\Queue\SerializesModels;
  */
 class PluginReportMailNotification extends Notification implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, RespectsEmailChoice, SerializesModels;
 
     public const SUBMITTED = 'submitted';
 
@@ -35,7 +36,7 @@ class PluginReportMailNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return $this->mailWhenWanted($notifiable, $this->type === self::STATUS_UPDATED ? SiteCategories::PLUGIN_REPORTS : null);
     }
 
     public function toMail(object $notifiable): MailMessage

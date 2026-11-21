@@ -510,8 +510,22 @@ Profile
                         <h2 class="text-lg font-semibold text-[#0f2133]">Notifications</h2>
                         <p class="mt-1 {{ $metaClass }}">Choose how you are told about forum, plugin and message activity.</p>
                     </div>
+                    @php
+                        $notificationGroupTitles = [
+                            'forum' => 'Forums',
+                            'plugins' => 'Plugins',
+                            'messages' => 'Messages',
+                            'moderation' => 'Moderation of your content',
+                            'privacy' => 'Privacy',
+                            'entitlements' => 'Access requests',
+                        ];
+                        $notificationGroups = collect($notificationMatrix)->groupBy(fn (array $row): string => explode('.', $row['category']->id)[0]);
+                    @endphp
+                    @foreach($notificationGroups as $groupKey => $groupRows)
+                    <section>
+                        <h3 class="mb-2 text-sm font-semibold text-[#0f2133]">{{ $notificationGroupTitles[$groupKey] ?? ucfirst(str_replace('_', ' ', $groupKey)) }}</h3>
                     <div class="divide-y divide-[#e6e0d6] overflow-hidden rounded-surface border border-[#d8dce2] bg-white">
-                        @foreach($notificationMatrix as $row)
+                        @foreach($groupRows as $row)
                             @php($category = $row['category'])
                             <div class="grid gap-2 px-3 py-2.5 text-sm text-[#0f2133] md:grid-cols-[1fr_auto] md:items-center">
                                 <span>
@@ -523,6 +537,8 @@ Profile
                                             <option value="{{ $modeValue }}" @selected($row['mode'] === $modeValue)>{{ ucfirst(str_replace('_', ' ', $modeValue)) }}</option>
                                         @endforeach
                                     </select>
+                                @elseif($row['locked'])
+                                    <span class="{{ $metaClass }}">Always on</span>
                                 @else
                                     <span class="flex flex-wrap gap-4">
                                         @foreach($row['channels'] as $channel => $allowed)
@@ -536,6 +552,8 @@ Profile
                             </div>
                         @endforeach
                     </div>
+                    </section>
+                    @endforeach
                     @if($errors->getBag('notifications')->any())
                         <p class="{{ $errorClass }}">{{ $errors->getBag('notifications')->first() }}</p>
                     @endif
