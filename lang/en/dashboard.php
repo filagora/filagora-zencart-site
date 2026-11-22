@@ -57,6 +57,7 @@ return [
         // System
         'system_settings' => 'System Settings',
         'backups' => 'Backups',
+        'staff_alert_recipients' => 'Staff Alert Recipients',
         'fail2ban' => 'Fail2ban',
         'nftables' => 'Nftables',
     ],

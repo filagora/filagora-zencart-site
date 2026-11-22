@@ -139,6 +139,19 @@ class StaffAlertsTest extends TestCase
         Notification::assertSentTo($admin, BackupFailedNotification::class);
     }
 
+    public function test_a_super_administrator_is_told_through_the_role_alone(): void
+    {
+        Notification::fake();
+        $this->individualMode();
+        $super = User::factory()->create();
+        $super->assignRole((string) config('filagora-zencart.super_admin_role'));
+
+        $this->alert();
+
+        Notification::assertSentTo($super, BackupFailedNotification::class);
+        Notification::assertSentTo($super, BellNotification::class);
+    }
+
     public function test_a_privacy_request_nobody_is_set_to_hear_about_still_reaches_the_team_and_is_logged(): void
     {
         Notification::fake();
