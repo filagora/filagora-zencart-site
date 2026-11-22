@@ -205,13 +205,47 @@ class StaffAlertsTest extends TestCase
         $this->assertSame([], array_values(array_filter($ids($member), fn (string $id): bool => str_starts_with($id, 'staff.'))));
     }
 
-    public function test_the_profile_shows_a_moderator_their_staff_alerts_and_a_member_none(): void
+    public function test_the_profile_shows_a_moderator_their_staff_alerts_only_once_alerts_go_to_individuals(): void
     {
         $moderator = $this->acknowledged($this->moderator());
         $member = $this->acknowledged(User::factory()->create());
 
+        $this->actingAs($moderator)->get('/profile?tab=settings')->assertOk()->assertDontSee('Staff alerts')->assertDontSee('Plugin reports');
+
+        $this->individualMode();
+
         $this->actingAs($moderator)->get('/profile?tab=settings')->assertOk()->assertSee('Staff alerts')->assertSee('Plugin reports')->assertDontSee('New privacy requests');
         $this->actingAs($member)->get('/profile?tab=settings')->assertOk()->assertDontSee('Staff alerts');
+    }
+
+    public function test_saving_the_profile_while_the_staff_section_is_hidden_leaves_the_moderators_choices_alone(): void
+    {
+        $moderator = $this->acknowledged($this->moderator());
+        $prefs = app(Preferences::class);
+        $prefs->set($moderator, StaffCategories::PLUGIN_REPORTS, NotificationChannel::IN_APP, false);
+        $prefs->flush();
+
+        $this->actingAs($moderator)->post(route('profile.notifications.update'), [])->assertRedirect('/profile?tab=settings');
+        $prefs->flush();
+
+        // The hidden section sent no checkboxes; that must not read as "turned everything off".
+        $this->assertTrue($prefs->allows($moderator, StaffCategories::PLUGIN_SUBMISSIONS, NotificationChannel::EMAIL));
+        $this->assertTrue($prefs->allows($moderator, StaffCategories::PLUGIN_REPORTS, NotificationChannel::EMAIL));
+        $this->assertFalse($prefs->allows($moderator, StaffCategories::PLUGIN_REPORTS, NotificationChannel::IN_APP));
+    }
+
+    public function test_once_staff_alerts_go_to_individuals_saving_the_profile_stores_the_staff_choices(): void
+    {
+        $this->individualMode();
+        $moderator = $this->acknowledged($this->moderator());
+        $prefs = app(Preferences::class);
+
+        $this->actingAs($moderator)->post(route('profile.notifications.update'), ['channel' => [StaffCategories::PLUGIN_REPORTS => ['email' => '1']]])->assertRedirect('/profile?tab=settings');
+        $prefs->flush();
+
+        $this->assertTrue($prefs->allows($moderator, StaffCategories::PLUGIN_REPORTS, NotificationChannel::EMAIL));
+        $this->assertFalse($prefs->allows($moderator, StaffCategories::PLUGIN_REPORTS, NotificationChannel::IN_APP));
+        $this->assertFalse($prefs->allows($moderator, StaffCategories::PLUGIN_SUBMISSIONS, NotificationChannel::EMAIL));
     }
 
     private function acknowledged(User $user): User

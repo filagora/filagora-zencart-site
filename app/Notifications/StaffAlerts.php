@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use Closure;
 use Filagora\Core\Settings\SettingsRegistry;
+use Filagora\Notifications\Category;
 use Filagora\Notifications\Services\Recipients;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
@@ -28,6 +29,23 @@ class StaffAlerts
     public function toIndividuals(): bool
     {
         return $this->settings->boolean(self::SETTING, false);
+    }
+
+    /**
+     * The choices a member's settings page offers. The staff alert categories are left out until staff
+     * alerts go to individuals, because until then nothing reads those choices. The page and the form
+     * that saves it must use the same list, or saving would switch the hidden ones off.
+     *
+     * @param  list<array{category: Category, channels: array<string, bool>, mode: string|null, locked: bool}>  $matrix
+     * @return list<array{category: Category, channels: array<string, bool>, mode: string|null, locked: bool}>
+     */
+    public function offeredRows(array $matrix): array
+    {
+        if ($this->toIndividuals()) {
+            return $matrix;
+        }
+
+        return array_values(array_filter($matrix, fn (array $row): bool => ! $row['category']->isStaff()));
     }
 
     /**

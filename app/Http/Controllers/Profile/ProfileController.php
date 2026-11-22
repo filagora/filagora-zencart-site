@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Profile;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Notifications\StaffAlerts;
 use App\Profile\ProfilePage;
 use App\TimeFormat;
 use Closure;
@@ -29,6 +30,7 @@ class ProfileController extends Controller
         private readonly ProfilePage $page,
         private readonly Preferences $preferences,
         private readonly Subscribers $newsletter,
+        private readonly StaffAlerts $staffAlerts,
     ) {}
 
     public function show(Request $request): View|RedirectResponse
@@ -158,7 +160,7 @@ class ProfileController extends Controller
         $channels = (array) $request->input('channel', []);
         $modes = (array) $request->input('mode', []);
 
-        foreach ($this->preferences->matrix($user) as $row) {
+        foreach ($this->staffAlerts->offeredRows($this->preferences->matrix($user)) as $row) {
             $category = $row['category'];
 
             // A required category is always on and is not a choice.
