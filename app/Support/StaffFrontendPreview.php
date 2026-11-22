@@ -19,7 +19,10 @@ class StaffFrontendPreview
     public function availableFor(?User $user): bool
     {
         return $user instanceof User
-            && app(AccessChecker::class)->allows($user, 'operator.forum.moderate');
+            && app(AccessChecker::class)->allowsAny($user, [
+                'operator.forum.moderate',
+                'operator.forum.moderate_frontend',
+            ]);
     }
 
     public function enabledFor(Request $request, ?User $user): bool
