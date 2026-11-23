@@ -12,11 +12,7 @@
         @include('forum.partials.header_nav')
         @include('forum.partials.moderation_queue')
 
-        <div class="mb-3 text-sm text-[#5c6570]">
-            <a class="text-[#8f3f1f] hover:underline" href="{{ route('forums.index') }}">Forums</a>
-            / <a href="{{ route('forums.show', $forum) }}">{{ $decodedForumName }}</a>
-            / New Thread
-        </div>
+        @include('forum.partials.breadcrumb', ['forum' => $forum, 'forumUrl' => route('forums.show', $forum), 'current' => 'New Thread'])
 
         <header class="mb-5">
             <h1 class="ui-page-title">Start New Thread</h1>

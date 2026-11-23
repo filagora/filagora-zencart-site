@@ -9,7 +9,6 @@
     @php
         $contentRenderer = app(\App\Support\FormattedContentRenderer::class);
         $decodedThreadTitle = \App\Support\LegacyTextDecoder::decode($thread->title);
-        $decodedForumName = \App\Support\LegacyTextDecoder::decode($thread->forum->name);
     @endphp
     @php
         $showReplyComposer = $errors->reply->has('body') || (string) old('body') !== '';
@@ -33,11 +32,7 @@
     @include('forum.partials.header_nav')
     @include('forum.partials.moderation_queue')
 
-    <div class="mb-3 text-sm text-[#5c6570]">
-        <a class="text-[#8f3f1f] hover:underline" href="{{ route('forums.index') }}">Forums</a>
-        / <a class="text-[#8f3f1f] hover:underline" href="{{ app(\App\Forum\ThreadListings::class)->forumUrlFor($thread, request()) }}">{{ $decodedForumName }}</a>
-        / {{ $decodedThreadTitle }}
-    </div>
+    @include('forum.partials.breadcrumb', ['forum' => $thread->forum, 'forumUrl' => app(\App\Forum\ThreadListings::class)->forumUrlFor($thread, request()), 'current' => $decodedThreadTitle])
 
     <header class="mb-4 border border-[#d8dce2] bg-white p-4">
         <div class="flex flex-col items-start justify-between gap-3 lg:flex-row lg:items-center">

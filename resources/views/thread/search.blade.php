@@ -24,12 +24,7 @@
             ])
         </div>
 
-        <div class="mb-3 text-sm text-[#5c6570] [overflow-wrap:anywhere]">
-            <a class="text-[#8f3f1f] hover:underline" href="{{ route('forums.index') }}">Forums</a>
-            / <a class="text-[#8f3f1f] hover:underline" href="{{ app(\App\Forum\ThreadListings::class)->forumUrlFor($thread, request()) }}">{{ $decodeLegacyText($thread->forum?->name) }}</a>
-            / <a class="text-[#8f3f1f] hover:underline" href="{{ route('threads.show', $thread) }}">{{ $decodedThreadTitle }}</a>
-            / {{ __('forum.search.submit') }}
-        </div>
+        @include('forum.partials.breadcrumb', ['forum' => $thread->forum, 'forumUrl' => app(\App\Forum\ThreadListings::class)->forumUrlFor($thread, request()), 'thread' => $thread, 'current' => __('forum.search.submit')])
 
         @if($authorNotFound)
             <p class="mb-4 rounded-surface border border-[#f1b6bc] bg-[#fff1f2] px-3 py-2 text-sm text-[#9f2230]" role="alert">{{ __('forum.search.author_not_found', ['name' => $authorName]) }}</p>

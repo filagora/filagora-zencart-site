@@ -34,7 +34,7 @@
             $group = $row['group'];
             $forums = $row['forums'];
         @endphp
-        <section class="mb-5 overflow-hidden border border-[#d8dce2] bg-white">
+        <section id="forum-group-{{ $group->id }}" class="mb-5 scroll-mt-[calc(var(--site-header-h,100px)+12px)] overflow-hidden border border-[#d8dce2] bg-white">
             <header class="ui-surface-panel border-b border-[#d8dce2] px-4 py-3">
                 <div>
                     <h2 class="ui-content-title text-[1.3rem]">{{ $decodeLegacyText($group->name) }}</h2>

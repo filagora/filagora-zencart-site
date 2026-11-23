@@ -110,6 +110,23 @@ class ThreadForumBreadcrumbPageTest extends TestCase
         $this->get(route('threads.search', $thread))->assertOk()->assertSee($expected, false);
     }
 
+    public function test_breadcrumbs_include_the_forum_group_and_link_every_step(): void
+    {
+        [$forum, $threads] = $this->forumWithThreads(1);
+        $thread = $threads[0];
+        $anchor = 'href="'.route('forums.index').'#forum-group-'.$forum->forum_group_id.'"';
+
+        $this->get(route('threads.show', $thread))->assertOk()
+            ->assertSeeInOrder([route('forums.index'), $anchor, route('forums.show', $forum), 'Thread 0'], false)
+            ->assertSee($anchor, false);
+
+        $this->get(route('forums.show', $forum))->assertOk()->assertSee($anchor, false);
+        $this->get(route('threads.search', $thread))->assertOk()->assertSee($anchor, false)
+            ->assertSee('href="'.route('threads.show', $thread).'"', false);
+        $this->get(route('forums.index'))->assertOk()
+            ->assertSee('id="forum-group-'.$forum->forum_group_id.'"', false);
+    }
+
     private function assertForumLink(Thread $thread, Forum $forum, ?int $page): void
     {
         $href = route('forums.show', array_filter(['forum' => $forum, 'page' => $page]));

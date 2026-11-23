@@ -30,10 +30,7 @@
 
     @include('forum.partials.moderation_queue')
 
-    <div class="mb-3 text-sm text-[#5c6570]">
-        <a class="text-[#8f3f1f] hover:underline" href="{{ route('forums.index') }}">Forums</a>
-        / {{ $decodeLegacyText($forum->group?->name ?? 'Group') }}
-    </div>
+    @include('forum.partials.breadcrumb', ['forum' => $forum, 'forumUrl' => null, 'current' => null])
 
     <header class="mb-4 border border-[#d8dce2] bg-white p-4">
         <div class="flex flex-col items-start justify-between gap-3 lg:flex-row lg:items-center">

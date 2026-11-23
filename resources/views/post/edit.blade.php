@@ -6,12 +6,7 @@
 @section('content')
     <div class="mx-auto max-w-[1100px] px-6 py-8 md:px-10">
         @include('forum.partials.header_nav')
-        <div class="mb-3 text-sm text-[#5c6570]">
-            <a class="text-[#8f3f1f] hover:underline" href="{{ route('forums.index') }}">Forums</a>
-            / <a class="text-[#8f3f1f] hover:underline" href="{{ app(\App\Forum\ThreadListings::class)->forumUrlFor($thread, request()) }}">{{ \App\Support\LegacyTextDecoder::decode($thread->forum->name) }}</a>
-            / <a class="text-[#8f3f1f] hover:underline" href="{{ route('threads.show', $thread) }}">{{ \App\Support\LegacyTextDecoder::decode($thread->title) }}</a>
-            / Edit Post
-        </div>
+        @include('forum.partials.breadcrumb', ['forum' => $thread->forum, 'forumUrl' => app(\App\Forum\ThreadListings::class)->forumUrlFor($thread, request()), 'thread' => $thread, 'current' => 'Edit Post'])
 
         <header class="mb-4">
             <h1 class="text-3xl font-semibold text-[#0f2133]">Edit Post</h1>
