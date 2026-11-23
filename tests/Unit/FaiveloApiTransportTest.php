@@ -7,6 +7,7 @@ use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\Mailer\Exception\TransportException;
 use Tests\TestCase;
@@ -60,6 +61,16 @@ class FaiveloApiTransportTest extends TestCase
                 && $body['cc'] === ['cc@example.com']
                 && $body['bcc'] === ['bcc@example.com'];
         });
+    }
+
+    public function test_a_recipient_the_api_refuses_is_logged_and_does_not_throw(): void
+    {
+        Log::shouldReceive('channel')->with('faivelo')->once()->andReturnSelf();
+        Log::shouldReceive('warning')->once()->withArgs(fn (string $message, array $context): bool => $context['recipients'] === ['bounced@example.com'] && $context['status'] === 422);
+
+        Http::fake(['faivelo.test/*' => Http::response(['error' => 'Recipient is suppressed after a hard bounce'], 422)]);
+
+        Mail::mailer('faivelo')->to('bounced@example.com')->send(new FaiveloTestMailable);
     }
 
     public function test_it_throws_a_transport_exception_when_the_api_rejects_the_send(): void

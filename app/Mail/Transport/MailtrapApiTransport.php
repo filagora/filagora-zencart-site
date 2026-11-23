@@ -13,6 +13,8 @@ use Symfony\Component\Mime\MessageConverter;
 
 class MailtrapApiTransport extends AbstractTransport
 {
+    use HandlesRecipientRejections;
+
     public function __construct(protected string $token, protected string $endpoint)
     {
         parent::__construct();
@@ -47,6 +49,12 @@ class MailtrapApiTransport extends AbstractTransport
 
         if (! $response->successful() || ! ($result['success'] ?? false)) {
             $errors = implode(', ', $result['errors'] ?? [$response->body()]);
+
+            if ($this->isRecipientRejection($response->status(), $errors)) {
+                $this->logRecipientRejection('mailtrap', $envelope->getRecipients(), $response->status(), $errors);
+
+                return;
+            }
 
             throw new TransportException(
                 sprintf('Request to Mailtrap API failed. Reason: %s.', $errors),

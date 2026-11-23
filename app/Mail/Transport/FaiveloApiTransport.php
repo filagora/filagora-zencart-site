@@ -18,6 +18,8 @@ use Symfony\Component\Mime\MessageConverter;
  */
 class FaiveloApiTransport extends AbstractTransport
 {
+    use HandlesRecipientRejections;
+
     private const MAX_RECIPIENTS = 50;
 
     public function __construct(protected string $key, protected string $endpoint)
@@ -64,6 +66,12 @@ class FaiveloApiTransport extends AbstractTransport
 
         if (! $response->successful()) {
             $reason = $response->json('error.message') ?? $response->json('error') ?? $response->body();
+
+            if ($this->isRecipientRejection($response->status(), is_string($reason) ? $reason : $response->body())) {
+                $this->logRecipientRejection('faivelo', $envelope->getRecipients(), $response->status(), is_string($reason) ? $reason : $response->body());
+
+                return;
+            }
 
             throw new TransportException(
                 sprintf('Request to Faivelo API failed. Reason: %s.', is_string($reason) ? $reason : $response->body()),

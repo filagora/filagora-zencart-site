@@ -9,6 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\Mailer\Exception\TransportException;
 use Tests\TestCase;
@@ -60,6 +61,21 @@ class MailtrapApiTransportTest extends TestCase
         $this->expectException(TransportException::class);
 
         Mail::mailer('mailtrap')->to('recipient@example.com')->send(new MailtrapTestMailable);
+    }
+
+    public function test_a_recipient_the_api_refuses_is_logged_and_does_not_throw(): void
+    {
+        Log::shouldReceive('channel')->with('mailtrap')->once()->andReturnSelf();
+        Log::shouldReceive('warning')->once()->withArgs(fn (string $message, array $context): bool => $context['recipients'] === ['bounced@example.com'] && $context['status'] === 422);
+
+        Http::fake([
+            'send.api.mailtrap.io/*' => Http::response([
+                'success' => false,
+                'errors' => ['Recipient is suppressed due to a previous bounce'],
+            ], 422),
+        ]);
+
+        Mail::mailer('mailtrap')->to('bounced@example.com')->send(new MailtrapTestMailable);
     }
 
     public function test_it_translates_the_mailtrap_variables_header_into_custom_variables(): void
