@@ -3,6 +3,7 @@
 @section('title', $page->seo_title ?: $page->title)
 @section('meta_description', $page->seo_description ?: '')
 @section('main_class', 'home-shell')
+@section('back_to_top', '1')
 
 @section('content')
     <section class="cms-page-shell">

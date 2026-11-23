@@ -3,6 +3,7 @@
 @section('title', $page->seo_title ?: $page->title)
 @section('meta_description', $page->seo_description ?: '')
 @section('main_class', '')
+@section('back_to_top', '1')
 
 @section('content')
     @forelse($page->blocks as $block)

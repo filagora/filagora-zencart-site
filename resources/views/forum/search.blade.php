@@ -2,6 +2,7 @@
 
 @section('title', __('forum.search.page_title'))
 @section('main_class', 'bg-white')
+@section('back_to_top', '1')
 
 @section('content')
     @php

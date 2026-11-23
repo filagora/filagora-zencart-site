@@ -2,6 +2,7 @@
 
 @section('title', __('forum.search.thread_page_title', ['thread' => \App\Support\LegacyTextDecoder::decode((string) $thread->title)]))
 @section('main_class', 'bg-white')
+@section('back_to_top', '1')
 
 @section('content')
     @php

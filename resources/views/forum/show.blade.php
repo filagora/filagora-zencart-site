@@ -2,6 +2,7 @@
 
 @section('title', \App\Support\LegacyTextDecoder::decode((string) $forum->name))
 @section('main_class', 'bg-white')
+@section('back_to_top', '1')
 @section('meta_description', $metaDescription ?? '')
 @section('canonical', $canonicalUrl ?? '')
 

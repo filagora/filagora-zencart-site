@@ -2,6 +2,7 @@
 
 @section('title', 'Forums')
 @section('main_class', 'bg-white')
+@section('back_to_top', '1')
 
 @section('content')
     @php

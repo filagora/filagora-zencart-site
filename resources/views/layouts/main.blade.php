@@ -91,6 +91,9 @@
 
     @include('partials.site_footer')
 </main>
+@hasSection('back_to_top')
+    @include('partials.back_to_top')
+@endif
 @stack('modals')
 @stack('scripts')
 @production

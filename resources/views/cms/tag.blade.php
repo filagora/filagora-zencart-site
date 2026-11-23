@@ -2,6 +2,7 @@
 
 @section('title', 'Pages tagged '. $tagSlug)
 @section('main_class', 'home-shell')
+@section('back_to_top', '1')
 
 @section('content')
     <section class="rounded-[22px] border border-[#e6d6c4] bg-white px-6 py-8 sm:px-10 sm:py-10">
