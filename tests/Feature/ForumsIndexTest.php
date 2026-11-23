@@ -616,7 +616,8 @@ class ForumsIndexTest extends TestCase
             ->assertSee('Pending Queue Thread')
             ->assertSee('Rejected reply body')
             ->assertSee(route('threads.moderate', $thread))
-            ->assertSee(route('posts.moderate', $reply));
+            ->assertSee(route('posts.moderate', $reply))
+            ->assertSeeInOrder(['data-forum-moderation-bar', '<header class="sticky top-0', 'Support Forums'], false);
 
         $this->actingAs(User::factory()->create())
             ->get('/forums')

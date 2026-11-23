@@ -2,15 +2,16 @@
 @php
     $decodeLegacyText = static fn (?string $value): string => \App\Support\LegacyTextDecoder::decode($value);
 @endphp
-    <details class="mb-6 overflow-hidden border border-[#d8dce2] bg-white shadow-[0_2px_6px_rgba(15,23,42,0.04)]">
-        <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 border-b border-[#d8dce2] bg-white px-4 py-3 text-[#243342] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8f3f1f] [&::-webkit-details-marker]:hidden">
+    <details class="overflow-hidden border-b border-[#d4a900] bg-[#f5d547] text-[#243342]" data-forum-moderation-bar>
+        <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 px-6 py-3 text-[#243342] md:px-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8f3f1f] [&::-webkit-details-marker]:hidden">
             <strong>Forum Moderation Queue</strong>
-            <small class="text-xs text-[#5c6570]">
+            <small class="text-xs text-[#3d3200]">
                 ({{ $pendingThreads->count() }} threads, {{ $pendingPosts->count() }} posts reviewable, {{ ($reportedPosts ?? collect())->sum('count') }} open reports)
             </small>
         </summary>
 
-        <h4 class="mt-4 px-4 text-sm font-semibold uppercase tracking-[0.04em] text-[#304458]">Reviewable Threads</h4>
+        <div class="bg-white">
+        <h4 class="pt-4 px-4 text-sm font-semibold uppercase tracking-[0.04em] text-[#304458]">Reviewable Threads</h4>
         <ul class="grid gap-3 p-4">
             @forelse($pendingThreads as $pendingThread)
                 @php
@@ -153,5 +154,6 @@
                 <li><small>No open reports.</small></li>
             @endforelse
         </ul>
+        </div>
     </details>
 @endif

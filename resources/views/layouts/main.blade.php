@@ -85,6 +85,7 @@
 @include('partials.form_submit_lock_overlay')
 <a href="#main-content" class="skip-link rounded-md bg-[#0f2133] px-3 py-2 text-sm font-semibold text-white" style="position:fixed;left:0.75rem;top:0.75rem;z-index:2000;transform:translateY(-160%);opacity:0;pointer-events:none;">Skip to main content</a>
 <main id="main-content" tabindex="-1" class="@yield('main_class', 'bg-[#dddddf]')">
+    @yield('above_header')
     @include('partials.site_header')
 
     @yield('content')

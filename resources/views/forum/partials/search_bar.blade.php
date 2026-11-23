@@ -35,6 +35,7 @@
     ])->filter()->count();
     // Which scope-specific fields show on first load; forum-search-bar.js
     // switches them when the scope changes.
+    $searchQuickLinks = $searchQuickLinks ?? false;
     $searchInThread = str_starts_with($searchScopeSelected, 'thread:');
 
     $searchPlaceholder = match (true) {
@@ -128,7 +129,8 @@
         <p class="hidden px-1 py-1 text-sm text-[#9f2230]" role="alert" data-forum-search-load-error>{{ __('forum.search.find_load_error') }}</p>
     </div>
 
-    <details class="group" @if($searchActiveFilters > 0) open @endif>
+    @if($searchQuickLinks)<div class="flex flex-wrap items-start gap-x-4 gap-y-2">@endif
+    <details @class(['group', 'min-w-0 flex-1' => $searchQuickLinks]) @if($searchActiveFilters > 0) open @endif>
         <summary class="inline-flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-control border border-[#0b3d67] bg-[#0f4c81] px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-[#0b3d67] group-open:bg-[#0b3d67] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f4c81] [&::-webkit-details-marker]:hidden">
             {{ __('forum.search.filters') }}
             @if($searchActiveFilters > 0)
@@ -194,4 +196,8 @@
             </label>
         </div>
     </details>
+    @if($searchQuickLinks)
+        @include('forum.partials.header_nav', ['inline' => true])
+    </div>
+    @endif
 </form>

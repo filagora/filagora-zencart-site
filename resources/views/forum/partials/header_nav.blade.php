@@ -1,5 +1,6 @@
 @php
     $forumHeaderItems = array_values($forumHeaderMenuItems ?? []);
+    $inline = $inline ?? false;
 @endphp
 
 {{--
@@ -7,10 +8,10 @@
     share this row but now has its own include per page - see
     forum.partials.search_bar.
 --}}
-<div class="mb-5 border-b border-[#e2e6ea] pb-3">
+<div @class(['mb-5 border-b border-[#e2e6ea] pb-3' => ! $inline, 'ml-auto' => $inline])>
 @if($forumHeaderItems !== [])
-    <nav class="pt-1" aria-label="Forum shortcuts">
-        <ul class="flex flex-wrap items-center gap-y-2 text-sm">
+    <nav @class(['pt-1' => ! $inline]) aria-label="Forum shortcuts">
+        <ul @class(['flex flex-wrap items-center gap-y-2 text-sm', 'justify-end' => $inline])>
             @foreach($forumHeaderItems as $item)
                 @php
                     $itemUrl = is_string($item['url'] ?? null) ? $item['url'] : '#';
@@ -19,11 +20,11 @@
                     $currentPath = request()->getPathInfo();
                     $isActive = $itemPath !== ''
                         && ($currentPath === $itemPath || str_starts_with($currentPath, rtrim($itemPath, '/').'/'));
-                    $linkClass = 'inline-flex items-center px-1 py-1 font-semibold underline-offset-4 transition hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8f3f1f] '.($isActive ? 'text-[#933c1f] underline' : 'text-[#0f2133] hover:text-[#8f3f1f]');
+                    $linkClass = 'inline-flex items-center px-1 py-1 '.($inline ? 'text-xs ' : '').'font-semibold underline-offset-4 transition hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8f3f1f] '.($isActive ? 'text-[#933c1f] underline' : 'text-[#0f2133] hover:text-[#8f3f1f]');
                 @endphp
                 <li class="flex items-center">
                     @unless($loop->first)
-                        <span class="mx-4 h-4 w-px bg-[#d0d5da]" aria-hidden="true"></span>
+                        <span class="{{ $inline ? 'mx-3' : 'mx-4' }} h-4 w-px bg-[#d0d5da]" aria-hidden="true"></span>
                     @endunless
                     @if($itemPath === '/forums/mark-all-read')
                         <form method="post" action="{{ route('forums.mark-all-read') }}" class="m-0">

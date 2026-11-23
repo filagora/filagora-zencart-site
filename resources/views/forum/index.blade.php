@@ -4,6 +4,10 @@
 @section('main_class', 'bg-white')
 @section('back_to_top', '1')
 
+@section('above_header')
+    @include('forum.partials.moderation_queue')
+@endsection
+
 @section('content')
     @php
         $decodeLegacyText = static fn (?string $value): string => \App\Support\LegacyTextDecoder::decode($value);
@@ -17,18 +21,14 @@
     @if(session('thread_status'))
         <div class="mb-4 rounded-surface border border-[#b9d6bd] bg-[#f1fbf2] px-3 py-2 text-sm text-[#1f5130]" role="status" aria-live="polite">{{ session('thread_status') }}@if(session('thread_status_link')) <a href="{{ session('thread_status_link') }}" class="font-semibold underline">Manage subscriptions</a>@endif</div>
     @endif
-    @include('forum.partials.header_nav')
-
     <header class="mb-5">
         <h1 class="ui-page-title">Support Forums</h1>
         <p class="ui-page-subtitle mt-2">Browse all active categories and latest discussions.</p>
     </header>
 
     <div class="mb-6">
-        @include('forum.partials.search_bar')
+        @include('forum.partials.search_bar', ['searchQuickLinks' => true])
     </div>
-
-    @include('forum.partials.moderation_queue')
 
     @foreach($groupRows as $row)
         @php
