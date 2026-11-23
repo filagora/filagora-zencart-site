@@ -12,8 +12,6 @@
     <div class="mx-auto max-w-[1320px] px-6 py-8 md:px-10">
     @include('partials.site_guest_intro')
         @include('forum.partials.unverified_banner')
-        @include('forum.partials.header_nav')
-
 
         <div class="mb-3 text-sm text-[#5c6570]">
             <a class="text-[#8f3f1f] hover:underline" href="{{ route('forums.index') }}">Forums</a>

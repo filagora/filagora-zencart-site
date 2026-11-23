@@ -13,7 +13,6 @@
         $decodedForumName = \App\Support\LegacyTextDecoder::decode($forum->name);
     @endphp
     <div class="mx-auto max-w-[1320px] px-6 py-8 md:px-10">
-        @include('forum.partials.header_nav')
 
         @include('forum.partials.breadcrumb', ['forum' => $forum, 'forumUrl' => route('forums.show', $forum), 'current' => 'New Thread'])
 

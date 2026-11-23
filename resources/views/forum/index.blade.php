@@ -27,7 +27,7 @@
     </header>
 
     <div class="mb-6">
-        @include('forum.partials.search_bar', ['searchQuickLinks' => true])
+        @include('forum.partials.search_bar')
     </div>
 
     @foreach($groupRows as $row)

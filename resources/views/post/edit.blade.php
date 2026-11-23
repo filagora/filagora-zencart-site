@@ -5,7 +5,6 @@
 
 @section('content')
     <div class="mx-auto max-w-[1100px] px-6 py-8 md:px-10">
-        @include('forum.partials.header_nav')
         @include('forum.partials.breadcrumb', ['forum' => $thread->forum, 'forumUrl' => app(\App\Forum\ThreadListings::class)->forumUrlFor($thread, request()), 'breadcrumbThread' => $thread, 'current' => 'Edit Post'])
 
         <header class="mb-4">

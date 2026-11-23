@@ -14,7 +14,6 @@
 
     <div class="mx-auto max-w-[1320px] px-6 py-8 md:px-10">
     @include('partials.site_guest_intro')
-        @include('forum.partials.header_nav')
 
         <div class="mt-3">
             @include('forum.partials.search_bar', [

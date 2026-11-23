@@ -35,7 +35,7 @@
     ])->filter()->count();
     // Which scope-specific fields show on first load; forum-search-bar.js
     // switches them when the scope changes.
-    $searchQuickLinks = $searchQuickLinks ?? false;
+    $searchQuickLinks = $searchQuickLinks ?? true;
     $searchInThread = str_starts_with($searchScopeSelected, 'thread:');
 
     $searchPlaceholder = match (true) {
