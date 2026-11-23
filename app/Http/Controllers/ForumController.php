@@ -134,7 +134,7 @@ class ForumController extends Controller
         $isForumSubscribed = $this->forumSubscriptions->isSubscribed($user, $forum);
 
         $threads = $this->listings->inForum($forum->id, $user, $ownThreadsOnly, $hideResolvedBugs)
-            ->paginate(30)
+            ->paginate(ThreadListings::FORUM_PAGE_SIZE)
             ->withQueryString();
         $this->listings->hydrateIndicators($threads->getCollection(), $user);
 

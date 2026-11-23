@@ -8,7 +8,7 @@
         @include('forum.partials.header_nav')
         <div class="mb-3 text-sm text-[#5c6570]">
             <a class="text-[#8f3f1f] hover:underline" href="{{ route('forums.index') }}">Forums</a>
-            / <a class="text-[#8f3f1f] hover:underline" href="{{ route('forums.show', $thread->forum) }}">{{ \App\Support\LegacyTextDecoder::decode($thread->forum->name) }}</a>
+            / <a class="text-[#8f3f1f] hover:underline" href="{{ app(\App\Forum\ThreadListings::class)->forumUrlFor($thread, request()) }}">{{ \App\Support\LegacyTextDecoder::decode($thread->forum->name) }}</a>
             / <a class="text-[#8f3f1f] hover:underline" href="{{ route('threads.show', $thread) }}">{{ \App\Support\LegacyTextDecoder::decode($thread->title) }}</a>
             / Edit Post
         </div>

@@ -26,7 +26,7 @@
 
         <div class="mb-3 text-sm text-[#5c6570] [overflow-wrap:anywhere]">
             <a class="text-[#8f3f1f] hover:underline" href="{{ route('forums.index') }}">Forums</a>
-            / <a class="text-[#8f3f1f] hover:underline" href="{{ route('forums.show', $thread->forum) }}">{{ $decodeLegacyText($thread->forum?->name) }}</a>
+            / <a class="text-[#8f3f1f] hover:underline" href="{{ app(\App\Forum\ThreadListings::class)->forumUrlFor($thread, request()) }}">{{ $decodeLegacyText($thread->forum?->name) }}</a>
             / <a class="text-[#8f3f1f] hover:underline" href="{{ route('threads.show', $thread) }}">{{ $decodedThreadTitle }}</a>
             / {{ __('forum.search.submit') }}
         </div>

@@ -13,6 +13,7 @@ use Filagora\Forums\Support\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 /**
@@ -23,6 +24,8 @@ use Illuminate\Support\Carbon;
  */
 class ThreadListings
 {
+    public const FORUM_PAGE_SIZE = 30;
+
     public function __construct(private readonly ForumAccess $access) {}
 
     /**
@@ -99,13 +102,23 @@ class ThreadListings
      */
     public function inForum(int $forumId, ?User $user, bool $ownThreadsOnly, bool $hideResolvedBugs = false): Builder
     {
-        $thread = Models::class('thread');
-
-        $query = $this->withMetrics(
-            $thread::query(),
+        return $this->withMetrics(
+            $this->forumScope($forumId, $user, $ownThreadsOnly, $hideResolvedBugs),
             $user,
             ['author:id,username,name,email', 'lastPostAuthor:id,username,name,email'],
-        )
+        );
+    }
+
+    /**
+     * The forum listing's filter and order, without the per-row counts: what `inForum()` lists.
+     *
+     * @return Builder<Thread>
+     */
+    private function forumScope(int $forumId, ?User $user, bool $ownThreadsOnly, bool $hideResolvedBugs): Builder
+    {
+        $thread = Models::class('thread');
+
+        $query = $thread::query()
             ->where('forum_id', $forumId)
             ->orderByDesc('is_pinned')
             ->orderByDesc('last_post_at')
@@ -122,6 +135,58 @@ class ThreadListings
         }
 
         return $query;
+    }
+
+    /**
+     * Where the thread's forum link should land: the forum listing page that holds the thread for
+     * this viewer, or the forum's first page when the thread is not in their listing (pending,
+     * rejected, or reached by a direct link).
+     */
+    public function forumUrlFor(Thread $thread, Request $request): string
+    {
+        $user = $request->user() instanceof User ? $request->user() : null;
+        $page = $this->forumPageOf($thread, $user, app(BugReportsFeature::class)->hideResolvedFor($request, $user));
+
+        return route('forums.show', array_filter([
+            'forum' => $thread->forum,
+            'page' => $page > 1 ? $page : null,
+        ]));
+    }
+
+    /**
+     * The 1-based page of `inForum()->paginate(self::FORUM_PAGE_SIZE)` the thread appears on for
+     * this viewer, or 1 when it is not in that listing.
+     */
+    public function forumPageOf(Thread $thread, ?User $user, bool $hideResolvedBugs = false): int
+    {
+        $ownThreadsOnly = $this->access->seesOnlyOwnThreads($thread->forum, $user);
+        $listing = fn (): Builder => $this->forumScope($thread->forum_id, $user, $ownThreadsOnly, $hideResolvedBugs)->reorder();
+
+        if (! $listing()->whereKey($thread->getKey())->exists()) {
+            return 1;
+        }
+
+        // Threads sorting before this one: pinned first, then newest last_post_at (nulls last),
+        // then newest created_at. Mirrors the orderBy chain in forumScope().
+        $ahead = $listing()->where(function (Builder $before) use ($thread): void {
+            $before->where('is_pinned', '>', (int) $thread->is_pinned)
+                ->orWhere(function (Builder $samePin) use ($thread): void {
+                    $samePin->where('is_pinned', (int) $thread->is_pinned)
+                        ->where(function (Builder $byActivity) use ($thread): void {
+                            if ($thread->last_post_at === null) {
+                                $byActivity->whereNotNull('last_post_at')
+                                    ->orWhere(fn (Builder $tie) => $tie->whereNull('last_post_at')->where('created_at', '>', $thread->created_at));
+
+                                return;
+                            }
+
+                            $byActivity->where('last_post_at', '>', $thread->last_post_at)
+                                ->orWhere(fn (Builder $tie) => $tie->where('last_post_at', $thread->last_post_at)->where('created_at', '>', $thread->created_at));
+                        });
+                });
+        })->count();
+
+        return intdiv($ahead, self::FORUM_PAGE_SIZE) + 1;
     }
 
     /**
