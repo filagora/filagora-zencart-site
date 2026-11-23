@@ -122,7 +122,9 @@ class ThreadListings
             ->where('forum_id', $forumId)
             ->orderByDesc('is_pinned')
             ->orderByDesc('last_post_at')
-            ->orderByDesc('created_at');
+            ->orderByDesc('created_at')
+            // A unique tiebreak, so threads sharing both timestamps keep one stable position.
+            ->orderByDesc('id');
 
         $this->access->scopeVisibleThreads($query, $user);
 
@@ -167,21 +169,24 @@ class ThreadListings
         }
 
         // Threads sorting before this one: pinned first, then newest last_post_at (nulls last),
-        // then newest created_at. Mirrors the orderBy chain in forumScope().
-        $ahead = $listing()->where(function (Builder $before) use ($thread): void {
+        // then newest created_at, then highest id. Mirrors the orderBy chain in forumScope().
+        $olderTies = fn (Builder $tie): Builder => $tie->where('created_at', '>', $thread->created_at)
+            ->orWhere(fn (Builder $same) => $same->where('created_at', $thread->created_at)->where('id', '>', $thread->id));
+
+        $ahead = $listing()->where(function (Builder $before) use ($thread, $olderTies): void {
             $before->where('is_pinned', '>', (int) $thread->is_pinned)
-                ->orWhere(function (Builder $samePin) use ($thread): void {
+                ->orWhere(function (Builder $samePin) use ($thread, $olderTies): void {
                     $samePin->where('is_pinned', (int) $thread->is_pinned)
-                        ->where(function (Builder $byActivity) use ($thread): void {
+                        ->where(function (Builder $byActivity) use ($thread, $olderTies): void {
                             if ($thread->last_post_at === null) {
                                 $byActivity->whereNotNull('last_post_at')
-                                    ->orWhere(fn (Builder $tie) => $tie->whereNull('last_post_at')->where('created_at', '>', $thread->created_at));
+                                    ->orWhere(fn (Builder $tie) => $tie->whereNull('last_post_at')->where($olderTies));
 
                                 return;
                             }
 
                             $byActivity->where('last_post_at', '>', $thread->last_post_at)
-                                ->orWhere(fn (Builder $tie) => $tie->where('last_post_at', $thread->last_post_at)->where('created_at', '>', $thread->created_at));
+                                ->orWhere(fn (Builder $tie) => $tie->where('last_post_at', $thread->last_post_at)->where($olderTies));
                         });
                 });
         })->count();

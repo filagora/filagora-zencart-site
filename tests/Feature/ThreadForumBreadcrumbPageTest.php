@@ -53,6 +53,30 @@ class ThreadForumBreadcrumbPageTest extends TestCase
         }
     }
 
+    public function test_threads_with_identical_timestamps_get_distinct_positions(): void
+    {
+        [$forum, $threads] = $this->forumWithThreads(35);
+        $stamp = now()->subDay();
+        Thread::query()->where('forum_id', $forum->id)->update(['last_post_at' => $stamp, 'created_at' => $stamp]);
+
+        $listings = app(ThreadListings::class);
+        $pages = [];
+
+        foreach ($threads as $thread) {
+            $thread = $thread->fresh();
+            $thread->setRelation('forum', $forum);
+            $pages[] = $listings->forumPageOf($thread, null);
+        }
+
+        $this->assertCount(30, array_keys($pages, 1, true));
+        $this->assertCount(5, array_keys($pages, 2, true));
+
+        $pageTwo = $listings->inForum($forum->id, null, false)->paginate(30, ['*'], 'page', 2)->pluck('id')->all();
+        foreach ($threads as $i => $thread) {
+            $this->assertSame(in_array($thread->id, $pageTwo, true), $pages[$i] === 2);
+        }
+    }
+
     public function test_threads_the_viewer_cannot_see_do_not_count_towards_the_page(): void
     {
         [$forum, $threads] = $this->forumWithThreads(31);
