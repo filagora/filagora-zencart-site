@@ -6,6 +6,10 @@
 @section('meta_description', $metaDescription ?? '')
 @section('canonical', $canonicalUrl ?? '')
 
+@section('above_header')
+    @include('forum.partials.moderation_queue')
+@endsection
+
 @section('content')
     @php
         $contentRenderer = app(\App\Support\FormattedContentRenderer::class);
@@ -31,7 +35,6 @@
     @include('partials.site_guest_intro')
     @include('forum.partials.unverified_banner')
     @include('forum.partials.header_nav')
-    @include('forum.partials.moderation_queue')
 
     @include('forum.partials.breadcrumb', ['forum' => $thread->forum, 'forumUrl' => app(\App\Forum\ThreadListings::class)->forumUrlFor($thread, request()), 'current' => $decodedThreadTitle])
 
