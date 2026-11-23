@@ -120,6 +120,10 @@ class ThreadForumBreadcrumbPageTest extends TestCase
             ->assertSeeInOrder([route('forums.index'), $anchor, route('forums.show', $forum), 'Thread 0'], false)
             ->assertSee($anchor, false);
 
+        // On the thread's own page its title is the last crumb, not a link as well.
+        $this->get(route('threads.show', $thread))->assertOk()
+            ->assertDontSee('hover:underline" href="'.route('threads.show', $thread).'">Thread 0</a>', false);
+
         $this->get(route('forums.show', $forum))->assertOk()->assertSee($anchor, false);
         $this->get(route('threads.search', $thread))->assertOk()->assertSee($anchor, false)
             ->assertSee('href="'.route('threads.show', $thread).'"', false);
