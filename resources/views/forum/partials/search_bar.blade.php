@@ -201,3 +201,6 @@
     </div>
     @endif
 </form>
+@if($searchQuickLinks)
+    <form id="forum-mark-all-read-form" method="post" action="{{ route('forums.mark-all-read') }}" class="hidden">@csrf</form>
+@endif

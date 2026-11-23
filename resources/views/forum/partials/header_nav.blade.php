@@ -26,7 +26,10 @@
                     @unless($loop->first)
                         <span class="{{ $inline ? 'mx-3' : 'mx-4' }} h-4 w-px bg-[#d0d5da]" aria-hidden="true"></span>
                     @endunless
-                    @if($itemPath === '/forums/mark-all-read')
+                    @if($itemPath === '/forums/mark-all-read' && $inline)
+                        {{-- Inline links sit inside the search form, so this button targets the sibling form search_bar emits after it (forms cannot nest). --}}
+                        <button type="submit" form="forum-mark-all-read-form" class="{{ $linkClass }} cursor-pointer appearance-none border-0 bg-transparent">{{ $item['label'] ?? 'Untitled' }}</button>
+                    @elseif($itemPath === '/forums/mark-all-read')
                         <form method="post" action="{{ route('forums.mark-all-read') }}" class="m-0">
                             @csrf
                             <button type="submit" class="{{ $linkClass }} cursor-pointer appearance-none border-0 bg-transparent">{{ $item['label'] ?? 'Untitled' }}</button>

@@ -100,7 +100,15 @@ class ForumHeaderNavigationTest extends TestCase
             ->assertSee('/forums/unread', false)
             ->assertSee('Mark All Read')
             ->assertSee('action="'.route('forums.mark-all-read').'"', false)
+            ->assertSee('form="forum-mark-all-read-form"', false)
             ->assertDontSee('href="/forums/mark-all-read"', false);
+
+        $html = $this->actingAs($user)->get(route('forums.show', $forum))->getContent();
+        $this->assertSame(
+            0,
+            preg_match('/<form[^>]*role="search"(?:(?!<\/form>).)*<form/s', $html),
+            'The mark-all-read form must not nest inside the search form.'
+        );
     }
 
     public function test_last_24_hours_page_only_lists_threads_with_recent_activity(): void
