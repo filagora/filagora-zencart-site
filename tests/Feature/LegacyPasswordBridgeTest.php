@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class LegacyPasswordBridgeTest extends TestCase
@@ -67,5 +68,29 @@ class LegacyPasswordBridgeTest extends TestCase
         ]);
 
         $this->assertTrue($user->verifyLegacyPassword($plainPassword));
+    }
+
+    public function test_upgrade_replaces_legacy_hash_with_a_working_bcrypt_password(): void
+    {
+        $plainPassword = 'my-secret-password';
+        $salt = 'abcd';
+
+        $user = User::query()->create([
+            'name' => 'legacy',
+            'username' => 'legacy_user_upgrade',
+            'email' => 'legacy-upgrade@example.com',
+            'password' => bcrypt('placeholder'),
+            'legacy_password_hash' => md5(md5($plainPassword).$salt),
+            'legacy_password_salt' => $salt,
+            'legacy_password_algo' => 'vb3_md5_double',
+        ]);
+
+        $user->upgradeLegacyPassword($plainPassword);
+        $user->save();
+
+        $user->refresh();
+        $this->assertTrue(Hash::check($plainPassword, $user->password));
+        $this->assertNull($user->legacy_password_hash);
+        $this->assertNull($user->legacy_password_algo);
     }
 }
