@@ -700,7 +700,7 @@
                     </div>
                 </div>
                 <div class="px-3.5 py-3">
-                        <h2 class="ui-card-title mb-2 text-[1.08rem]">{{ $index === 0 ? $decodedThreadTitle : 'Re: '.$decodedThreadTitle }}</h2>
+                        <h2 class="sr-only">Post #{{ $postNumber }} by {{ $authorName }}</h2>
                         @if($isUnderReview && !$post->is_deleted && $post->isApproved())
                             <div class="mb-3 flex items-center gap-2 border border-[#e7d3b8] bg-[#fbf1e6] px-3 py-2 text-sm text-[#7a4a1d]" role="status">
                                 <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
