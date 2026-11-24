@@ -9,6 +9,9 @@ use Filagora\Messages\Models\PrivateConversationParticipant;
 use Filagora\Messages\Models\PrivateMessage;
 use Filagora\Messages\Models\PrivateMessageFolder;
 use Filagora\Messages\Notifications\MessageReceivedNotification;
+use Filagora\Notifications\Enums\NotificationChannel;
+use Filagora\Notifications\Services\Preferences;
+use Filagora\Notifications\StandardCategories;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Notification;
@@ -39,7 +42,7 @@ class PrivateMessagingTest extends TestCase
         $this->assertSame(0, $sender->notifications()->count());
     }
 
-    public function test_a_new_private_message_is_not_mailed_as_on_the_old_site(): void
+    public function test_a_new_private_message_is_mailed_to_the_recipient_and_not_the_sender(): void
     {
         Notification::fake();
 
@@ -48,8 +51,22 @@ class PrivateMessagingTest extends TestCase
 
         $this->actingAs($sender)->post(route('messages.store'), ['subject' => 'Ping', 'to' => 'pm_recipient3', 'body' => 'You have a message'])->assertRedirect();
 
-        Notification::assertNotSentTo($recipient, MessageReceivedNotification::class);
+        Notification::assertSentToTimes($recipient, MessageReceivedNotification::class, 1);
         Notification::assertNotSentTo($sender, MessageReceivedNotification::class);
+    }
+
+    public function test_a_new_private_message_is_not_mailed_to_someone_who_turned_that_email_off(): void
+    {
+        Notification::fake();
+
+        $sender = User::factory()->create(['username' => 'pm_sender4']);
+        $recipient = User::factory()->create(['username' => 'pm_recipient4']);
+        app(Preferences::class)->set($recipient, StandardCategories::MESSAGES_RECEIVED, NotificationChannel::EMAIL, false);
+        app(Preferences::class)->flush();
+
+        $this->actingAs($sender)->post(route('messages.store'), ['subject' => 'Ping', 'to' => 'pm_recipient4', 'body' => 'You have a message'])->assertRedirect();
+
+        Notification::assertNotSentTo($recipient, MessageReceivedNotification::class);
     }
 
     public function test_header_avatar_shows_a_badge_for_unread_private_messages(): void

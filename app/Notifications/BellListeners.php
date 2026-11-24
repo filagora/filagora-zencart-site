@@ -9,7 +9,9 @@ use Filagora\Forums\Events\PostReported;
 use Filagora\Forums\Events\SubscribersToNotify as ThreadSubscribersToNotify;
 use Filagora\Forums\Events\ThreadModerated;
 use Filagora\Forums\Events\UsersMentioned;
+use Filagora\Forums\Notifications\UserMentionedNotification;
 use Filagora\Messages\Events\MessageReceived;
+use Filagora\Messages\Notifications\MessageReceivedNotification;
 use Filagora\Notifications\Enums\NotificationChannel;
 use Filagora\Notifications\Services\Preferences;
 use Filagora\Notifications\StandardCategories;
@@ -61,6 +63,10 @@ class BellListeners
         $url = $thread !== null ? $this->links->urlFor($thread, $post) : route('forums.index');
 
         foreach ($this->users($event->users) as $user) {
+            if ($this->preferences->canDeliver($user, StandardCategories::MENTION)) {
+                $user->notify(new UserMentionedNotification($post));
+            }
+
             if ($this->wants($user, StandardCategories::MENTION)) {
                 $user->notify(new BellNotification(__('notifications.mention.push.title', ['author' => $this->nameOf($post->author)]), $this->plain((string) $post->body), $url, StandardCategories::MENTION, $post->author?->getKey(), threadId: $thread?->getKey()));
             }
@@ -73,6 +79,12 @@ class BellListeners
         $url = route('messages.show', $event->conversation);
 
         foreach ($this->users($event->recipients) as $user) {
+            // The package's own mail is switched off site-wide (config/filagora-messages.php) so it
+            // is sent here, only to people whose email choice for new messages allows it.
+            if ($this->preferences->canDeliver($user, StandardCategories::MESSAGES_RECEIVED)) {
+                $user->notify(new MessageReceivedNotification($event->conversation, $event->message));
+            }
+
             if ($this->wants($user, StandardCategories::MESSAGES_RECEIVED)) {
                 $user->notify(new BellNotification(__('notifications.private_message.push.title', ['sender' => $this->nameOf($sender)]), $this->plain((string) $event->message->body), $url, StandardCategories::MESSAGES_RECEIVED, $sender?->getKey()));
             }

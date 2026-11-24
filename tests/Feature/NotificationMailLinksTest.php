@@ -7,10 +7,12 @@ use Filagora\Forums\Events\UsersMentioned;
 use Filagora\Forums\Models\ForumGroup;
 use Filagora\Forums\Notifications\ThreadUpdatedNotification;
 use Filagora\Forums\Notifications\UserMentionedNotification;
-use Filagora\Messages\Events\MessageReceived;
 use Filagora\Messages\Models\PrivateConversation;
 use Filagora\Messages\Models\PrivateMessage;
 use Filagora\Messages\Notifications\MessageReceivedNotification;
+use Filagora\Notifications\Enums\NotificationChannel;
+use Filagora\Notifications\Services\Preferences;
+use Filagora\Notifications\StandardCategories;
 use Filagora\ZenCart\Models\Forum;
 use Filagora\ZenCart\Models\Post;
 use Filagora\ZenCart\Models\Thread;
@@ -56,18 +58,18 @@ class NotificationMailLinksTest extends TestCase
         $this->assertSame(route('messages.show', $conversation), $mail->actionUrl);
     }
 
-    public function test_mentions_and_new_messages_are_not_emailed_as_on_the_old_site(): void
+    public function test_a_mention_is_mailed_unless_the_person_turned_that_email_off(): void
     {
         Notification::fake();
         [, $post, $recipient] = $this->threadWithReply();
-        $conversation = PrivateConversation::query()->forceCreate(['created_by_id' => $recipient->id, 'subject' => 'Hello']);
-        $message = PrivateMessage::query()->forceCreate(['conversation_id' => $conversation->id, 'sender_id' => $recipient->id, 'body' => 'Hi']);
+        $optedOut = User::factory()->create();
+        app(Preferences::class)->set($optedOut, StandardCategories::MENTION, NotificationChannel::EMAIL, false);
+        app(Preferences::class)->flush();
 
-        event(new UsersMentioned($post, [$recipient]));
-        event(new MessageReceived($conversation, $message, [$recipient]));
+        event(new UsersMentioned($post, [$recipient, $optedOut]));
 
-        Notification::assertNotSentTo($recipient, UserMentionedNotification::class);
-        Notification::assertNotSentTo($recipient, MessageReceivedNotification::class);
+        Notification::assertSentToTimes($recipient, UserMentionedNotification::class, 1);
+        Notification::assertNotSentTo($optedOut, UserMentionedNotification::class);
     }
 
     /**

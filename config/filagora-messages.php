@@ -5,8 +5,9 @@
  * array, so each key listed here carries all of its own values.
  */
 return [
-    // The old site told people about new messages with the bell and browser push only, never mail.
-    // The mail is built and links to the conversation if it is ever switched on.
+    // Off so the package does not mail every recipient regardless of their settings; the site's
+    // MessageReceived listener (BellListeners) sends the same mail to people whose email choice for
+    // new messages allows it. It links to the conversation through the route below.
     'mail' => [
         'enabled' => false,
         'routes' => ['conversation' => 'messages.show'],

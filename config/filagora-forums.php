@@ -30,7 +30,9 @@ return [
         'enabled' => true,
         'user_attribute' => 'username',
         'max_per_post' => 10,
-        // The old site told people about mentions with the bell and browser push only, never mail.
+        // Off so the package does not mail every mentioned person regardless of their settings; the
+        // site's UsersMentioned listener (BellListeners) sends the same mail to people whose email
+        // choice for mentions allows it.
         'mail' => ['enabled' => false],
         'routes' => ['thread' => 'threads.show'],
     ],
