@@ -96,6 +96,22 @@ class ForumListResolvedBugThreadFilterTest extends TestCase
         );
     }
 
+    public function test_toggle_sits_in_the_breadcrumb_row_above_the_header(): void
+    {
+        $forum = $this->createForum();
+        $moderator = $this->createModerator();
+
+        $html = $this->actingAs($moderator)
+            ->get(route('forums.show', $forum))
+            ->assertOk()
+            ->getContent();
+
+        $toggle = strpos($html, 'Hide threads with all bug reports resolved');
+        $this->assertNotFalse($toggle);
+        $this->assertGreaterThan(strpos($html, 'href="'.route('forums.index').'"'), $toggle);
+        $this->assertLessThan(strpos($html, '<header class="mb-4 border'), $toggle);
+    }
+
     public function test_moderator_sees_the_toggle_and_its_state(): void
     {
         $forum = $this->createForum();

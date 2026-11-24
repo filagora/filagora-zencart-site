@@ -32,7 +32,20 @@
     @include('partials.site_guest_intro')
     @include('forum.partials.unverified_banner')
 
-    @include('forum.partials.breadcrumb', ['forum' => $forum, 'forumUrl' => null, 'current' => null])
+    <div class="flex flex-wrap items-start justify-between gap-x-4">
+        @include('forum.partials.breadcrumb', ['forum' => $forum, 'forumUrl' => null, 'current' => null])
+        @if($canHideResolvedBugThreads ?? false)
+            <form method="post" action="{{ route('profile.hide-resolved-bug-threads.update') }}" class="mb-3 shrink-0">
+                @csrf
+                <input type="hidden" name="hidden" value="{{ ($hideResolvedBugThreads ?? false) ? '0' : '1' }}">
+                <input type="hidden" name="redirect_to" value="{{ request()->getRequestUri() }}">
+                <button type="submit" class="inline-flex items-center gap-2 rounded-control border px-3 py-1.5 text-xs font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8f3f1f] {{ ($hideResolvedBugThreads ?? false) ? 'border-[#933c1f] bg-[#933c1f] text-white hover:bg-[#7f3219]' : 'border-[#d8dce2] bg-white text-[#5c6570] hover:border-[#b9a68d] hover:text-[#8f3f1f]' }}">
+                    <span aria-hidden="true">{{ ($hideResolvedBugThreads ?? false) ? '☑' : '☐' }}</span>
+                    Hide threads with all bug reports resolved
+                </button>
+            </form>
+        @endif
+    </div>
 
     <header class="mb-4 border border-[#d8dce2] bg-white p-4">
         <div class="flex flex-col items-start justify-between gap-3 lg:flex-row lg:items-center">
@@ -74,18 +87,6 @@
     <div class="mb-6">
         @include('forum.partials.search_bar', ['searchForum' => $forum])
     </div>
-
-    @if($canHideResolvedBugThreads ?? false)
-        <form method="post" action="{{ route('profile.hide-resolved-bug-threads.update') }}" class="mb-4 flex items-center justify-end">
-            @csrf
-            <input type="hidden" name="hidden" value="{{ ($hideResolvedBugThreads ?? false) ? '0' : '1' }}">
-            <input type="hidden" name="redirect_to" value="{{ request()->getRequestUri() }}">
-            <button type="submit" class="inline-flex items-center gap-2 rounded-control border px-3 py-1.5 text-xs font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8f3f1f] {{ ($hideResolvedBugThreads ?? false) ? 'border-[#933c1f] bg-[#933c1f] text-white hover:bg-[#7f3219]' : 'border-[#d8dce2] bg-white text-[#5c6570] hover:border-[#b9a68d] hover:text-[#8f3f1f]' }}">
-                <span aria-hidden="true">{{ ($hideResolvedBugThreads ?? false) ? '☑' : '☐' }}</span>
-                Hide threads with all bug reports resolved
-            </button>
-        </form>
-    @endif
 
     @if($threadRequiresApproval || $replyRequiresApproval)
         <div class="{{ $threadErrorClass }}" role="status" aria-live="polite">
