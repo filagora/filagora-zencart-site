@@ -6,6 +6,7 @@ use App\Filament\Auth\Responses\LoginResponse as AppLoginResponse;
 use App\Filament\Auth\Responses\RegistrationResponse as AppRegistrationResponse;
 use App\Forum\BugReportsFeature;
 use App\Forum\ReportedPostUrl;
+use App\Http\Middleware\ThrottleAuthEndpoints;
 use App\Listeners\LogApiChange;
 use App\Listeners\SendBugReportNotification;
 use App\Listeners\SendForumThreadNotifications;
@@ -92,14 +93,17 @@ use Filament\Auth\Http\Responses\Contracts\RegistrationResponse as FilamentRegis
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -142,6 +146,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->configureDatabaseStatementTimeout();
+        $this->throttleLivewireAuthSubmissions();
 
         DB::prohibitDestructiveCommands(
             $this->app->isProduction() && ! config('app.allow_destructive_commands_in_production', false),
@@ -362,6 +367,18 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perDay(10)->by('privacy-request-submit:day:'.$key),
             ];
         });
+    }
+
+    /**
+     * The dashboard's sign-in and registration forms submit through Livewire's update route,
+     * which panel middleware does not cover.
+     */
+    private function throttleLivewireAuthSubmissions(): void
+    {
+        Livewire::setUpdateRoute(
+            fn (array $handle, string $path): RoutingRoute => Route::post($path, $handle)
+                ->middleware(['web', ThrottleAuthEndpoints::class]),
+        );
     }
 
     /**

@@ -21,6 +21,7 @@ return [
         'throttle' => 'Too many :bucket attempts. Please try again in :seconds seconds.',
     ],
     'messages' => [
+        'password_reset_requested' => 'If an account exists for that email address, we will email it a password reset link. If nothing arrives, wait a few minutes and try again.',
         'two_factor_enabled' => 'Two-factor authentication enabled.',
         'two_factor_disabled' => 'Two-factor authentication disabled.',
         'two_factor_already_enabled' => 'Two-factor authentication is already enabled.',

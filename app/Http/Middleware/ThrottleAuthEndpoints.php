@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Filament\Auth\Pages\PasswordReset\RequestPasswordReset;
+use Filament\Auth\Pages\PasswordReset\ResetPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,34 +13,40 @@ class ThrottleAuthEndpoints
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $bucket = $this->resolveBucket($request);
-        if ($bucket === null) {
-            return $next($request);
+        foreach ($this->resolveAttempts($request) as $bucket => $attempts) {
+            $key = $this->throttleKey($request, $bucket);
+            [$maxAttempts, $decaySeconds] = $this->limitsForBucket($bucket);
+
+            // The first check also clears a count left from a closed window. The count that
+            // comes back from adding to it is what holds when requests arrive together.
+            if (RateLimiter::tooManyAttempts($key, $maxAttempts)
+                || RateLimiter::increment($key, $decaySeconds, $attempts) > $maxAttempts) {
+                $retryAfter = RateLimiter::availableIn($key);
+
+                return $this->tooManyAttemptsResponse($request, $bucket, $retryAfter);
+            }
         }
-
-        $key = $this->throttleKey($request, $bucket);
-        [$maxAttempts, $decaySeconds] = $this->limitsForBucket($bucket);
-
-        if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
-            $retryAfter = RateLimiter::availableIn($key);
-
-            return $this->tooManyAttemptsResponse($request, $bucket, $retryAfter);
-        }
-
-        RateLimiter::hit($key, $decaySeconds);
 
         return $next($request);
     }
 
-    private function resolveBucket(Request $request): ?string
+    /**
+     * @return array<string, int> How many attempts the request makes, by bucket.
+     */
+    private function resolveAttempts(Request $request): array
     {
         if (strtoupper($request->method()) !== 'POST') {
-            return null;
+            return [];
+        }
+
+        // Livewire's path carries a per-application hash, so match the route.
+        if ($request->routeIs('*livewire.update')) {
+            return $this->resolveLivewireAttempts($request);
         }
 
         $path = trim($request->path(), '/');
 
-        return match (true) {
+        $bucket = match (true) {
             $path === 'dashboard/login' => 'login',
             $path === 'dashboard/register' => 'register',
             str_starts_with($path, 'dashboard/password-reset') => 'password_reset',
@@ -46,56 +54,71 @@ class ThrottleAuthEndpoints
             $path === 'register' => 'register',
             str_starts_with($path, 'password') => 'password_reset',
             $path === 'email/verification-notification' => 'password_reset',
-            $path === 'livewire/update' => $this->resolveLivewireBucket($request),
             default => null,
         };
+
+        return $bucket === null ? [] : [$bucket => 1];
     }
 
-    private function resolveLivewireBucket(Request $request): ?string
+    /**
+     * Counts the dashboard forms' submit calls, each one, since Livewire runs them all. Their
+     * pages also post an update as fields change, and those must not use up the allowance.
+     *
+     * @return array<string, int>
+     */
+    private function resolveLivewireAttempts(Request $request): array
     {
-        $payload = $request->json()->all();
-        if (! is_array($payload)) {
-            return null;
+        // The same input Livewire reads: it takes the query string as well as the body.
+        $components = $request->input('components');
+        if (! is_array($components)) {
+            return [];
         }
 
-        $components = $payload['components'] ?? [];
-        if (! is_array($components)) {
-            return null;
-        }
+        $attempts = [];
 
         foreach ($components as $component) {
-            if (! is_array($component)) {
+            if (! is_array($component) || ! is_array($component['calls'] ?? null)) {
                 continue;
             }
 
-            $snapshot = (string) ($component['snapshot'] ?? '');
-            $calls = $component['calls'] ?? [];
-            $methods = [];
-            if (is_array($calls)) {
-                foreach ($calls as $call) {
-                    if (! is_array($call)) {
-                        continue;
-                    }
-                    $method = strtolower(trim((string) ($call['method'] ?? '')));
-                    if ($method !== '') {
-                        $methods[] = $method;
-                    }
+            foreach ($component['calls'] as $call) {
+                $method = is_array($call) && is_string($call['method'] ?? null) ? strtolower(trim($call['method'])) : '';
+
+                $bucket = match ($method) {
+                    'authenticate' => 'login',
+                    'register' => 'register',
+                    // "request" is too common a method name to count on any other component.
+                    'request' => $this->isComponent($component, RequestPasswordReset::class) ? 'password_reset' : null,
+                    'resetpassword' => $this->isComponent($component, ResetPassword::class) ? 'password_reset' : null,
+                    default => null,
+                };
+
+                if ($bucket !== null) {
+                    $attempts[$bucket] = ($attempts[$bucket] ?? 0) + 1;
                 }
-            }
-
-            $isLoginComponent = str_contains($snapshot, 'filament.pages.auth.login');
-            $isRegisterComponent = str_contains($snapshot, 'filament.pages.auth.register');
-
-            if ($isLoginComponent || in_array('authenticate', $methods, true)) {
-                return 'login';
-            }
-
-            if ($isRegisterComponent || in_array('register', $methods, true)) {
-                return 'register';
             }
         }
 
-        return null;
+        return $attempts;
+    }
+
+    /**
+     * @param  array<mixed>  $component
+     * @param  class-string  $class
+     */
+    private function isComponent(array $component, string $class): bool
+    {
+        $snapshot = is_string($component['snapshot'] ?? null) ? json_decode($component['snapshot'], true) : null;
+        $name = is_array($snapshot) ? ($snapshot['memo']['name'] ?? null) : null;
+
+        if (! is_string($name)) {
+            return false;
+        }
+
+        $finder = app('livewire.finder');
+        $resolved = $finder->resolveClassComponentClassName($finder->normalizeName($name));
+
+        return is_string($resolved) && is_a($resolved, $class, true);
     }
 
     /**
@@ -113,10 +136,11 @@ class ThrottleAuthEndpoints
 
     private function throttleKey(Request $request, string $bucket): string
     {
+        // Nothing the client can choose (the user agent, say) may go in the key, or changing
+        // it would start a fresh allowance.
         $ip = (string) ($request->ip() ?? 'unknown-ip');
-        $agent = strtolower(substr((string) ($request->userAgent() ?? 'unknown-agent'), 0, 120));
 
-        return 'auth-throttle:'.$bucket.':'.sha1($ip.'|'.$agent);
+        return 'auth-throttle:'.$bucket.':'.sha1($ip);
     }
 
     private function tooManyAttemptsResponse(Request $request, string $bucket, int $retryAfter): Response
@@ -126,7 +150,16 @@ class ThrottleAuthEndpoints
             'seconds' => max(1, $retryAfter),
         ]);
 
-        if ($request->expectsJson() || $request->is('livewire/*')) {
+        // Livewire shows a failed update's body to the visitor in a popup, which is dark
+        // behind the document unless the document sets its own colours.
+        if ($request->routeIs('*livewire.update')) {
+            return response(sprintf(
+                '<!doctype html><meta charset="utf-8"><body style="margin:0;padding:24px;background:#fff;color:#111;font:16px/1.5 sans-serif">%s</body>',
+                e($message),
+            ), 429);
+        }
+
+        if ($request->expectsJson()) {
             return response()->json([
                 'message' => $message,
                 'retry_after' => max(1, $retryAfter),
