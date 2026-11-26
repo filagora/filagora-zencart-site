@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\DB;
  * years of stored posts ([u], [sup], [sub], [highlight], [left], [center], [right], [indent],
  * [color], [size], [font], [spoiler], [video], [attach]), "GitHub issue #13" links to the core
  * tracker, and @mention links to member pages. The input is already safe HTML (raw HTML is
- * escaped before this runs) and every step keeps it safe: colours, sizes and fonts are checked
- * against short allow-lists, and only http(s) URLs are linked.
+ * escaped before this runs) and every step keeps it safe: only text is rewritten, never a tag or
+ * an attribute value, colours, sizes and fonts are checked against short allow-lists, and only
+ * http(s) URLs are linked.
  *
  * Links to other sites are marked by the markdown renderer itself, and the GitHub issue anchors
  * made here the same way; a last pass sets their final form. Member-posted links to anywhere but our
@@ -35,6 +36,11 @@ final class ZenCartHtmlTransformer implements HtmlTransformer
     private const OWN_HOST_SUFFIX = 'zen-cart.com';
 
     private const OWN_GITHUB_PATH_PREFIX = '/zencart/';
+
+    /**
+     * Whole links and code, whose text is left as written, and every other tag.
+     */
+    private const LINKS_CODE_AND_TAGS = '/<a\b[^>]*>.*?<\/a>|<code\b[^>]*>.*?<\/code>|<pre\b[^>]*>.*?<\/pre>|<[^<>]*>/is';
 
     /** @var array<string,string> */
     private const FONT_FAMILIES = [
@@ -62,28 +68,50 @@ final class ZenCartHtmlTransformer implements HtmlTransformer
 
     public function transform(string $html): string
     {
-        $html = $this->linkGitHubIssueReferences($html);
-        $html = $this->linkMentions($html);
-        $html = $this->replacePairedTag($html, 'u', static fn (string $body): string => '<u>'.$body.'</u>');
-        $html = $this->replacePairedTag($html, 'sup', static fn (string $body): string => '<sup>'.$body.'</sup>');
-        $html = $this->replacePairedTag($html, 'sub', static fn (string $body): string => '<sub>'.$body.'</sub>');
-        $html = $this->replacePairedTag($html, 'highlight', static fn (string $body): string => '<mark>'.$body.'</mark>');
+        $html = str_replace("\0", '', $html);
+        $html = $this->rewriteText($html, self::LINKS_CODE_AND_TAGS, $this->linkGitHubIssueReferences(...));
+        $html = $this->rewriteText($html, self::LINKS_CODE_AND_TAGS, $this->linkMentions(...));
+        $html = $this->rewriteText($html, HiddenMarkup::TAG, $this->replaceForumTags(...));
+
+        return $this->markExternalLinks($html);
+    }
+
+    /**
+     * Runs a rewrite over the HTML with the markup the pattern matches taken out of its reach.
+     *
+     * @param  Closure(string, HiddenMarkup): string  $rewrite
+     */
+    private function rewriteText(string $html, string $pattern, Closure $rewrite): string
+    {
+        $markup = new HiddenMarkup;
+        $text = $markup->hide($html, $pattern);
+
+        return $text === null ? $html : $markup->restore($rewrite($text, $markup));
+    }
+
+    private function replaceForumTags(string $text, HiddenMarkup $markup): string
+    {
+        $text = $this->replacePairedTag($markup, $text, 'u', static fn (string $body): string => '<u>'.$body.'</u>');
+        $text = $this->replacePairedTag($markup, $text, 'sup', static fn (string $body): string => '<sup>'.$body.'</sup>');
+        $text = $this->replacePairedTag($markup, $text, 'sub', static fn (string $body): string => '<sub>'.$body.'</sub>');
+        $text = $this->replacePairedTag($markup, $text, 'highlight', static fn (string $body): string => '<mark>'.$body.'</mark>');
 
         foreach (['left', 'center', 'right'] as $alignment) {
-            $html = $this->replacePairedTag(
-                $html,
+            $text = $this->replacePairedTag(
+                $markup,
+                $text,
                 $alignment,
                 static fn (string $body): string => '<span class="block text-'.$alignment.'">'.$body.'</span>',
             );
         }
 
-        $html = $this->replacePairedTag($html, 'indent', static fn (string $body): string => '<blockquote>'.$body.'</blockquote>');
-        $html = $this->replaceAttributedTag($html, 'color', function (string $attribute, string $body): string {
+        $text = $this->replacePairedTag($markup, $text, 'indent', static fn (string $body): string => '<blockquote>'.$body.'</blockquote>');
+        $text = $this->replaceAttributedTag($markup, $text, 'color', function (string $attribute, string $body): string {
             $color = $this->normalizeAttribute($attribute);
 
             return $this->isSafeColor($color) ? '<span style="color:'.$color.';">'.$body.'</span>' : $body;
         });
-        $html = $this->replaceAttributedTag($html, 'size', function (string $attribute, string $body): string {
+        $text = $this->replaceAttributedTag($markup, $text, 'size', function (string $attribute, string $body): string {
             $size = $this->normalizeAttribute($attribute);
 
             if (! preg_match('/^\d{1,2}$/', $size) || (int) $size < 8 || (int) $size > 72) {
@@ -92,15 +120,15 @@ final class ZenCartHtmlTransformer implements HtmlTransformer
 
             return '<span style="font-size:'.(int) $size.'px;">'.$body.'</span>';
         });
-        $html = $this->replaceAttributedTag($html, 'font', function (string $attribute, string $body): string {
+        $text = $this->replaceAttributedTag($markup, $text, 'font', function (string $attribute, string $body): string {
             $font = self::FONT_FAMILIES[strtolower($this->normalizeAttribute($attribute))] ?? null;
 
             return $font === null ? $body : '<span style="font-family:'.$font.';">'.$body.'</span>';
         });
-        $html = $this->replaceSpoilers($html);
-        $html = $this->replaceVideos($html);
+        $text = $this->replaceSpoilers($markup, $text);
+        $text = $this->replaceVideos($markup, $text);
 
-        return $this->markExternalLinks($this->replaceAttachments($html));
+        return $this->replaceAttachments($markup, $text);
     }
 
     /**
@@ -146,36 +174,45 @@ final class ZenCartHtmlTransformer implements HtmlTransformer
     }
 
     /** @param Closure(string): string $renderer */
-    private function replacePairedTag(string $html, string $tag, Closure $renderer): string
+    private function replacePairedTag(HiddenMarkup $markup, string $text, string $tag, Closure $renderer): string
     {
         $pattern = '/\['.preg_quote($tag, '/').'\](.*?)\[\/'.preg_quote($tag, '/').'\]/is';
 
-        return $this->replaceUntilStable($html, $pattern, static fn (array $matches): string => $renderer((string) $matches[1]));
+        return $this->replaceUntilStable($markup, $text, $pattern, static fn (array $matches): string => $renderer((string) $matches[1]));
     }
 
     /** @param Closure(string,string): string $renderer */
-    private function replaceAttributedTag(string $html, string $tag, Closure $renderer): string
+    private function replaceAttributedTag(HiddenMarkup $markup, string $text, string $tag, Closure $renderer): string
     {
         $pattern = '/\['.preg_quote($tag, '/').'=([^\]]+)\](.*?)\[\/'.preg_quote($tag, '/').'\]/is';
 
-        return $this->replaceUntilStable($html, $pattern, static fn (array $matches): string => $renderer((string) $matches[1], (string) $matches[2]));
+        return $this->replaceUntilStable($markup, $text, $pattern, static fn (array $matches): string => $renderer((string) $matches[1], (string) $matches[2]));
     }
 
-    /** @param Closure(array<int,string>): string $renderer */
-    private function replaceUntilStable(string $html, string $pattern, Closure $renderer): string
+    /**
+     * The tags a replacement makes are hidden at once, so that no later match can reach into them.
+     *
+     * @param  Closure(array<int,string>): string  $renderer
+     */
+    private function replaceUntilStable(HiddenMarkup $markup, string $text, string $pattern, Closure $renderer): string
     {
         do {
-            $previous = $html;
-            $html = preg_replace_callback($pattern, $renderer, $html) ?? $html;
-        } while ($html !== $previous);
+            $previous = $text;
+            $text = preg_replace_callback(
+                $pattern,
+                static fn (array $matches): string => (string) $markup->hide($renderer($matches)),
+                $text,
+            ) ?? $text;
+        } while ($text !== $previous);
 
-        return $html;
+        return $text;
     }
 
-    private function replaceSpoilers(string $html): string
+    private function replaceSpoilers(HiddenMarkup $markup, string $text): string
     {
         return $this->replaceUntilStable(
-            $html,
+            $markup,
+            $text,
             '/\[spoiler(?:=([^\]]+))?\](.*?)\[\/spoiler\]/is',
             function (array $matches): string {
                 $summary = $this->normalizeAttribute((string) ($matches[1] ?? ''));
@@ -186,10 +223,11 @@ final class ZenCartHtmlTransformer implements HtmlTransformer
         );
     }
 
-    private function replaceVideos(string $html): string
+    private function replaceVideos(HiddenMarkup $markup, string $text): string
     {
-        return $this->replaceUntilStable($html, '/\[video\](.*?)\[\/video\]/is', function (array $matches): string {
-            $label = trim(strip_tags(html_entity_decode((string) $matches[1], ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+        return $this->replaceUntilStable($markup, $text, '/\[video\](.*?)\[\/video\]/is', function (array $matches): string {
+            $body = HiddenMarkup::remove((string) $matches[1]);
+            $label = trim(strip_tags(html_entity_decode($body, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
             $url = $this->safeUrl($label);
             if ($url === null) {
                 return htmlspecialchars($label, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -201,11 +239,11 @@ final class ZenCartHtmlTransformer implements HtmlTransformer
         });
     }
 
-    private function replaceAttachments(string $html): string
+    private function replaceAttachments(HiddenMarkup $markup, string $text): string
     {
-        return $this->replaceUntilStable($html, '/\[attach(?:=([^\]]+))?\](.*?)\[\/attach\]/is', function (array $matches): string {
+        return $this->replaceUntilStable($markup, $text, '/\[attach(?:=([^\]]+))?\](.*?)\[\/attach\]/is', function (array $matches): string {
             $mode = strtoupper($this->normalizeAttribute((string) ($matches[1] ?? '')));
-            $rawId = trim(strip_tags((string) $matches[2]));
+            $rawId = trim(strip_tags(HiddenMarkup::remove((string) $matches[2])));
             if (! preg_match('/^\d+$/', $rawId) || (int) $rawId <= 0 || ! $this->attachmentExists((int) $rawId)) {
                 return '[Attachment no longer available]';
             }
@@ -232,38 +270,22 @@ final class ZenCartHtmlTransformer implements HtmlTransformer
     /**
      * Auto-links a bare "GitHub issue #13" (or "github issue 13", any
      * casing/spacing of the same shorthand) mention to the core issue
-     * tracker. Skips text already inside a link, code span, or code block,
-     * both to avoid double-linking and to leave literal/quoted text alone.
+     * tracker. Never sees text inside a link, code span, or code block,
+     * which avoids double-linking and leaves literal/quoted text alone.
      * Runs before markExternalLinks() so the anchors it creates pick up the
      * same new-tab-with-icon treatment as any other external link.
      */
-    private function linkGitHubIssueReferences(string $html): string
+    private function linkGitHubIssueReferences(string $text): string
     {
-        $protectedBlocks = [];
-        $protect = function (string $match) use (&$protectedBlocks): string {
-            $key = "\0gh-issue-protected-".count($protectedBlocks)."\0";
-            $protectedBlocks[$key] = $match;
-
-            return $key;
-        };
-
-        $protectedHtml = preg_replace_callback(
-            '/<a\b[^>]*>.*?<\/a>|<code\b[^>]*>.*?<\/code>|<pre\b[^>]*>.*?<\/pre>/is',
-            static fn (array $matches): string => $protect((string) $matches[0]),
-            $html,
-        ) ?? $html;
-
-        $linkedHtml = preg_replace_callback(
+        return preg_replace_callback(
             '/\bgithub issue\s*#?\s*(\d+)\b/i',
             static function (array $matches): string {
                 $url = self::GITHUB_ISSUE_TRACKER_URL.(int) $matches[1];
 
                 return '<a rel="nofollow noopener noreferrer" target="_blank" class="external-link" href="'.$url.'">'.$matches[0].'</a>';
             },
-            $protectedHtml,
-        ) ?? $protectedHtml;
-
-        return strtr($linkedHtml, $protectedBlocks);
+            $text,
+        ) ?? $text;
     }
 
     /**
@@ -271,27 +293,13 @@ final class ZenCartHtmlTransformer implements HtmlTransformer
      * same username shape and existence check PostMentionService uses to
      * decide who gets notified - an unrecognised name (typo, or just prose
      * with an "@" in it) is left as plain text rather than a dead link.
-     * Skips text already inside a link, code span, or code block, same as
+     * Never sees text inside a link, code span, or code block, same as
      * linkGitHubIssueReferences() above.
      */
-    private function linkMentions(string $html): string
+    private function linkMentions(string $text): string
     {
-        $protectedBlocks = [];
-        $protect = function (string $match) use (&$protectedBlocks): string {
-            $key = "\0mention-protected-".count($protectedBlocks)."\0";
-            $protectedBlocks[$key] = $match;
-
-            return $key;
-        };
-
-        $protectedHtml = preg_replace_callback(
-            '/<a\b[^>]*>.*?<\/a>|<code\b[^>]*>.*?<\/code>|<pre\b[^>]*>.*?<\/pre>/is',
-            static fn (array $matches): string => $protect((string) $matches[0]),
-            $html,
-        ) ?? $html;
-
-        if (preg_match_all('/(?<![\w@])@([A-Za-z0-9._-]{2,30})/u', $protectedHtml, $matches) === 0) {
-            return strtr($protectedHtml, $protectedBlocks);
+        if (preg_match_all('/(?<![\w@])@([A-Za-z0-9._-]{2,30})/u', $text, $matches) === 0) {
+            return $text;
         }
 
         $usernames = [];
@@ -305,10 +313,10 @@ final class ZenCartHtmlTransformer implements HtmlTransformer
         $userIdsByUsername = $this->resolveMentionedUserIds(array_keys($usernames));
 
         if ($userIdsByUsername === []) {
-            return strtr($protectedHtml, $protectedBlocks);
+            return $text;
         }
 
-        $linkedHtml = preg_replace_callback(
+        return preg_replace_callback(
             '/(?<![\w@])@([A-Za-z0-9._-]{2,30})/u',
             static function (array $matches) use ($userIdsByUsername): string {
                 $raw = (string) $matches[1];
@@ -322,10 +330,8 @@ final class ZenCartHtmlTransformer implements HtmlTransformer
 
                 return '<a href="/members/'.$userId.'">@'.$name.'</a>'.$trailing;
             },
-            $protectedHtml,
-        ) ?? $protectedHtml;
-
-        return strtr($linkedHtml, $protectedBlocks);
+            $text,
+        ) ?? $text;
     }
 
     /**
@@ -353,7 +359,7 @@ final class ZenCartHtmlTransformer implements HtmlTransformer
 
     private function normalizeAttribute(string $attribute): string
     {
-        return trim(html_entity_decode($attribute, ENT_QUOTES | ENT_HTML5, 'UTF-8'), " \t\n\r\0\x0B'\"");
+        return trim(html_entity_decode(HiddenMarkup::remove($attribute), ENT_QUOTES | ENT_HTML5, 'UTF-8'), " \t\n\r\0\x0B'\"");
     }
 
     private function isSafeColor(string $color): bool

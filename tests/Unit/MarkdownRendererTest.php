@@ -5,8 +5,10 @@ namespace Tests\Unit;
 use App\Markdown\BlankLineGapExtension;
 use App\Markdown\ZenCartHtmlTransformer;
 use Closure;
+use Dom\HTMLDocument;
 use Filagora\Core\Content\ExtensionRegistry;
 use Filagora\Core\Content\MarkdownRenderer;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class MarkdownRendererTest extends TestCase
@@ -288,6 +290,116 @@ MARKDOWN);
         $this->assertStringContainsString('<sub>n</sub>', $html);
         $this->assertStringContainsString('<mark>&lt;script&gt;alert(1)&lt;/script&gt;</mark>', $html);
         $this->assertStringNotContainsString('<script>', $html);
+    }
+
+    /**
+     * Markdown that puts member text inside an HTML attribute. The site's additions work on text, so
+     * what the core renderer made of these must come out untouched.
+     */
+    #[DataProvider('textInsideAnAttribute')]
+    public function test_nothing_is_rewritten_inside_an_attribute(string $markdown): void
+    {
+        $plain = $this->coreRenderer()->render($markdown);
+
+        $html = $this->renderer(
+            attachmentExists: fn (int $id): bool => true,
+            mentionedUserIds: fn (array $usernames): array => ['wilt' => 42],
+        )->render($markdown);
+
+        $this->assertSame($plain, $html);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function textInsideAnAttribute(): iterable
+    {
+        $tags = [
+            'underline' => '[u]t[/u]',
+            'superscript' => '[sup]t[/sup]',
+            'subscript' => '[sub]t[/sub]',
+            'highlight' => '[highlight]t[/highlight]',
+            'left' => '[left]t[/left]',
+            'center' => '[center]t[/center]',
+            'right' => '[right]t[/right]',
+            'indent' => '[indent]t[/indent]',
+            'color' => '[color=red]t[/color]',
+            'size' => '[size=18]t[/size]',
+            'font' => '[font=Verdana]t[/font]',
+            'spoiler' => '[spoiler=s]t[/spoiler]',
+            'video' => '[video]http://example.test/clip//[/video]',
+            'attachment' => '[attach=CONFIG]123[/attach]',
+            'issue reference' => 'GitHub issue #13',
+            'mention' => 'hello @wilt',
+        ];
+
+        foreach ($tags as $name => $tag) {
+            yield $name.' in a link title' => ['[a](/x "'.$tag.'")'];
+            yield $name.' in an image title' => ['![a](/x "'.$tag.'")'];
+            yield $name.' in image alt text' => ['!['.$tag.'](/x)'];
+        }
+
+        yield 'a mention in a link address' => ['[a](/x?@wilt)'];
+        yield 'an issue reference in a link address' => ['[a](</x?q= github issue 13>)'];
+        yield 'a tag in a code fence language' => ["```[u]t[/u]\ncode\n```"];
+    }
+
+    /**
+     * Markup one tag makes must be as closed to the tags after it as the markdown renderer's own.
+     */
+    #[DataProvider('tagsNestedInGeneratedMarkup')]
+    public function test_a_tag_never_rewrites_markup_another_tag_made(string $markdown): void
+    {
+        $html = $this->renderer(
+            attachmentExists: fn (int $id): bool => true,
+            mentionedUserIds: fn (array $usernames): array => ['wilt' => 42],
+        )->render($markdown);
+
+        $allowed = [
+            'a' => ['class', 'href', 'rel', 'target', 'title'],
+            'img' => ['alt', 'loading', 'src', 'title'],
+            'span' => ['class', 'style'],
+        ];
+        $document = HTMLDocument::createFromString('<!doctype html><body>'.$html, LIBXML_NOERROR);
+
+        $this->assertStringNotContainsString("\0", $html);
+
+        foreach ($document->querySelectorAll('body *') as $element) {
+            foreach ($element->attributes as $attribute) {
+                $this->assertContains($attribute->name, $allowed[$element->localName] ?? [], $html);
+                $this->assertStringNotContainsString('<', $attribute->value, $html);
+            }
+        }
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function tagsNestedInGeneratedMarkup(): iterable
+    {
+        yield 'a video inside a video address' => ['[video]http://a.test/[video]http://b.test/path/clip//[/video] [/video]'];
+        yield 'a video closed twice' => ['[video]http://a.test/[video][/video]http://b.test/path/clip//[/video]'];
+        yield 'an attachment inside a video address' => ['[video]http://a.test/[attach]1[/attach][/video]'];
+        yield 'a mention inside a video address' => ['[video]http://a.test/@wilt[/video]'];
+        yield 'a tag as a colour' => ['[color=[u]red[/u]]t[/color]'];
+        yield 'a video as a spoiler title' => ['[spoiler=[video]http://a.test/path/clip//[/video]]t[/spoiler]'];
+        yield 'markdown inside a tag attribute' => ['[spoiler=![a](/x "q")]t[/spoiler]'];
+    }
+
+    public function test_a_null_byte_cannot_pose_as_hidden_markup(): void
+    {
+        $html = $this->renderer()->render("[a](/x \"t\") \0#0#\0 [u]\0#1#\0[/u]");
+
+        $this->assertSame(1, substr_count($html, '<a '));
+        $this->assertStringNotContainsString("\0", $html);
+    }
+
+    private function coreRenderer(): MarkdownRenderer
+    {
+        $registry = new ExtensionRegistry;
+        $registry->extension(new BlankLineGapExtension);
+
+        return new MarkdownRenderer($registry);
     }
 
     /**
