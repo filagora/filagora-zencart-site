@@ -296,7 +296,7 @@ assert_deploy_target() {
     actual_hostname="$(hostname)"
 
     if [ "${actual_hostname}" != "${DEPLOY_EXPECTED_HOSTNAME}" ]; then
-      echo "Refusing to deploy: this host is ${actual_hostname}, expected ${DEPLOY_EXPECTED_HOSTNAME}." >&2
+      echo "Refusing to deploy: this host does not have the name in DEPLOY_EXPECTED_HOSTNAME." >&2
       exit 1
     fi
   fi
@@ -310,7 +310,7 @@ assert_deploy_target() {
       address="$(echo "${address}" | xargs)"
 
       if [ -n "${address}" ] && [[ "${addresses}" == *" ${address} "* ]]; then
-        echo "Refusing to deploy: this host has the forbidden address ${address}." >&2
+        echo "Refusing to deploy: this host has an address listed in DEPLOY_FORBIDDEN_ADDRESSES." >&2
         exit 1
       fi
     done

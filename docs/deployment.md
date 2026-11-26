@@ -1,6 +1,6 @@
 # Deploying the site
 
-How a release reaches a server. Nothing here names a real host: every server detail is a variable of the
+How a release reaches a server. Nothing here names a real host: every server detail is a secret of the
 GitHub `production` environment, so the same files serve any install of this site, and are a worked example
 for anyone building a site on the Filagora packages (which are ordinary Composer libraries; the steps they add
 to any Laravel deploy are listed at the end).
@@ -34,25 +34,35 @@ The deploy job needs a self-hosted runner because it changes the machine it runs
 `DEPLOY_PATH`, repairs permissions, and reloads PHP-FPM and the web server), and GitHub's own runners cannot do
 that. Set one up once, as below.
 
-### Variables (environment `production`)
+### Secrets (environment `production`)
 
-| Variable | Default | Meaning |
+Everything that describes the host is a **secret**. This repository's run logs are public and print each step's
+environment; Actions masks secrets there, and nothing else. Never move one of these to a variable.
+
+| Secret | Default | Meaning |
 | --- | --- | --- |
 | `DEPLOY_PATH` | none, required | the directory above |
 | `DEPLOY_SHARED_ENV_PATH` | `<DEPLOY_PATH>/shared/.env` | the environment file |
+| `DEPLOY_SCHEDULER_SERVICE` | empty | systemd unit running `schedule:work`; restarted if set |
+| `DEPLOY_QUEUE_WORKER_SERVICES` | empty | comma-separated units; must be active after the deploy |
+| `DEPLOY_EXPECTED_HOSTNAME` | empty | refuse to run unless `hostname` equals this |
+| `DEPLOY_FORBIDDEN_ADDRESSES` | empty | comma-separated addresses; refuse to run if the host has any of them (a copy of production keeps its hostname, so use this to keep it from deploying to the real host) |
+| `DEPLOY_SMOKE_URLS` | empty | comma-separated URLs (for example `https://<host>/up`) that must answer below 400 after the switch; empty skips the check |
+| `DEPLOY_SMOKE_RESOLVE` | empty | curl `--resolve` value (`<host>:443:127.0.0.1`) so the check reaches the origin, not the CDN |
+
+### Variables (environment `production`)
+
+Settings that say nothing about the host.
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
 | `DEPLOY_EXPECTED_APP_ENV` | `production` | refuse to deploy if the file's `APP_ENV` differs (`any` to skip) |
 | `DEPLOY_PHP_FPM_SERVICE` | `php8.4-fpm` | reloaded after the switch |
 | `DEPLOY_WEB_SERVICE` | `nginx` | reloaded after the switch |
 | `DEPLOY_WEB_GROUP` | `www-data` | group that must be able to write storage and the bootstrap cache |
 | `DEPLOY_KEEP_RELEASES` | `5` | releases kept after a deploy |
-| `DEPLOY_SCHEDULER_SERVICE` | empty | systemd unit running `schedule:work`; restarted if set |
-| `DEPLOY_QUEUE_WORKER_SERVICES` | empty | comma-separated units; must be active after the deploy |
 | `DEPLOY_SEARCH_REINDEX_ARGS` | `--sync-settings` | arguments for `filagora:search:reindex` |
 | `DEPLOY_ENV_CHECK` | `warn` | `site:check-env` on the shared `.env` before the switch: `off` skips it, `warn` prints what needs attention, `strict` fails the deploy on it |
-| `DEPLOY_EXPECTED_HOSTNAME` | empty | refuse to run unless `hostname` equals this |
-| `DEPLOY_FORBIDDEN_ADDRESSES` | empty | comma-separated addresses; refuse to run if the host has any of them (a copy of production keeps its hostname, so use this to keep it from deploying to the real host) |
-| `DEPLOY_SMOKE_URLS` | empty | comma-separated URLs (for example `https://<host>/up`) that must answer below 400 after the switch; empty skips the check |
-| `DEPLOY_SMOKE_RESOLVE` | empty | curl `--resolve` value (`<host>:443:127.0.0.1`) so the check reaches the origin, not the CDN |
 
 If a smoke check fails, the deploy makes the previous release current again (the same steps as
 `rollback_release.sh`), exits non-zero, and prunes nothing. Only code is rolled back: migrations that already ran
@@ -75,7 +85,7 @@ Two inputs are chosen per run: `run_adopt` and `run_search_reindex`.
    `setfacl` and `rm` on paths under `DEPLOY_PATH`, and `systemctl reload` of the PHP-FPM and web services (and
    `restart` of the scheduler unit, if one is set). The script stops with a clear message if `sudo -n` is refused.
 3. **The `production` environment.** In *Settings, Environments* create `production`, add required reviewers (so
-   a deploy waits for an approval), restrict it to the `master` branch, and set the variables in the table above.
+   a deploy waits for an approval), restrict it to the `master` branch, and set the secrets and variables in the tables above.
 4. **The server.** Create `DEPLOY_PATH/shared/.env` (see below), the PHP-FPM pool and the nginx server block that
    serves `DEPLOY_PATH/current/public`, and the systemd units for the scheduler and queue workers if you use them.
 5. **Protect `master`** (required reviews and status checks), since a deploy runs whatever is on it.
