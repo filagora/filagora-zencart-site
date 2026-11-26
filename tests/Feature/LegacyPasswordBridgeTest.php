@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
 class LegacyPasswordBridgeTest extends TestCase
@@ -92,5 +94,91 @@ class LegacyPasswordBridgeTest extends TestCase
         $this->assertTrue(Hash::check($plainPassword, $user->password));
         $this->assertNull($user->legacy_password_hash);
         $this->assertNull($user->legacy_password_algo);
+    }
+
+    public function test_the_old_password_stops_working_after_a_password_reset(): void
+    {
+        $user = $this->importedMember('old-password-1');
+
+        $this->post(route('password.update'), [
+            'token' => Password::createToken($user),
+            'email' => $user->email,
+            'password' => 'new-password-2',
+            'password_confirmation' => 'new-password-2',
+        ])->assertRedirect(route('login'));
+
+        $this->assertOnlyNewPasswordSignsIn($user, 'old-password-1', 'new-password-2');
+    }
+
+    public function test_the_old_password_stops_working_after_a_change_on_the_profile(): void
+    {
+        $user = $this->importedMember('old-password-1');
+        $user->forceFill(['password' => 'current-password-1'])->saveQuietly();
+
+        $this->actingAs($user)->post(route('profile.password.update'), [
+            'current_password' => 'current-password-1',
+            'password' => 'new-password-2',
+            'password_confirmation' => 'new-password-2',
+        ])->assertSessionHasNoErrors();
+
+        Auth::logout();
+
+        $this->assertOnlyNewPasswordSignsIn($user, 'old-password-1', 'new-password-2');
+    }
+
+    public function test_any_saved_password_change_removes_the_legacy_password(): void
+    {
+        $user = $this->importedMember('old-password-1');
+
+        $user->update(['password' => 'new-password-2']);
+        $user->refresh();
+
+        $this->assertNull($user->legacy_password_hash);
+        $this->assertNull($user->legacy_password_salt);
+        $this->assertNull($user->legacy_password_algo);
+        $this->assertNull($user->legacy_password_imported_at);
+    }
+
+    public function test_saving_something_else_keeps_the_legacy_password(): void
+    {
+        $user = $this->importedMember('old-password-1');
+
+        $user->update(['name' => 'Renamed']);
+
+        $this->assertTrue($user->refresh()->verifyLegacyPassword('old-password-1'));
+    }
+
+    public function test_a_legacy_password_set_along_with_a_password_is_kept(): void
+    {
+        $user = $this->importedMember('old-password-1');
+
+        $user->update([
+            'password' => 'placeholder-2',
+            'legacy_password_hash' => md5(md5('reimported-password').'efgh'),
+            'legacy_password_salt' => 'efgh',
+        ]);
+
+        $this->assertTrue($user->refresh()->verifyLegacyPassword('reimported-password'));
+    }
+
+    private function importedMember(string $legacyPassword): User
+    {
+        return User::factory()->create([
+            'legacy_password_hash' => md5(md5($legacyPassword).'abcd'),
+            'legacy_password_salt' => 'abcd',
+            'legacy_password_algo' => 'vb3_md5_double',
+            'legacy_password_imported_at' => now(),
+        ]);
+    }
+
+    private function assertOnlyNewPasswordSignsIn(User $user, string $oldPassword, string $newPassword): void
+    {
+        $this->post(route('login.store'), ['username' => $user->username, 'password' => $oldPassword])
+            ->assertSessionHasErrors('username');
+        $this->assertGuest();
+        $this->assertTrue(Hash::check($newPassword, (string) $user->refresh()->password));
+
+        $this->post(route('login.store'), ['username' => $user->username, 'password' => $newPassword]);
+        $this->assertAuthenticatedAs($user);
     }
 }

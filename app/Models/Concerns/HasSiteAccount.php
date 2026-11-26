@@ -34,6 +34,20 @@ trait HasSiteAccount
         return $this->banned_until->isFuture();
     }
 
+    /**
+     * A new password, however it is saved (reset, profile, dashboard), is the member's only one,
+     * so the old forum's goes. A save that sets the old forum's hash along with the password, as an
+     * import does, keeps it.
+     */
+    public static function bootHasSiteAccount(): void
+    {
+        static::updating(function (self $user): void {
+            if ($user->isDirty('password') && ! $user->isDirty('legacy_password_hash')) {
+                $user->forgetLegacyPassword();
+            }
+        });
+    }
+
     public function hasLegacyPasswordBridge(): bool
     {
         return is_string($this->legacy_password_hash)
@@ -70,6 +84,11 @@ trait HasSiteAccount
     public function upgradeLegacyPassword(string $plainPassword): void
     {
         $this->password = Hash::make($plainPassword);
+        $this->forgetLegacyPassword();
+    }
+
+    private function forgetLegacyPassword(): void
+    {
         $this->legacy_password_hash = null;
         $this->legacy_password_salt = null;
         $this->legacy_password_algo = null;

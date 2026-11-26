@@ -44,16 +44,12 @@ class ThrottleAuthEndpoints
             return $this->resolveLivewireAttempts($request);
         }
 
-        $path = trim($request->path(), '/');
-
-        $bucket = match (true) {
-            $path === 'dashboard/login' => 'login',
-            $path === 'dashboard/register' => 'register',
-            str_starts_with($path, 'dashboard/password-reset') => 'password_reset',
-            $path === 'login', $path === 'login/two-factor' => 'login',
-            $path === 'register' => 'register',
-            str_starts_with($path, 'password') => 'password_reset',
-            $path === 'email/verification-notification' => 'password_reset',
+        // By route name, never by path: one route can be reached by more than one spelling of
+        // its path.
+        $bucket = match ($request->route()?->getName()) {
+            'login.store', 'login.two-factor.store' => 'login',
+            'register.store' => 'register',
+            'password.email', 'password.update', 'verification.send' => 'password_reset',
             default => null,
         };
 

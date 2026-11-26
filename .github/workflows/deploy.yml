@@ -3,7 +3,8 @@ name: Deploy
 # Manual only, on purpose. This repository is public, so nothing here may run on a pull request or on
 # a push, and the job that touches the server runs only from master, in the `production` environment
 # (set required reviewers on it), on a runner registered for this repository alone. Every server
-# detail comes from the environment's variables; none is written down in the repository.
+# detail comes from the environment's secrets and none is written down in the repository. Secrets, not
+# variables, because the run log is public and prints each step's environment.
 on:
   workflow_dispatch:
     inputs:
@@ -129,10 +130,10 @@ jobs:
     steps:
       - name: Validate required variables
         env:
-          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           set -euo pipefail
-          test -n "${DEPLOY_PATH:-}" || { echo "Missing variable: DEPLOY_PATH"; exit 1; }
+          test -n "${DEPLOY_PATH:-}" || { echo "Missing secret: DEPLOY_PATH"; exit 1; }
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -159,21 +160,21 @@ jobs:
 
       - name: Deploy locally on runner host
         env:
-          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
           DEPLOY_EXPECTED_APP_ENV: ${{ vars.DEPLOY_EXPECTED_APP_ENV }}
           DEPLOY_KEEP_RELEASES: ${{ vars.DEPLOY_KEEP_RELEASES }}
           DEPLOY_PHP_FPM_SERVICE: ${{ vars.DEPLOY_PHP_FPM_SERVICE }}
           DEPLOY_WEB_GROUP: ${{ vars.DEPLOY_WEB_GROUP }}
-          DEPLOY_SHARED_ENV_PATH: ${{ vars.DEPLOY_SHARED_ENV_PATH }}
+          DEPLOY_SHARED_ENV_PATH: ${{ secrets.DEPLOY_SHARED_ENV_PATH }}
           DEPLOY_WEB_SERVICE: ${{ vars.DEPLOY_WEB_SERVICE }}
-          DEPLOY_SCHEDULER_SERVICE: ${{ vars.DEPLOY_SCHEDULER_SERVICE }}
-          DEPLOY_QUEUE_WORKER_SERVICES: ${{ vars.DEPLOY_QUEUE_WORKER_SERVICES }}
+          DEPLOY_SCHEDULER_SERVICE: ${{ secrets.DEPLOY_SCHEDULER_SERVICE }}
+          DEPLOY_QUEUE_WORKER_SERVICES: ${{ secrets.DEPLOY_QUEUE_WORKER_SERVICES }}
           DEPLOY_SEARCH_REINDEX_ARGS: ${{ vars.DEPLOY_SEARCH_REINDEX_ARGS }}
           DEPLOY_ENV_CHECK: ${{ vars.DEPLOY_ENV_CHECK }}
-          DEPLOY_EXPECTED_HOSTNAME: ${{ vars.DEPLOY_EXPECTED_HOSTNAME }}
-          DEPLOY_FORBIDDEN_ADDRESSES: ${{ vars.DEPLOY_FORBIDDEN_ADDRESSES }}
-          DEPLOY_SMOKE_URLS: ${{ vars.DEPLOY_SMOKE_URLS }}
-          DEPLOY_SMOKE_RESOLVE: ${{ vars.DEPLOY_SMOKE_RESOLVE }}
+          DEPLOY_EXPECTED_HOSTNAME: ${{ secrets.DEPLOY_EXPECTED_HOSTNAME }}
+          DEPLOY_FORBIDDEN_ADDRESSES: ${{ secrets.DEPLOY_FORBIDDEN_ADDRESSES }}
+          DEPLOY_SMOKE_URLS: ${{ secrets.DEPLOY_SMOKE_URLS }}
+          DEPLOY_SMOKE_RESOLVE: ${{ secrets.DEPLOY_SMOKE_RESOLVE }}
           RUN_ADOPT: ${{ inputs.run_adopt }}
           RUN_SEARCH_REINDEX: ${{ inputs.run_search_reindex }}
         run: |
@@ -240,11 +241,11 @@ jobs:
     steps:
       - name: Validate rollback inputs and variables
         env:
-          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
           RELEASE_ID: ${{ inputs.release_id }}
         run: |
           set -euo pipefail
-          test -n "${DEPLOY_PATH:-}" || { echo "Missing variable: DEPLOY_PATH"; exit 1; }
+          test -n "${DEPLOY_PATH:-}" || { echo "Missing secret: DEPLOY_PATH"; exit 1; }
           test -n "${RELEASE_ID:-}" || { echo "workflow_dispatch input 'release_id' is required for rollback"; exit 1; }
 
       - name: Checkout
@@ -252,10 +253,10 @@ jobs:
 
       - name: Roll back locally on runner host
         env:
-          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
           DEPLOY_PHP_FPM_SERVICE: ${{ vars.DEPLOY_PHP_FPM_SERVICE }}
           DEPLOY_WEB_SERVICE: ${{ vars.DEPLOY_WEB_SERVICE }}
-          DEPLOY_QUEUE_WORKER_SERVICES: ${{ vars.DEPLOY_QUEUE_WORKER_SERVICES }}
+          DEPLOY_QUEUE_WORKER_SERVICES: ${{ secrets.DEPLOY_QUEUE_WORKER_SERVICES }}
           RELEASE_ID: ${{ inputs.release_id }}
         run: |
           set -euo pipefail

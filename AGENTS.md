@@ -4,7 +4,7 @@ Guidance for AI coding agents working in `filagora-zencart-site`. `CLAUDE.md` im
 
 ## What this is
 
-The Zen Cart support site: a Laravel 13 / Filament 5 application built on the public Filagora packages and the Zen Cart profile. **This repository is public** (MIT), so it must never hold a secret, real personal data, or a host-specific detail: every server name, address and path comes from the deploy environment's variables.
+The Zen Cart support site: a Laravel 13 / Filament 5 application built on the public Filagora packages and the Zen Cart profile. **This repository is public** (MIT), so it must never hold a secret, real personal data, or a host-specific detail: every server name, address and path comes from the deploy environment's secrets.
 
 It replaces the old support site on the same production database. It starts as the generic `filagora-demo`'s shape and takes in the old site's application code slice by slice, deleting each piece the packages replace. The plan (private planning repository, `zencart-site-plan.md`) is the authority for order and decisions.
 

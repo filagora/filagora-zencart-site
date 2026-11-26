@@ -118,6 +118,51 @@ class DeployScriptsTest extends TestCase
         $this->assertSame(1, $run('DEPLOY_EXPECTED_HOSTNAME= DEPLOY_FORBIDDEN_ADDRESSES="'.$absent.', '.$other.'"')->getExitCode());
     }
 
+    public function test_a_refused_host_is_not_described_in_the_public_log(): void
+    {
+        $own = implode('.', [203, 0, 113, 9]);
+
+        $bin = $this->fakeBin('hostname', 'if [ "${1:-}" = "-I" ]; then echo "'.$own.'"; else echo box-a; fi');
+        $path = $bin.':'.getenv('PATH');
+
+        foreach (['DEPLOY_EXPECTED_HOSTNAME=box-b DEPLOY_FORBIDDEN_ADDRESSES=', 'DEPLOY_EXPECTED_HOSTNAME= DEPLOY_FORBIDDEN_ADDRESSES='.$own] as $vars) {
+            $process = $this->runShellFunction('assert_deploy_target', $vars.' assert_deploy_target', $path);
+            $output = $process->getOutput().$process->getErrorOutput();
+
+            $this->assertSame(1, $process->getExitCode());
+            $this->assertStringContainsString('Refusing to deploy', $output);
+            $this->assertStringNotContainsString($own, $output);
+            $this->assertStringNotContainsString('box-a', $output);
+            $this->assertStringNotContainsString('box-b', $output);
+        }
+    }
+
+    /**
+     * Actions prints each step's environment into the run log, which is public here. It masks
+     * secrets there and nothing else.
+     */
+    #[DataProvider('hostDetails')]
+    public function test_a_host_detail_comes_from_a_secret(string $name): void
+    {
+        $workflow = (string) file_get_contents(dirname(__DIR__, 2).'/.github/workflows/deploy.yml');
+
+        $this->assertStringContainsString('secrets.'.$name.' ', $workflow);
+        $this->assertStringNotContainsString('vars.'.$name.' ', $workflow);
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function hostDetails(): array
+    {
+        $names = [
+            'DEPLOY_PATH', 'DEPLOY_SHARED_ENV_PATH', 'DEPLOY_EXPECTED_HOSTNAME', 'DEPLOY_FORBIDDEN_ADDRESSES',
+            'DEPLOY_SMOKE_URLS', 'DEPLOY_SMOKE_RESOLVE', 'DEPLOY_SCHEDULER_SERVICE', 'DEPLOY_QUEUE_WORKER_SERVICES',
+        ];
+
+        return array_combine($names, array_map(fn (string $name): array => [$name], $names));
+    }
+
     public function test_the_host_guard_is_called_after_its_settings_have_defaults(): void
     {
         $script = (string) file_get_contents(dirname(__DIR__, 2).'/scripts/deploy/release_deploy.sh');
