@@ -41,14 +41,46 @@ class LoginTwoFactorEnforcementTest extends TestCase
             ->assertDontSee(__('auth.labels.authentication_code'));
     }
 
-    public function test_otp_input_is_shown_when_username_has_two_factor_enabled(): void
+    public function test_a_username_or_wrong_password_does_not_show_that_an_account_has_two_factor(): void
     {
         $user = $this->makeTwoFactorEnabledUser();
 
         Livewire::test(Login::class)
-            ->assertDontSee(__('auth.labels.authentication_code'))
             ->set('data.username', $user->username)
+            ->assertDontSee(__('auth.labels.authentication_code'))
+            ->set('data.password', 'not-the-password')
+            ->call('authenticate')
+            ->assertHasErrors(['data.username'])
+            ->assertDontSee(__('auth.labels.authentication_code'));
+    }
+
+    public function test_otp_input_is_shown_once_the_password_is_accepted(): void
+    {
+        $user = $this->makeTwoFactorEnabledUser();
+
+        Livewire::test(Login::class)
+            ->set('data.username', $user->username)
+            ->set('data.password', 'password123')
+            ->call('authenticate')
             ->assertSee(__('auth.labels.authentication_code'));
+
+        $this->assertGuest();
+    }
+
+    public function test_a_code_cannot_be_used_without_the_password(): void
+    {
+        $user = $this->makeTwoFactorEnabledUser();
+
+        Livewire::test(Login::class)
+            ->set('data.username', $user->username)
+            ->set('data.password', 'password123')
+            ->call('authenticate')
+            ->set('data.password', 'not-the-password')
+            ->set('data.otp', $this->currentValidOtp((string) $user->getTwoFactorSecret()))
+            ->call('authenticate')
+            ->assertHasErrors(['data.username']);
+
+        $this->assertGuest();
     }
 
     public function test_login_rejects_invalid_otp_for_two_factor_enabled_user(): void
@@ -61,6 +93,7 @@ class LoginTwoFactorEnforcementTest extends TestCase
         Livewire::test(Login::class)
             ->set('data.username', $user->username)
             ->set('data.password', 'password123')
+            ->call('authenticate')
             ->set('data.otp', $invalidOtp)
             ->call('authenticate')
             ->assertHasErrors(['data.otp']);
@@ -77,6 +110,7 @@ class LoginTwoFactorEnforcementTest extends TestCase
         Livewire::test(Login::class)
             ->set('data.username', $user->username)
             ->set('data.password', 'password123')
+            ->call('authenticate')
             ->set('data.otp', $validOtp)
             ->call('authenticate')
             ->assertHasNoErrors();
@@ -94,6 +128,7 @@ class LoginTwoFactorEnforcementTest extends TestCase
         Livewire::test(Login::class)
             ->set('data.username', $user->username)
             ->set('data.password', 'password123')
+            ->call('authenticate')
             ->set('data.otp', $code)
             ->call('authenticate')
             ->assertHasNoErrors();
@@ -115,6 +150,7 @@ class LoginTwoFactorEnforcementTest extends TestCase
         Livewire::test(Login::class)
             ->set('data.username', $user->username)
             ->set('data.password', 'password123')
+            ->call('authenticate')
             ->set('data.otp', $code)
             ->call('authenticate')
             ->assertHasErrors(['data.otp']);
@@ -137,15 +173,6 @@ class LoginTwoFactorEnforcementTest extends TestCase
             ->assertHasNoErrors();
 
         $this->assertAuthenticatedAs($user);
-    }
-
-    public function test_login_username_field_only_syncs_on_blur(): void
-    {
-        $source = file_get_contents(app_path('Filament/Pages/Auth/Login.php'));
-
-        $this->assertIsString($source);
-        $this->assertStringContainsString('->live(onBlur: true)', $source);
-        $this->assertStringNotContainsString("->live()\n", $source);
     }
 
     private function makeTwoFactorEnabledUser(): User

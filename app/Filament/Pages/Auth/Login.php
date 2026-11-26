@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages\Auth;
 
-use App\Models\User;
+use App\Services\Auth\LoginAttemptOutcome;
 use App\Services\Auth\LoginAttemptService;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse;
@@ -11,15 +11,23 @@ use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Schemas\Components\Component;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Locked;
 use SensitiveParameter;
 
 class Login extends BaseLogin
 {
+    /**
+     * Set once a password has been accepted for an account with two-factor sign-in. Showing the
+     * code field any earlier would tell anyone which usernames have it.
+     */
+    #[Locked]
+    public bool $requiresTwoFactor = false;
+
     public function mount(): void
     {
         $intended = $this->resolveIntendedPath(request());
@@ -36,7 +44,6 @@ class Login extends BaseLogin
         return TextInput::make('username')
             ->label(__('auth.labels.username'))
             ->required()
-            ->live(onBlur: true)
             ->autocomplete()
             ->autofocus();
     }
@@ -65,16 +72,14 @@ class Login extends BaseLogin
 
         $data = $this->form->getState();
 
-        // otp is always passed as a string (never null) here: this page's OTP
-        // field is already shown reactively (see getOtpFormComponent() below)
-        // as soon as a 2FA-enabled username is typed, so by submit time the
-        // service should go straight to validating the code rather than
-        // returning its "requires two factor" outcome - that two-step
-        // handshake is only for the public site's non-reactive login form.
-        app(LoginAttemptService::class)->attempt(
+        // The code field is absent until a first submit has asked for it, and the password is
+        // verified again on the submit that carries the code.
+        $otp = (string) ($data['otp'] ?? '');
+
+        $result = app(LoginAttemptService::class)->attempt(
             username: (string) $data['username'],
             password: (string) $data['password'],
-            otp: (string) ($data['otp'] ?? ''),
+            otp: $otp === '' ? null : $otp,
             remember: (bool) ($data['remember'] ?? false),
             accessGate: function (Authenticatable $attemptUser): bool {
                 if (! ($attemptUser instanceof FilamentUser)) {
@@ -87,6 +92,14 @@ class Login extends BaseLogin
             otpField: 'data.otp',
         );
 
+        if ($result->outcome === LoginAttemptOutcome::RequiresTwoFactor) {
+            $this->requiresTwoFactor = true;
+
+            throw ValidationException::withMessages([
+                'data.otp' => __('auth.errors.authentication_code_required'),
+            ]);
+        }
+
         return app(LoginResponse::class);
     }
 
@@ -98,7 +111,7 @@ class Login extends BaseLogin
             ->minLength(6)
             ->maxLength(21)
             ->regex('/^(\d{6}|[A-Za-z0-9]{10}-[A-Za-z0-9]{10})$/')
-            ->visible(fn (Get $get): bool => $this->userRequiresTwoFactor((string) $get('username')))
+            ->visible(fn (): bool => $this->requiresTwoFactor)
             ->autocomplete('one-time-code');
     }
 
@@ -111,20 +124,6 @@ class Login extends BaseLogin
                 $this->getOtpFormComponent(),
                 $this->getRememberFormComponent(),
             ]);
-    }
-
-    private function userRequiresTwoFactor(string $username): bool
-    {
-        $normalized = trim($username);
-        if ($normalized === '') {
-            return false;
-        }
-
-        $user = User::query()
-            ->where('username', $normalized)
-            ->first();
-
-        return $user instanceof User && $user->hasTwoFactorEnabled();
     }
 
     private function resolveIntendedPath(Request $request): ?string

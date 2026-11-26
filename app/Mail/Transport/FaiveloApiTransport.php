@@ -79,7 +79,7 @@ class FaiveloApiTransport extends AbstractTransport
             );
         }
 
-        $messageId = $response->json('messageId');
+        $messageId = $response->json('data.messageId');
 
         if (is_string($messageId) && $messageId !== '') {
             $message->setMessageId($messageId);

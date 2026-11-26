@@ -6,6 +6,7 @@ use App\Ai\AiChatFeature;
 use App\Filament\Pages\Auth\EmailVerificationPrompt;
 use App\Filament\Pages\Auth\Login as UsernameLogin;
 use App\Filament\Pages\Auth\Register as FrontendRegister;
+use App\Filament\Pages\Auth\RequestPasswordReset;
 use App\Filament\Widgets\EntitlementRequestQueueStats;
 use App\Forum\BugReportsFeature;
 use App\Http\Middleware\EnsureBannedDashboardUserIsLoggedOut;
@@ -58,7 +59,7 @@ class AdminPanelProvider extends PanelProvider
             ->login(UsernameLogin::class)
             ->registration(FrontendRegister::class)
             ->emailVerification(EmailVerificationPrompt::class)
-            ->passwordReset()
+            ->passwordReset(RequestPasswordReset::class)
             ->globalSearch(false)
             ->maxContentWidth(Width::Full)
             ->sidebarCollapsibleOnDesktop()

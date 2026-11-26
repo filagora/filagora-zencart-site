@@ -24,9 +24,14 @@ class FaiveloApiTransportTest extends TestCase
 
     public function test_it_sends_via_the_faivelo_api_with_the_expected_payload(): void
     {
-        Http::fake(['faivelo.test/*' => Http::response(['id' => 'em_1', 'messageId' => '<abc@faivelo.test>', 'status' => 'sent'], 200)]);
+        Http::fake(['faivelo.test/*' => Http::response([
+            'success' => true,
+            'data' => ['id' => 'em_1', 'messageId' => '<abc@faivelo.test>', 'status' => 'sent'],
+        ], 200)]);
 
-        Mail::mailer('faivelo')->to('recipient@example.com')->send(new FaiveloTestMailable);
+        $sent = Mail::mailer('faivelo')->to('recipient@example.com')->send(new FaiveloTestMailable);
+
+        $this->assertSame('<abc@faivelo.test>', $sent?->getMessageId());
 
         Http::assertSent(function ($request): bool {
             $body = $request->data();
@@ -46,7 +51,7 @@ class FaiveloApiTransportTest extends TestCase
 
     public function test_cc_and_bcc_recipients_are_not_repeated_in_to(): void
     {
-        Http::fake(['faivelo.test/*' => Http::response(['id' => 'em_2', 'status' => 'sent'], 200)]);
+        Http::fake(['faivelo.test/*' => Http::response(['success' => true, 'data' => ['id' => 'em_2', 'status' => 'sent']], 200)]);
 
         Mail::mailer('faivelo')
             ->to('to@example.com')

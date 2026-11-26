@@ -93,9 +93,10 @@ class LoginAttemptService
 
     /**
      * Single-request login: verify credentials and (if applicable) the 2FA
-     * code in one call. Used by Filament's page, whose OTP field is already
-     * shown reactively before submit. The public site's two-step form calls
-     * verifyCredentials() and completeLogin() separately instead.
+     * code in one call, or report that a code is needed. Used by Filament's
+     * page, which then asks for it and submits again. The public site's
+     * two-step form calls verifyCredentials() and completeLogin() separately
+     * instead.
      *
      * @param  Closure(Authenticatable): bool|null  $accessGate
      */
