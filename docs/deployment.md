@@ -80,7 +80,8 @@ Two inputs are chosen per run: `run_adopt` and `run_search_reindex`.
    give it the label `filagora-production`. Install it as a service under the **deploy user** (a user that can
    write `DEPLOY_PATH`), not root. Register it for this repository alone, never for an organisation-wide group.
    Because the repository is public, also keep *Settings, Actions, General, Fork pull request workflows* on
-   "Require approval", and leave the runner's labels off any workflow that runs on a pull request (none does).
+   "Require approval for all external contributors", leave the runner's labels off any workflow that runs on a
+   pull request (none does), and install [the runner guard](#the-runner-guard) before the runner takes a job.
 2. **Passwordless sudo for the deploy user**, limited to what the scripts run: `chgrp`, `chmod`, `find`,
    `setfacl` and `rm` on paths under `DEPLOY_PATH`, and `systemctl reload` of the PHP-FPM and web services (and
    `restart` of the scheduler unit, if one is set). The script stops with a clear message if `sudo -n` is refused.
@@ -89,6 +90,46 @@ Two inputs are chosen per run: `run_adopt` and `run_search_reindex`.
 4. **The server.** Create `DEPLOY_PATH/shared/.env` (see below), the PHP-FPM pool and the nginx server block that
    serves `DEPLOY_PATH/current/public`, and the systemd units for the scheduler and queue workers if you use them.
 5. **Protect `master`** (required reviews and status checks), since a deploy runs whatever is on it.
+
+### The runner guard
+
+A workflow's own conditions are part of the workflow, so the runner host checks each job as well.
+`scripts/runner/job_started_guard.sh` is a job-started hook: it lets through the `Deploy` workflow started by
+hand from `master`, and ends the job for anything else by killing the runner's worker process. A refused job
+fails with a runner crash message.
+
+From a checkout of `master`, install a copy that only root can change, so a job cannot rewrite it:
+
+```bash
+sudo install -D -o root -g root -m 0755 scripts/runner/job_started_guard.sh /usr/local/lib/actions-runner-guard/job_started_guard.sh
+```
+
+Point the runner's service at it. `systemctl list-units 'actions.runner.*'` names the unit, and
+`sudo systemctl edit <unit>` takes:
+
+```ini
+[Service]
+Environment=ACTIONS_RUNNER_HOOK_JOB_STARTED=/usr/local/lib/actions-runner-guard/job_started_guard.sh
+```
+
+Restart the unit while no job is running. The `.env` file in the runner's own directory must not set the same
+variable.
+
+To check it:
+
+- This must end with `exit 137`: the guard killed the stand-in for the worker. Run it exactly as written,
+  because the guard kills its parent, so running the script straight from your shell ends your session.
+
+  ```bash
+  bash -c 'bash /usr/local/lib/actions-runner-guard/job_started_guard.sh; echo NOT REFUSED'; echo "exit $?"
+  ```
+
+- The log of the next `Deploy` run must show a "Set up runner" step saying a job started hook has been
+  configured by the self-hosted runner administrator.
+
+If the file is missing or the runner cannot read it, jobs are **not** protected: the hook step fails, but steps
+that ask to run `always()` still do. Check both points again after moving or reinstalling the runner. The host
+keeps its own copy, so a change to the script takes effect only when it is installed again.
 
 ## What a deploy does, in order
 
