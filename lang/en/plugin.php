@@ -34,6 +34,13 @@ return [
         'default_body' => 'Official support thread for :plugin.',
     ],
     'moderation' => [
+        'queue' => [
+            'plugins' => '{1} :count plugin|[0,*] :count plugins',
+            'releases' => '{1} :count release|[0,*] :count releases',
+            'pending_review' => ':plugins and :releases pending review',
+            'to_review' => ':plugins · :releases to review',
+            'latest_only' => 'Only the latest :limit of each are listed.',
+        ],
         'defaults' => [
             'author' => 'author',
         ],

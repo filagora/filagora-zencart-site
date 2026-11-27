@@ -233,6 +233,8 @@ class PluginLibraryController extends Controller
 
         [$pendingPlugins, $pendingReleases] = $canModerate ? $this->reviewQueue->forModerator() : [collect(), collect()];
 
+        $pendingCounts = $canModerate ? $this->reviewQueue->counts() : ['plugins' => 0, 'releases' => 0];
+
         return view('plugins.index', [
             'activeType' => $activeType,
             'typeRows' => is_array($payload['typeRows'] ?? null) ? $payload['typeRows'] : [],
@@ -242,6 +244,7 @@ class PluginLibraryController extends Controller
             'canModerate' => $canModerate,
             'pendingPlugins' => $pendingPlugins,
             'pendingReleases' => $pendingReleases,
+            'pendingCounts' => $pendingCounts,
             'categorySort' => $categorySort,
             'encapsulatedFilter' => $encapsulatedFilter,
             'searchSortOptions' => $this->searcher->sortOptions(),

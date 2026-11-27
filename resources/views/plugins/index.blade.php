@@ -78,8 +78,12 @@
         >
             <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm text-[#243342] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8f3f1f] [&::-webkit-details-marker]:hidden">
                 <strong>Moderation Queue</strong>
-                <small class="text-xs text-[#5c6570]">{{ $pendingPlugins->count() }} plugins · {{ $pendingReleases->count() }} releases to review</small>
+                <small class="text-xs text-[#5c6570]">{{ __('plugin.moderation.queue.to_review', \App\Plugins\PluginReviewQueue::countLabels($pendingCounts)) }}</small>
             </summary>
+
+            @if($pendingCounts['plugins'] > $pendingPlugins->count() || $pendingCounts['releases'] > $pendingReleases->count())
+                <p class="border-t border-[#d8dce2] px-3 py-1.5 text-xs text-[#5c6570]">{{ __('plugin.moderation.queue.latest_only', ['limit' => \App\Plugins\PluginReviewQueue::LIMIT]) }}</p>
+            @endif
 
             @if($errors->has('note'))
                 <p class="border-t border-[#d8dce2] bg-[#fff2f3] px-3 py-1.5 text-xs text-[#a63a45]" role="alert">{{ $errors->first('note') }}</p>

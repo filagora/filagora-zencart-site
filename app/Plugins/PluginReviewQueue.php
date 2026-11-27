@@ -17,9 +17,36 @@ use Illuminate\Support\Collection;
  */
 class PluginReviewQueue
 {
-    private const LIMIT = 20;
+    public const LIMIT = 20;
 
     public function __construct(private readonly AccessChecker $access) {}
+
+    /**
+     * Everything waiting, not only what the page lists.
+     *
+     * @return array{plugins: int, releases: int}
+     */
+    public function counts(): array
+    {
+        return [
+            'plugins' => Models::class('plugin')::query()->where('status', PluginStatus::MODERATED->value)->count(),
+            'releases' => Models::class('release')::query()->where('status', PluginStatus::MODERATED->value)->count(),
+        ];
+    }
+
+    /**
+     * Counts from `counts()` in words, ready for a sentence about them.
+     *
+     * @param  array{plugins: int, releases: int}  $counts
+     * @return array{plugins: string, releases: string}
+     */
+    public static function countLabels(array $counts): array
+    {
+        return [
+            'plugins' => trans_choice('plugin.moderation.queue.plugins', $counts['plugins']),
+            'releases' => trans_choice('plugin.moderation.queue.releases', $counts['releases']),
+        ];
+    }
 
     /**
      * @return array{0: Collection<int, Plugin>, 1: Collection<int, PluginRelease>}
