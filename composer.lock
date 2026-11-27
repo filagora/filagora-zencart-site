@@ -2174,16 +2174,16 @@
         },
         {
             "name": "filagora/filagora-newsletters",
-            "version": "v0.1.0",
+            "version": "v0.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-newsletters.git",
-                "reference": "ab170f91b05fca9cbb5e4f1837d398a5fcc25a0b"
+                "reference": "04bda96544c51f4ae084b08ce358144700886fd7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-newsletters/zipball/ab170f91b05fca9cbb5e4f1837d398a5fcc25a0b",
-                "reference": "ab170f91b05fca9cbb5e4f1837d398a5fcc25a0b",
+                "url": "https://api.github.com/repos/filagora/filagora-newsletters/zipball/04bda96544c51f4ae084b08ce358144700886fd7",
+                "reference": "04bda96544c51f4ae084b08ce358144700886fd7",
                 "shasum": ""
             },
             "require": {
@@ -2226,10 +2226,10 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-newsletters/issues",
-                "source": "https://github.com/filagora/filagora-newsletters/tree/v0.1.0"
+                "source": "https://github.com/filagora/filagora-newsletters/tree/v0.1.1"
             },
-            "time": "2026-11-14T16:25:29+00:00",
-            "published-time": "2026-11-14T16:38:58+00:00"
+            "time": "2026-11-27T13:44:25+00:00",
+            "published-time": "2026-11-27T13:44:45+00:00"
         },
         {
             "name": "filagora/filagora-notifications",
