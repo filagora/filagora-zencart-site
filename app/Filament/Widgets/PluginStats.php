@@ -3,20 +3,15 @@
 namespace App\Filament\Widgets;
 
 use App\Models\User;
-use App\Services\PluginModerationService;
+use App\Plugins\PluginReviewQueue;
 use Filagora\Entitlements\Services\AuthorizationService;
 use Filament\Facades\Filament;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use Illuminate\Support\Collection;
 
 class PluginStats extends StatsOverviewWidget
 {
     protected static ?int $sort = 4;
-
-    private Collection $pendingPlugins;
-
-    private Collection $pendingReleases;
 
     public static function canView(): bool
     {
@@ -28,19 +23,13 @@ class PluginStats extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        [$pendingPlugins, $pendingReleases] = app(PluginModerationService::class)->getModeratedPlugins();
-        $total = $pendingPlugins->count() + $pendingReleases->count();
+        $counts = app(PluginReviewQueue::class)->counts();
+        $total = $counts['plugins'] + $counts['releases'];
 
         return [
             Stat::make('Plugins needing Moderation', (string) $total)
-                ->description(
-                    sprintf(
-                        '%d plugins and %d releases pending review',
-                        $pendingPlugins->count(),
-                        $pendingReleases->count()
-                    )
-                )
-                ->url('/plugins')
+                ->description(__('plugin.moderation.queue.pending_review', PluginReviewQueue::countLabels($counts)))
+                ->url(route('plugins.index'))
                 ->color($total > 0 ? 'danger' : 'success'),
         ];
     }

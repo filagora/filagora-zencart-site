@@ -2,7 +2,7 @@
 
 namespace App\Filament\RichEditor\Plugins;
 
-use App\Models\CmsMediaAsset;
+use Filagora\Cms\Models\CmsMediaAsset;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\RichEditor;
@@ -10,6 +10,7 @@ use Filament\Forms\Components\RichEditor\EditorCommand;
 use Filament\Forms\Components\RichEditor\Plugins\Contracts\RichContentPlugin;
 use Filament\Forms\Components\RichEditor\RichEditorTool;
 use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
@@ -75,11 +76,17 @@ class InsertMediaLibraryImagePlugin implements RichContentPlugin
                         ->visible(fn (Get $get): bool => filled($get('asset_id')))
                         ->columnSpanFull(),
                 ])
-                ->action(function (array $arguments, array $data, RichEditor $component): void {
+                ->action(function (Action $action, array $arguments, array $data, RichEditor $component): void {
                     $asset = CmsMediaAsset::query()->find($data['asset_id']);
 
                     if (! $asset instanceof CmsMediaAsset || blank($asset->publicUrl())) {
-                        return;
+                        Notification::make()
+                            ->danger()
+                            ->title('That image could not be inserted')
+                            ->body('Its file is missing from the media library. Choose another image, or upload it again.')
+                            ->send();
+
+                        $action->halt();
                     }
 
                     $component->runCommands(
@@ -87,7 +94,7 @@ class InsertMediaLibraryImagePlugin implements RichContentPlugin
                             EditorCommand::make('insertContent', arguments: [[
                                 'type' => 'image',
                                 'attrs' => [
-                                    'alt' => $asset->alt_text,
+                                    'alt' => $asset->alt_text ?: $asset->filename,
                                     'id' => 'media-'.$asset->id,
                                     'src' => $asset->publicUrl(),
                                 ],

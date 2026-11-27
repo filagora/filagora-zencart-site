@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use App\Models\UserPrivacyPolicyAcceptance;
 use Filagora\Compliance\Models\PrivacyPolicyVersion;
+use Filagora\Compliance\Models\UserPrivacyPolicyAcceptance;
 use Filagora\Newsletters\Enums\NewsletterSubscriberStatus;
 use Filagora\Newsletters\Models\NewsletterSubscriber;
 use Filagora\Newsletters\Notifications\ConfirmSubscription;
