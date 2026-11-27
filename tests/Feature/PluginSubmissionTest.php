@@ -19,6 +19,7 @@ use Filagora\ZenCart\Models\Thread;
 use Filagora\ZenCart\Models\ZcVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\SeedsSitePages;
@@ -867,6 +868,38 @@ class PluginSubmissionTest extends TestCase
         $this->assertFalse($titles->contains('Pending Support Thread'));
         $this->assertFalse($titles->contains('Off Topic Support Thread'));
         $this->assertFalse($titles->contains('Hidden Staff Support Thread'));
+    }
+
+    public function test_support_thread_search_does_not_count_the_posts_of_every_candidate_thread(): void
+    {
+        // The search box asks for the latest threads as soon as it has focus. A count on `posts`
+        // per candidate thread, all of them evaluated before the sort picks twenty, ran past the
+        // database's statement time limit.
+        [$user, , $supportForum] = $this->pluginSubmitFixtures('search-cost');
+        foreach (['older' => now()->subDay(), 'newer' => now()] as $slug => $updatedAt) {
+            Thread::query()->forceCreate([
+                'forum_id' => $supportForum->id,
+                'author_id' => $user->id,
+                'title' => ucfirst($slug).' Thread',
+                'slug' => $slug.'-thread',
+                'moderation_status' => ContentModerationStatus::APPROVED->value,
+                'updated_at' => $updatedAt,
+            ]);
+        }
+
+        DB::enableQueryLog();
+
+        $this->actingAs($user)
+            ->getJson(route('plugins.support-threads.search', ['q' => '']))
+            ->assertOk()
+            ->assertJsonPath('data.0.title', 'Newer Thread')
+            ->assertJsonPath('data.0.forum', $supportForum->name)
+            ->assertJsonPath('data.1.title', 'Older Thread');
+
+        $threadQueries = collect(DB::getQueryLog())->pluck('query')->filter(fn (string $sql): bool => str_contains($sql, 'from `threads`'));
+
+        $this->assertNotEmpty($threadQueries);
+        $this->assertSame([], $threadQueries->filter(fn (string $sql): bool => str_contains($sql, '`posts`'))->values()->all());
     }
 
     public function test_support_thread_search_requires_authentication(): void

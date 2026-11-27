@@ -81,10 +81,10 @@ class PluginSubmissionController extends Controller
 
         $threads = $this->supportThreads($user)
             ->when($text !== '', fn (Builder $builder) => $builder->where('threads.title', 'like', '%'.str_replace(['%', '_'], ['\%', '\_'], $text).'%'))
-            ->reorder()
             ->orderByDesc('threads.updated_at')
             ->limit(20)
-            ->get();
+            ->with('forum:id,name')
+            ->get(['threads.id', 'threads.title', 'threads.forum_id']);
 
         return response()->json([
             'data' => $threads->map(fn ($thread): array => [
@@ -342,7 +342,7 @@ class PluginSubmissionController extends Controller
      */
     private function supportThreads(User $user): Builder
     {
-        return $this->threadListings->visibleTo($user)->reorder()->where('forums.is_plugin_support_forum', true);
+        return $this->threadListings->readableBy($user)->where('forums.is_plugin_support_forum', true);
     }
 
     private function threadIdFromUrl(string $url, User $user): ?int

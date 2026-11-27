@@ -36,10 +36,8 @@ class ThreadListings
      */
     public function visibleTo(?User $user): Builder
     {
-        $thread = Models::class('thread');
-
-        $query = $this->withMetrics(
-            $thread::query()->join('forums', 'forums.id', '=', 'threads.forum_id'),
+        return $this->withMetrics(
+            $this->readableBy($user),
             $user,
             ['forum:id,name,slug,forum_group_id', 'author:id,username,name,email', 'lastPostAuthor:id,username,name,email'],
         )
@@ -47,10 +45,24 @@ class ThreadListings
             // posts_max_id and posts_min_id subquery columns; a plain select() would replace the
             // list and the rows would show no post counts and link to the wrong "latest post".
             ->addSelect('threads.*')
-            ->where('forums.is_active', true)
             ->orderByDesc('is_pinned')
             ->orderByDesc('last_post_at')
             ->orderByDesc('created_at');
+    }
+
+    /**
+     * The threads `visibleTo()` lists, joined to `forums`, with no columns, order, counts or
+     * relations: for a lookup or a picker. The counts are subqueries on `posts` that the database
+     * runs for every matching thread before it can sort them, too slow over a large set. Select
+     * columns with the table name, because both tables have an `id`.
+     *
+     * @return Builder<Thread>
+     */
+    public function readableBy(?User $user): Builder
+    {
+        $query = Models::class('thread')::query()
+            ->join('forums', 'forums.id', '=', 'threads.forum_id')
+            ->where('forums.is_active', true);
 
         if ($this->access->actsAsStaff($user)) {
             return $query;
