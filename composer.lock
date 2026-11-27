@@ -2047,16 +2047,16 @@
         },
         {
             "name": "filagora/filagora-memberships",
-            "version": "v0.1.4",
+            "version": "v0.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-memberships.git",
-                "reference": "67cc143da7df27702c5067335119e69dadd15c28"
+                "reference": "a85e3ce44d7f97ddbfdd86a655d0288c2629e6c8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-memberships/zipball/67cc143da7df27702c5067335119e69dadd15c28",
-                "reference": "67cc143da7df27702c5067335119e69dadd15c28",
+                "url": "https://api.github.com/repos/filagora/filagora-memberships/zipball/a85e3ce44d7f97ddbfdd86a655d0288c2629e6c8",
+                "reference": "a85e3ce44d7f97ddbfdd86a655d0288c2629e6c8",
                 "shasum": ""
             },
             "require": {
@@ -2105,10 +2105,9 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-memberships/issues",
-                "source": "https://github.com/filagora/filagora-memberships/tree/v0.1.4"
+                "source": "https://github.com/filagora/filagora-memberships/tree/v0.1.5"
             },
-            "time": "2026-11-14T10:32:14+00:00",
-            "published-time": "2026-11-14T10:37:13+00:00"
+            "time": "2026-11-27T20:50:18+00:00"
         },
         {
             "name": "filagora/filagora-messages",
@@ -2546,16 +2545,16 @@
         },
         {
             "name": "filagora/filagora-zencart",
-            "version": "v0.14.7",
+            "version": "v0.14.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-zencart.git",
-                "reference": "614e1393b871b63bf75b636c5be7146acc9c3dfe"
+                "reference": "400fda9f674193ea19248ecbb3aec440b6de0909"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/614e1393b871b63bf75b636c5be7146acc9c3dfe",
-                "reference": "614e1393b871b63bf75b636c5be7146acc9c3dfe",
+                "url": "https://api.github.com/repos/filagora/filagora-zencart/zipball/400fda9f674193ea19248ecbb3aec440b6de0909",
+                "reference": "400fda9f674193ea19248ecbb3aec440b6de0909",
                 "shasum": ""
             },
             "require": {
@@ -2564,7 +2563,7 @@
                 "filagora/filagora-core": "^0.2.3",
                 "filagora/filagora-entitlements": "^0.2.3",
                 "filagora/filagora-forums": "^0.6.5",
-                "filagora/filagora-memberships": "^0.1.1",
+                "filagora/filagora-memberships": "^0.1.5",
                 "filagora/filagora-messages": "^0.3",
                 "filagora/filagora-newsletters": "^0.1",
                 "filagora/filagora-notifications": "^0.2",
@@ -2626,10 +2625,10 @@
                 "zen-cart"
             ],
             "support": {
-                "source": "https://github.com/filagora/filagora-zencart/tree/v0.14.7",
+                "source": "https://github.com/filagora/filagora-zencart/tree/v0.14.8",
                 "issues": "https://github.com/filagora/filagora-zencart/issues"
             },
-            "time": "2026-11-21T20:23:31+00:00"
+            "time": "2026-11-27T21:15:15+00:00"
         },
         {
             "name": "filament/actions",
