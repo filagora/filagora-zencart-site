@@ -1617,16 +1617,16 @@
         },
         {
             "name": "filagora/filagora-cms",
-            "version": "v0.4.1",
+            "version": "v0.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filagora/filagora-cms.git",
-                "reference": "12ef89257c8690618cdc841040421787a709cc05"
+                "reference": "b90dcf306ed28560f84458259619a44250c96cd9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filagora/filagora-cms/zipball/12ef89257c8690618cdc841040421787a709cc05",
-                "reference": "12ef89257c8690618cdc841040421787a709cc05",
+                "url": "https://api.github.com/repos/filagora/filagora-cms/zipball/b90dcf306ed28560f84458259619a44250c96cd9",
+                "reference": "b90dcf306ed28560f84458259619a44250c96cd9",
                 "shasum": ""
             },
             "require": {
@@ -1675,10 +1675,9 @@
             ],
             "support": {
                 "issues": "https://github.com/filagora/filagora-cms/issues",
-                "source": "https://github.com/filagora/filagora-cms/tree/v0.4.1"
+                "source": "https://github.com/filagora/filagora-cms/tree/v0.4.2"
             },
-            "time": "2026-11-22T18:00:38+00:00",
-            "published-time": "2026-11-22T18:00:50+00:00"
+            "time": "2026-11-28T18:22:45+00:00"
         },
         {
             "name": "filagora/filagora-compliance",
